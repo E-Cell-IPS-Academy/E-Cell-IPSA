@@ -36,7 +36,7 @@ const DecryptedText = ({
   const containerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     let currentIteration = 0;
 
     const getNextIndex = (revealedSet: Set<number>): number => {
@@ -173,12 +173,7 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    const steps = [
-      { delay: 0 },
-      { delay: 2000 },
-      { delay: 4000 },
-      { delay: 6000 },
-    ];
+    const steps = [{ delay: 0 }, { delay: 2000 }, { delay: 4000 }];
 
     const timers = steps.map((step, index) =>
       setTimeout(() => {
@@ -316,53 +311,6 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
                 encryptedClassName="text-gray-700"
                 animateOn="auto"
               />
-            </div>
-          </motion.div>
-        )}
-
-        {/* Loading Animation */}
-        {currentStep >= 3 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex flex-col items-center space-y-6"
-          >
-            {/* Progress Bar */}
-            <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 2, ease: "easeInOut" }}
-              />
-            </div>
-
-            {/* Loading Text */}
-            <motion.div
-              className="text-sm text-gray-400 tracking-widest"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              INITIALIZING INNOVATION
-            </motion.div>
-
-            {/* Spinning Elements */}
-            <div className="relative">
-              <motion.div
-                className="w-16 h-16 border-2 border-purple-500/30 rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              >
-                <div className="absolute top-0 left-1/2 w-2 h-2 bg-purple-500 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
-              </motion.div>
-              <motion.div
-                className="absolute inset-2 border-2 border-blue-500/20 rounded-full"
-                animate={{ rotate: -360 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              >
-                <div className="absolute top-0 left-1/2 w-1 h-1 bg-blue-500 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
-              </motion.div>
             </div>
           </motion.div>
         )}
