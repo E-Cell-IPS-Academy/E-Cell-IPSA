@@ -66,7 +66,7 @@ const Navbar: React.FC = () => {
           >
             <Link to="/" className="flex items-center">
               <img
-                src="https://ecell-ipsa.iesipsacademystudentclubs.org/assets/EcellLogo-s1TM4fVH.png"
+                src="/EcellLogo.png"
                 alt="E-Cell IPSA Logo"
                 className="h-10 lg:h-12 w-auto object-contain drop-shadow-lg"
               />
