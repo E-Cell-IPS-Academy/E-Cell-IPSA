@@ -1,5 +1,4 @@
-// Create /src/pages/StartupOfWeek.tsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import {
   Star,
@@ -7,7 +6,6 @@ import {
   MapPin,
   Users,
   DollarSign,
-  TrendingUp,
   Award,
   Target,
   Lightbulb,
@@ -19,59 +17,62 @@ import {
   Search,
   Building,
   Rocket,
+  Loader,
+  AlertCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
+// Firebase imports
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "../firebase/config"; // Adjust path as needed
 
 // Types
 interface Founder {
   name: string;
-  role: string;
+  position: string;
   bio: string;
-  avatar?: string;
-  linkedIn?: string;
-  twitter?: string;
-}
-
-interface KeyMetric {
-  label: string;
-  value: string;
-  trend: "up" | "down" | "stable";
-  description?: string;
-}
-
-interface SocialLinks {
-  website?: string;
   linkedin?: string;
-  twitter?: string;
-  instagram?: string;
+  image?: string;
 }
 
 interface Startup {
-  id: string;
+  id?: string;
   name: string;
-  tagline: string;
   description: string;
-  fullDescription: string;
+  shortDescription: string;
   logo?: string;
+  logoPublicId?: string;
   coverImage?: string;
-  website: string;
+  coverImagePublicId?: string;
   industry: string;
-  stage: string;
   foundedYear: number;
   location: string;
-  teamSize: string;
-  funding: string;
-  valuation?: string;
+  website?: string;
+  status: "featured" | "upcoming" | "past";
+  fundingStage: string;
+  fundingAmount?: number;
+  employeeCount?: number;
   founders: Founder[];
-  keyMetrics: KeyMetric[];
   achievements: string[];
-  challengesSolved: string[];
-  futureGoals: string[];
-  socialLinks: SocialLinks;
-  weekFeatured: string;
-  weekNumber: number;
-  year: number;
-  featured: boolean;
+  problem: string;
+  solution: string;
+  businessModel: string;
+  targetMarket: string;
+  socialLinks: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+  };
+  featuredDate?: string;
+  isActive: boolean;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 
 interface StartupFilter {
@@ -81,7 +82,135 @@ interface StartupFilter {
   search: string;
 }
 
+// Startup service
+class StartupService {
+  private collection = "startups";
+
+  async getFeaturedStartup(): Promise<Startup | null> {
+    try {
+      // First try the simple query without orderBy to avoid compound index
+      const q = query(
+        collection(db, this.collection),
+        where("status", "==", "featured"),
+        where("isActive", "==", true)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        return null;
+      }
+
+      // Get all featured startups and sort in memory
+      const featuredStartups = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Startup[];
+
+      // Sort by createdAt (newest first) in memory
+      featuredStartups.sort((a, b) => {
+        const dateA = a.createdAt?.toDate().getTime() || 0;
+        const dateB = b.createdAt?.toDate().getTime() || 0;
+        return dateB - dateA;
+      });
+
+      return featuredStartups[0] || null;
+    } catch (error) {
+      console.error("Error fetching featured startup:", error);
+
+      // Fallback: try even simpler query
+      try {
+        const simpleQuery = query(
+          collection(db, this.collection),
+          where("status", "==", "featured")
+        );
+        const fallbackSnapshot = await getDocs(simpleQuery);
+
+        if (fallbackSnapshot.empty) {
+          return null;
+        }
+
+        const featuredStartups = fallbackSnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() } as Startup))
+          .filter((startup) => startup.isActive);
+
+        // Sort in memory and return the most recent
+        featuredStartups.sort((a, b) => {
+          const dateA = a.createdAt?.toDate().getTime() || 0;
+          const dateB = b.createdAt?.toDate().getTime() || 0;
+          return dateB - dateA;
+        });
+
+        return featuredStartups[0] || null;
+      } catch (fallbackError) {
+        console.error("Fallback query also failed:", fallbackError);
+        throw new Error("Failed to fetch featured startup");
+      }
+    }
+  }
+
+  async getAllStartups(): Promise<Startup[]> {
+    try {
+      // Try simple query first
+      const q = query(
+        collection(db, this.collection),
+        where("isActive", "==", true)
+      );
+      const querySnapshot = await getDocs(q);
+      const startups = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Startup[];
+
+      // Sort in memory by createdAt (newest first)
+      return startups.sort((a, b) => {
+        const dateA = a.createdAt?.toDate().getTime() || 0;
+        const dateB = b.createdAt?.toDate().getTime() || 0;
+        return dateB - dateA;
+      });
+    } catch (error) {
+      console.error("Error fetching startups:", error);
+
+      // Ultimate fallback: get all startups and filter/sort in memory
+      try {
+        const querySnapshot = await getDocs(collection(db, this.collection));
+        const allStartups = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Startup[];
+
+        // Filter active startups and sort in memory
+        return allStartups
+          .filter((startup) => startup.isActive)
+          .sort((a, b) => {
+            const dateA = a.createdAt?.toDate().getTime() || 0;
+            const dateB = b.createdAt?.toDate().getTime() || 0;
+            return dateB - dateA;
+          });
+      } catch (fallbackError) {
+        console.error("Ultimate fallback failed:", fallbackError);
+        throw new Error("Failed to fetch startups");
+      }
+    }
+  }
+
+  async getPastStartups(): Promise<Startup[]> {
+    try {
+      const allStartups = await this.getAllStartups();
+      return allStartups.filter((startup) => startup.status === "past");
+    } catch (error) {
+      console.error("Error fetching past startups:", error);
+      return [];
+    }
+  }
+}
+
+const startupService = new StartupService();
+
 const StartupOfWeek: React.FC = () => {
+  const [featuredStartup, setFeaturedStartup] = useState<Startup | null>(null);
+  const [pastStartups, setPastStartups] = useState<Startup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<StartupFilter>({
     industry: "All",
     stage: "All",
@@ -93,236 +222,77 @@ const StartupOfWeek: React.FC = () => {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
 
-  // Mock startup data
-  const startups: Startup[] = [
-    {
-      id: "1",
-      name: "GreenTech Solutions",
-      tagline: "Sustainable Technology for Tomorrow",
-      description:
-        "Revolutionary solar panel technology that increases efficiency by 40% while reducing costs.",
-      fullDescription:
-        "GreenTech Solutions is pioneering the next generation of solar energy technology. Our breakthrough photovoltaic cells use innovative materials to achieve unprecedented efficiency rates while maintaining cost-effectiveness. Founded by IPS Academy alumni, the company has already secured partnerships with major energy providers and is scaling rapidly across India.",
-      logo: "/images/startups/greentech-logo.png",
-      coverImage: "/images/startups/greentech-cover.jpg",
-      website: "https://greentechsolutions.com",
-      industry: "CleanTech",
-      stage: "Series A",
-      foundedYear: 2023,
-      location: "Indore, India",
-      teamSize: "25-50",
-      funding: "$2.5M",
-      valuation: "$15M",
-      founders: [
-        {
-          name: "Priya Sharma",
-          role: "CEO & Co-founder",
-          bio: "Former Tesla engineer with 8 years in renewable energy",
-          avatar: "/images/founders/priya-sharma.jpg",
-          linkedIn: "https://linkedin.com/in/priya-sharma",
-          twitter: "https://twitter.com/priya_greentech",
-        },
-        {
-          name: "Rahul Patel",
-          role: "CTO & Co-founder",
-          bio: "PhD in Materials Science from IIT Bombay",
-          avatar: "/images/founders/rahul-patel.jpg",
-          linkedIn: "https://linkedin.com/in/rahul-patel-cto",
-        },
-      ],
-      keyMetrics: [
-        {
-          label: "Energy Efficiency",
-          value: "94%",
-          trend: "up",
-          description: "40% above industry standard",
-        },
-        {
-          label: "Cost Reduction",
-          value: "35%",
-          trend: "up",
-          description: "Compared to traditional panels",
-        },
-        {
-          label: "Installations",
-          value: "500+",
-          trend: "up",
-          description: "Across 5 states",
-        },
-        {
-          label: "Revenue Growth",
-          value: "300%",
-          trend: "up",
-          description: "Year over year",
-        },
-      ],
-      achievements: [
-        "Winner of IPS Academy Innovation Challenge 2023",
-        "Featured in Forbes 30 Under 30 - Energy",
-        "Partnership with Tata Power announced",
-        "Patent approved for breakthrough cell technology",
-      ],
-      challengesSolved: [
-        "High cost of solar installations",
-        "Low efficiency in cloudy conditions",
-        "Complex maintenance requirements",
-        "Limited financing options for consumers",
-      ],
-      futureGoals: [
-        "Expand to 10 states by end of 2025",
-        "Launch residential solar subscription model",
-        "Develop energy storage solutions",
-        "International expansion to Southeast Asia",
-      ],
-      socialLinks: {
-        website: "https://greentechsolutions.com",
-        linkedin: "https://linkedin.com/company/greentech-solutions",
-        twitter: "https://twitter.com/greentechsol",
-        instagram: "https://instagram.com/greentechsolutions",
-      },
-      weekFeatured: "2024-12-16",
-      weekNumber: 51,
-      year: 2024,
-      featured: true,
-    },
-    {
-      id: "2",
-      name: "HealthAI",
-      tagline: "AI-Powered Healthcare Diagnostics",
-      description:
-        "Making medical diagnosis accessible through smartphone-based AI analysis.",
-      fullDescription:
-        "HealthAI leverages artificial intelligence to democratize healthcare diagnostics. Using advanced computer vision and machine learning, patients can get preliminary medical assessments through their smartphones.",
-      logo: "/images/startups/healthai-logo.png",
-      coverImage: "/images/startups/healthai-cover.jpg",
-      website: "https://healthai.in",
-      industry: "HealthTech",
-      stage: "Seed",
-      foundedYear: 2023,
-      location: "Mumbai, India",
-      teamSize: "15-25",
-      funding: "$1.2M",
-      founders: [
-        {
-          name: "Dr. Anita Desai",
-          role: "CEO & Founder",
-          bio: "Former radiologist with AI research background",
-          avatar: "/images/founders/anita-desai.jpg",
-        },
-      ],
-      keyMetrics: [
-        { label: "Accuracy Rate", value: "92%", trend: "up" },
-        { label: "Users", value: "50K+", trend: "up" },
-        { label: "Diagnoses", value: "100K+", trend: "up" },
-        { label: "Partner Clinics", value: "200+", trend: "up" },
-      ],
-      achievements: [
-        "FDA-equivalent approval in India",
-        "Partnership with Apollo Hospitals",
-        "Featured in TechCrunch",
-      ],
-      challengesSolved: [
-        "Limited access to specialists",
-        "High diagnostic costs",
-        "Long waiting times",
-      ],
-      futureGoals: [
-        "Expand to rural areas",
-        "Launch telemedicine platform",
-        "International regulatory approvals",
-      ],
-      socialLinks: {
-        website: "https://healthai.in",
-        linkedin: "https://linkedin.com/company/healthai",
-      },
-      weekFeatured: "2024-12-09",
-      weekNumber: 50,
-      year: 2024,
-      featured: false,
-    },
-    {
-      id: "3",
-      name: "EduNext",
-      tagline: "Personalized Learning for Every Student",
-      description:
-        "AI-driven educational platform that adapts to individual learning styles and pace.",
-      fullDescription:
-        "EduNext is transforming education through personalized AI tutoring that adapts to each student's unique learning style, pace, and preferences.",
-      logo: "/images/startups/edunext-logo.png",
-      coverImage: "/images/startups/edunext-cover.jpg",
-      website: "https://edunext.edu",
-      industry: "EdTech",
-      stage: "Series A",
-      foundedYear: 2022,
-      location: "Bangalore, India",
-      teamSize: "50-100",
-      funding: "$5M",
-      valuation: "$25M",
-      founders: [
-        {
-          name: "Vikram Singh",
-          role: "CEO & Co-founder",
-          bio: "Former Google product manager",
-          avatar: "/images/founders/vikram-singh.jpg",
-        },
-      ],
-      keyMetrics: [
-        { label: "Students", value: "1M+", trend: "up" },
-        { label: "Improvement Rate", value: "85%", trend: "up" },
-        { label: "Retention", value: "78%", trend: "up" },
-        { label: "Partner Schools", value: "500+", trend: "up" },
-      ],
-      achievements: [
-        "Raised Series A from Sequoia",
-        "Partnership with CBSE",
-        "Used in 500+ schools",
-      ],
-      challengesSolved: [
-        "One-size-fits-all education",
-        "Teacher shortage",
-        "Learning outcome tracking",
-      ],
-      futureGoals: [
-        "Reach 5M students by 2025",
-        "Launch in Africa",
-        "Develop VR learning modules",
-      ],
-      socialLinks: {
-        website: "https://edunext.edu",
-      },
-      weekFeatured: "2024-12-02",
-      weekNumber: 49,
-      year: 2024,
-      featured: false,
-    },
-  ];
+  useEffect(() => {
+    loadStartups();
+  }, []);
 
-  const currentWeekStartup = startups.find((s) => s.featured) || startups[0];
-  const previousStartups = startups.filter((s) => !s.featured);
+  const loadStartups = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const filteredStartups = previousStartups.filter((startup) => {
+      const [featured, past] = await Promise.all([
+        startupService.getFeaturedStartup(),
+        startupService.getPastStartups(),
+      ]);
+
+      setFeaturedStartup(featured);
+      setPastStartups(past);
+    } catch (err) {
+      setError("Failed to load startups. Please try again later.");
+      console.error("Error loading startups:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredStartups = pastStartups.filter((startup) => {
     const matchesIndustry =
       filters.industry === "All" || startup.industry === filters.industry;
     const matchesStage =
-      filters.stage === "All" || startup.stage === filters.stage;
+      filters.stage === "All" || startup.fundingStage === filters.stage;
     const matchesYear =
-      filters.year === "All" || startup.year.toString() === filters.year;
+      filters.year === "All" || startup.foundedYear.toString() === filters.year;
     const matchesSearch =
       startup.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      startup.shortDescription
+        .toLowerCase()
+        .includes(filters.search.toLowerCase()) ||
       startup.description.toLowerCase().includes(filters.search.toLowerCase());
 
     return matchesIndustry && matchesStage && matchesYear && matchesSearch;
   });
 
+  // Generate filter options from actual data
   const industries = [
     "All",
-    ...Array.from(new Set(startups.map((s) => s.industry))),
+    ...Array.from(new Set(pastStartups.map((s) => s.industry))),
   ];
-  const stages = ["All", ...Array.from(new Set(startups.map((s) => s.stage)))];
+  const stages = [
+    "All",
+    ...Array.from(new Set(pastStartups.map((s) => s.fundingStage))),
+  ];
   const years = [
     "All",
-    ...Array.from(new Set(startups.map((s) => s.year.toString()))),
-  ];
+    ...Array.from(new Set(pastStartups.map((s) => s.foundedYear.toString()))),
+  ].sort((a, b) => b.localeCompare(a));
+
+  const formatDate = (dateString?: string, timestamp?: Timestamp) => {
+    if (dateString) {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    } else if (timestamp) {
+      return timestamp.toDate().toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+    return "Recently";
+  };
 
   // Glassmorphism card component
   const GlassCard: React.FC<{
@@ -361,22 +331,36 @@ const StartupOfWeek: React.FC = () => {
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
       transition={{ duration: 0.6 }}
       className="group cursor-pointer"
+      onClick={() => {
+        if (startup.website) {
+          window.open(startup.website, "_blank");
+        }
+      }}
     >
       <GlassCard className={`overflow-hidden ${small ? "h-full" : ""}`}>
         {/* Cover Image */}
         <div className={`relative overflow-hidden ${small ? "h-32" : "h-48"}`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-            <div className="text-center p-4">
-              <Building
-                className={`${
-                  small ? "w-8 h-8" : "w-12 h-12"
-                } text-white/50 mx-auto mb-2`}
-              />
-              <p className={`text-white/70 ${small ? "text-xs" : "text-sm"}`}>
-                {startup.name}
-              </p>
+          {startup.coverImage ? (
+            <img
+              src={startup.coverImage}
+              alt={startup.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+              <div className="text-center p-4">
+                <Building
+                  className={`${
+                    small ? "w-8 h-8" : "w-12 h-12"
+                  } text-white/50 mx-auto mb-2`}
+                />
+                <p className={`text-white/70 ${small ? "text-xs" : "text-sm"}`}>
+                  {startup.name}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
 
           {/* Industry Badge */}
@@ -388,13 +372,14 @@ const StartupOfWeek: React.FC = () => {
             {startup.industry}
           </div>
 
-          {/* Week Badge */}
+          {/* Status Badge */}
           <div
-            className={`absolute top-3 right-3 px-2 py-1 bg-gradient-to-r from-yellow-500/80 to-orange-500/80 backdrop-blur-sm rounded-full ${
+            className={`absolute top-3 right-3 px-2 py-1 bg-gradient-to-r from-purple-500/80 to-blue-500/80 backdrop-blur-sm rounded-full ${
               small ? "text-xs" : "text-sm"
-            } text-white font-medium`}
+            } text-white font-medium flex items-center gap-1`}
           >
-            Week {startup.weekNumber}
+            <Star className="w-3 h-3" />
+            Past
           </div>
         </div>
 
@@ -415,7 +400,7 @@ const StartupOfWeek: React.FC = () => {
                   small ? "text-sm" : "text-base"
                 } text-purple-300 font-medium`}
               >
-                {startup.tagline}
+                {startup.industry}
               </p>
             </div>
           </div>
@@ -426,25 +411,28 @@ const StartupOfWeek: React.FC = () => {
               small ? "text-sm line-clamp-2" : "line-clamp-3"
             }`}
           >
-            {startup.description}
+            {startup.shortDescription}
           </p>
 
           {/* Key Metrics */}
           {!small && (
             <div className="grid grid-cols-2 gap-3 mb-4">
-              {startup.keyMetrics.slice(0, 2).map((metric, index) => (
-                <div key={index} className="text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <span className="text-lg font-bold text-white">
-                      {metric.value}
-                    </span>
-                    {metric.trend === "up" && (
-                      <TrendingUp className="w-4 h-4 text-green-400" />
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-400">{metric.label}</p>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="text-lg font-bold text-white">
+                    {startup.fundingStage}
+                  </span>
                 </div>
-              ))}
+                <p className="text-xs text-gray-400">Funding Stage</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="text-lg font-bold text-white">
+                    {startup.employeeCount || "N/A"}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">Team Size</p>
+              </div>
             </div>
           )}
 
@@ -456,7 +444,7 @@ const StartupOfWeek: React.FC = () => {
           >
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
-              {new Date(startup.weekFeatured).toLocaleDateString()}
+              {startup.foundedYear}
             </div>
             <div className="flex items-center gap-1">
               <MapPin className="w-3 h-3" />
@@ -498,7 +486,7 @@ const StartupOfWeek: React.FC = () => {
                   ` +${startup.founders.length - 1}`}
               </p>
               <p className={`${small ? "text-xs" : "text-sm"} text-gray-400`}>
-                {startup.founders[0]?.role}
+                {startup.founders[0]?.position}
               </p>
             </div>
           </div>
@@ -506,21 +494,23 @@ const StartupOfWeek: React.FC = () => {
           {/* Stats */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div
-                className={`flex items-center gap-1 text-gray-400 ${
-                  small ? "text-xs" : "text-sm"
-                }`}
-              >
-                <DollarSign className="w-3 h-3" />
-                {startup.funding}
-              </div>
+              {startup.fundingAmount && startup.fundingAmount > 0 && (
+                <div
+                  className={`flex items-center gap-1 text-gray-400 ${
+                    small ? "text-xs" : "text-sm"
+                  }`}
+                >
+                  <DollarSign className="w-3 h-3" />$
+                  {startup.fundingAmount.toLocaleString()}
+                </div>
+              )}
               <div
                 className={`flex items-center gap-1 text-gray-400 ${
                   small ? "text-xs" : "text-sm"
                 }`}
               >
                 <Users className="w-3 h-3" />
-                {startup.teamSize}
+                {startup.employeeCount || "N/A"}
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
@@ -529,6 +519,45 @@ const StartupOfWeek: React.FC = () => {
       </GlassCard>
     </motion.div>
   );
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="mb-4"
+          >
+            <Loader className="w-8 h-8 text-purple-500 mx-auto" />
+          </motion.div>
+          <p className="text-gray-400">Loading startups...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-white mb-2">
+            Error Loading Startups
+          </h3>
+          <p className="text-gray-400 text-center mb-6">{error}</p>
+          <button
+            onClick={loadStartups}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 pt-24 pb-12">
@@ -552,248 +581,285 @@ const StartupOfWeek: React.FC = () => {
         </motion.div>
 
         {/* Current Week Startup - Large Feature */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-16"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-3">
-              <Star className="w-8 h-8 text-yellow-400 fill-current" />
-              This Week's Featured Startup
-            </h2>
-            <p className="text-gray-400">
-              Week {currentWeekStartup.weekNumber}, {currentWeekStartup.year}
-            </p>
-          </div>
+        {featuredStartup ? (
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-16"
+          >
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+                <Star className="w-8 h-8 text-purple-400 fill-current" />
+                Featured Startup
+              </h2>
+              <p className="text-gray-400">
+                {formatDate(
+                  featuredStartup.featuredDate,
+                  featuredStartup.createdAt
+                )}
+              </p>
+            </div>
 
-          <GlassCard className="overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left - Image & Basic Info */}
-              <div>
-                {/* Cover Image */}
-                <div className="relative h-64 mb-6 rounded-xl overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Rocket className="w-16 h-16 text-white/50 mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold text-white mb-2">
-                        {currentWeekStartup.name}
-                      </h3>
-                      <p className="text-gray-300">
-                        {currentWeekStartup.tagline}
+            <GlassCard className="overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left - Image & Basic Info */}
+                <div className="p-6">
+                  {/* Cover Image */}
+                  <div className="relative h-64 mb-6 rounded-xl overflow-hidden">
+                    {featuredStartup.coverImage ? (
+                      <img
+                        src={featuredStartup.coverImage}
+                        alt={featuredStartup.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+                        <div className="text-center p-8">
+                          <Rocket className="w-16 h-16 text-white/50 mx-auto mb-4" />
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            {featuredStartup.name}
+                          </h3>
+                          <p className="text-gray-300">
+                            {featuredStartup.shortDescription}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Badges */}
+                    <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-sm text-white font-medium">
+                      {featuredStartup.industry}
+                    </div>
+                    <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full text-sm text-white font-medium flex items-center gap-1">
+                      <Star className="w-4 h-4" />
+                      Featured
+                    </div>
+                  </div>
+
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <GlassCard className="p-4 text-center" hover={false}>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-2xl font-bold text-white">
+                          {featuredStartup.fundingStage}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 font-medium">
+                        Funding Stage
+                      </p>
+                    </GlassCard>
+
+                    <GlassCard className="p-4 text-center" hover={false}>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-2xl font-bold text-white">
+                          {featuredStartup.employeeCount || "N/A"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 font-medium">
+                        Team Size
+                      </p>
+                    </GlassCard>
+
+                    {featuredStartup.fundingAmount &&
+                      featuredStartup.fundingAmount > 0 && (
+                        <GlassCard
+                          className="p-4 text-center col-span-2"
+                          hover={false}
+                        >
+                          <div className="flex items-center justify-center gap-2 mb-2">
+                            <span className="text-2xl font-bold text-white">
+                              ${featuredStartup.fundingAmount.toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-300 font-medium">
+                            Funding Raised
+                          </p>
+                        </GlassCard>
+                      )}
+                  </div>
+                </div>
+
+                {/* Right - Details */}
+                <div className="p-6">
+                  <div className="mb-6">
+                    <h3 className="text-3xl font-bold text-white mb-2">
+                      {featuredStartup.name}
+                    </h3>
+                    <p className="text-xl text-purple-300 font-medium mb-4">
+                      {featuredStartup.shortDescription}
+                    </p>
+                    <p className="text-gray-300 leading-relaxed mb-6">
+                      {featuredStartup.description}
+                    </p>
+                  </div>
+
+                  {/* Founders */}
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-white mb-4">
+                      Founders
+                    </h4>
+                    <div className="space-y-3">
+                      {featuredStartup.founders.map((founder, index) => (
+                        <div key={index} className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold">
+                              {founder.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-white font-medium">
+                              {founder.name}
+                            </p>
+                            <p className="text-gray-400 text-sm">
+                              {founder.position}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Company Info */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Founded</p>
+                      <p className="text-white font-medium">
+                        {featuredStartup.foundedYear}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Location</p>
+                      <p className="text-white font-medium">
+                        {featuredStartup.location}
                       </p>
                     </div>
                   </div>
 
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-sm text-white font-medium">
-                    {currentWeekStartup.industry}
-                  </div>
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full text-sm text-white font-medium flex items-center gap-1">
-                    <Star className="w-4 h-4" />
-                    Featured
-                  </div>
-                </div>
-
-                {/* Key Metrics */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  {currentWeekStartup.keyMetrics.map((metric, index) => (
-                    <GlassCard
-                      key={index}
-                      className="p-4 text-center"
-                      hover={false}
-                    >
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-2xl font-bold text-white">
-                          {metric.value}
-                        </span>
-                        {metric.trend === "up" && (
-                          <TrendingUp className="w-5 h-5 text-green-400" />
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-300 font-medium">
-                        {metric.label}
-                      </p>
-                      {metric.description && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          {metric.description}
-                        </p>
+                  {/* Actions */}
+                  <div className="flex items-center gap-4">
+                    {featuredStartup.website && (
+                      <a
+                        href={featuredStartup.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
+                      >
+                        <Globe className="w-4 h-4" />
+                        Visit Website
+                      </a>
+                    )}
+                    <div className="flex items-center gap-2">
+                      {featuredStartup.socialLinks?.linkedin && (
+                        <a
+                          href={featuredStartup.socialLinks.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                        >
+                          <Linkedin className="w-4 h-4 text-white" />
+                        </a>
                       )}
-                    </GlassCard>
-                  ))}
+                      {featuredStartup.socialLinks?.twitter && (
+                        <a
+                          href={featuredStartup.socialLinks.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                        >
+                          <Twitter className="w-4 h-4 text-white" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
+            </GlassCard>
+          </motion.section>
+        ) : (
+          /* No Featured Startup */
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-16 text-center"
+          >
+            <GlassCard className="p-12">
+              <Rocket className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">
+                No Featured Startup This Week
+              </h3>
+              <p className="text-gray-400">
+                Check back soon for our next featured startup!
+              </p>
+            </GlassCard>
+          </motion.section>
+        )}
 
-              {/* Right - Details */}
-              <div className="p-6">
-                <div className="mb-6">
-                  <h3 className="text-3xl font-bold text-white mb-2">
-                    {currentWeekStartup.name}
+        {/* Achievements, Problem, Solution */}
+        {featuredStartup && (
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-16"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Achievements */}
+              {featuredStartup.achievements &&
+                featuredStartup.achievements.length > 0 && (
+                  <GlassCard className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Award className="w-6 h-6 text-emerald-400" />
+                      <h3 className="text-xl font-bold text-white">
+                        Achievements
+                      </h3>
+                    </div>
+                    <ul className="space-y-3">
+                      {featuredStartup.achievements.map(
+                        (achievement, index) => (
+                          <li key={index} className="flex items-start gap-3">
+                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-2 flex-shrink-0" />
+                            <span className="text-gray-300 text-sm">
+                              {achievement}
+                            </span>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </GlassCard>
+                )}
+
+              {/* Problem Solved */}
+              <GlassCard className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Target className="w-6 h-6 text-blue-400" />
+                  <h3 className="text-xl font-bold text-white">
+                    Problem Solved
                   </h3>
-                  <p className="text-xl text-purple-300 font-medium mb-4">
-                    {currentWeekStartup.tagline}
-                  </p>
-                  <p className="text-gray-300 leading-relaxed mb-6">
-                    {currentWeekStartup.fullDescription}
-                  </p>
                 </div>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  {featuredStartup.problem}
+                </p>
+              </GlassCard>
 
-                {/* Founders */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-white mb-4">
-                    Founders
-                  </h4>
-                  <div className="space-y-3">
-                    {currentWeekStartup.founders.map((founder, index) => (
-                      <div key={index} className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">
-                            {founder.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">
-                            {founder.name}
-                          </p>
-                          <p className="text-gray-400 text-sm">
-                            {founder.role}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              {/* Solution */}
+              <GlassCard className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Lightbulb className="w-6 h-6 text-purple-400" />
+                  <h3 className="text-xl font-bold text-white">Solution</h3>
                 </div>
-
-                {/* Company Info */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Stage</p>
-                    <p className="text-white font-medium">
-                      {currentWeekStartup.stage}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Founded</p>
-                    <p className="text-white font-medium">
-                      {currentWeekStartup.foundedYear}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Funding</p>
-                    <p className="text-white font-medium">
-                      {currentWeekStartup.funding}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Team Size</p>
-                    <p className="text-white font-medium">
-                      {currentWeekStartup.teamSize}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-4">
-                  <a
-                    href={currentWeekStartup.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
-                  >
-                    <Globe className="w-4 h-4" />
-                    Visit Website
-                  </a>
-                  <div className="flex items-center gap-2">
-                    {currentWeekStartup.socialLinks.linkedin && (
-                      <a
-                        href={currentWeekStartup.socialLinks.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                      >
-                        <Linkedin className="w-4 h-4 text-white" />
-                      </a>
-                    )}
-                    {currentWeekStartup.socialLinks.twitter && (
-                      <a
-                        href={currentWeekStartup.socialLinks.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                      >
-                        <Twitter className="w-4 h-4 text-white" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  {featuredStartup.solution}
+                </p>
+              </GlassCard>
             </div>
-          </GlassCard>
-        </motion.section>
-
-        {/* Achievements, Challenges, Goals */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mb-16"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Achievements */}
-            <GlassCard className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Award className="w-6 h-6 text-yellow-400" />
-                <h3 className="text-xl font-bold text-white">Achievements</h3>
-              </div>
-              <ul className="space-y-3">
-                {currentWeekStartup.achievements.map((achievement, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">{achievement}</span>
-                  </li>
-                ))}
-              </ul>
-            </GlassCard>
-
-            {/* Challenges Solved */}
-            <GlassCard className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Target className="w-6 h-6 text-green-400" />
-                <h3 className="text-xl font-bold text-white">
-                  Problems Solved
-                </h3>
-              </div>
-              <ul className="space-y-3">
-                {currentWeekStartup.challengesSolved.map((challenge, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">{challenge}</span>
-                  </li>
-                ))}
-              </ul>
-            </GlassCard>
-
-            {/* Future Goals */}
-            <GlassCard className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Lightbulb className="w-6 h-6 text-purple-400" />
-                <h3 className="text-xl font-bold text-white">Future Goals</h3>
-              </div>
-              <ul className="space-y-3">
-                {currentWeekStartup.futureGoals.map((goal, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">{goal}</span>
-                  </li>
-                ))}
-              </ul>
-            </GlassCard>
-          </div>
-        </motion.section>
+          </motion.section>
+        )}
 
         {/* Previous Startups */}
         <motion.section
@@ -889,31 +955,53 @@ const StartupOfWeek: React.FC = () => {
                     ))}
                   </select>
                 </div>
+
+                {/* Clear Filters Button */}
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() =>
+                      setFilters({
+                        industry: "All",
+                        stage: "All",
+                        year: "All",
+                        search: "",
+                      })
+                    }
+                    className="px-4 py-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
               </GlassCard>
             </motion.div>
           )}
 
           {/* Startup Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredStartups.map((startup) => (
-              <Link
-                key={startup.id}
-                to={`/startup/${startup.id}`}
-                className="block"
-              >
-                <StartupCard startup={startup} small />
-              </Link>
-            ))}
-          </div>
-
-          {filteredStartups.length === 0 && (
+          {filteredStartups.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredStartups.map((startup, index) => (
+                <motion.div
+                  key={startup.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={
+                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
+                  }
+                  transition={{ delay: index * 0.1, duration: 0.6 }}
+                >
+                  <StartupCard startup={startup} small />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
             <div className="text-center py-12">
               <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">
                 No startups found
               </h3>
               <p className="text-gray-400">
-                Try adjusting your filters to see more results.
+                {pastStartups.length === 0
+                  ? "No past startups have been featured yet."
+                  : "Try adjusting your filters to see more results."}
               </p>
             </div>
           )}
@@ -936,24 +1024,72 @@ const StartupOfWeek: React.FC = () => {
                 and reach thousands of entrepreneurs, investors, and innovators.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/submit-startup"
+                <a
+                  href="/submit-startup"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
                 >
                   <Rocket className="w-5 h-5" />
                   Submit Your Startup
-                </Link>
-                <Link
-                  to="/nomination"
+                </a>
+                <a
+                  href="/nomination"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full font-medium transition-colors border border-white/20"
                 >
                   <Star className="w-5 h-5" />
                   Nominate a Startup
-                </Link>
+                </a>
               </div>
             </div>
           </GlassCard>
         </motion.section>
+
+        {/* Statistics */}
+        {pastStartups.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="mt-16 text-center"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+              {[
+                {
+                  number: (featuredStartup ? 1 : 0) + pastStartups.length,
+                  label: "Startups Featured",
+                },
+                {
+                  number: industries.length - 1,
+                  label: "Industries",
+                },
+                {
+                  number: pastStartups
+                    .reduce(
+                      (sum, startup) => sum + (startup.employeeCount || 0),
+                      0
+                    )
+                    .toLocaleString(),
+                  label: "Total Employees",
+                },
+                {
+                  number: `${pastStartups
+                    .reduce(
+                      (sum, startup) => sum + (startup.fundingAmount || 0),
+                      0
+                    )
+                    .toLocaleString()}`,
+                  label: "Total Funding",
+                },
+              ].map((stat, index) => (
+                <div key={index} className="text-center">
+                  <h3 className="text-3xl font-bold text-white mb-2">
+                    {stat.number}
+                  </h3>
+                  <p className="text-gray-400">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

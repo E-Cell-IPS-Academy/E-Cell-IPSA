@@ -36,18 +36,7 @@ const AdminLogin: React.FC = () => {
         "manage_settings",
       ],
     },
-    {
-      username: "admin2",
-      password: "ipsacademy@2024",
-      role: "Content Admin",
-      permissions: ["manage_content", "manage_events", "view_analytics"],
-    },
-    {
-      username: "admin3",
-      password: "entrepreneurship@2024",
-      role: "Event Admin",
-      permissions: ["manage_events", "view_analytics"],
-    },
+   
   ];
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {

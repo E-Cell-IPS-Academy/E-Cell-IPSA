@@ -251,7 +251,7 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
           {currentStep >= 0 && (
             <div className="text-6xl md:text-8xl font-bold tracking-wider">
               <DecryptedText
-                text="E-CELL IPSA"
+                text="E-CELL IPS"
                 speed={60}
                 sequential={true}
                 revealDirection="start"

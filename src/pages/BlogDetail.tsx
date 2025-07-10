@@ -1,5 +1,4 @@
-// Create /src/pages/BlogDetail.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -15,179 +14,385 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  Link as LinkIcon,
+  Link2 as LinkIcon,
+  Loader,
+  AlertCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import type { BlogPost } from "../types/blog";
+
+// Firebase imports
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc,
+  increment,
+  Timestamp,
+  limit,
+} from "firebase/firestore";
+import { db } from "../firebase/config"; // Adjust path as needed
+
+// Types
+interface Author {
+  name: string;
+  email: string;
+  bio?: string;
+  avatar?: string;
+}
+
+interface BlogPost {
+  id?: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  featuredImage?: string;
+  featuredImagePublicId?: string;
+  status: "draft" | "published" | "archived";
+  category: string;
+  tags: string[];
+  author: Author;
+  publishedDate?: string;
+  readTime?: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  isFeature: boolean;
+  viewCount: number;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+// Blog detail service
+class BlogDetailService {
+  private collection = "blogs";
+
+  async getBlogBySlug(slug: string): Promise<BlogPost | null> {
+    try {
+      const q = query(
+        collection(db, this.collection),
+        where("slug", "==", slug),
+        where("status", "==", "published"),
+        limit(1)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        return null;
+      }
+
+      const doc = querySnapshot.docs[0];
+      return {
+        id: doc.id,
+        ...doc.data(),
+      } as BlogPost;
+    } catch (error) {
+      console.error("Error fetching blog by slug:", error);
+      throw new Error("Failed to fetch blog post");
+    }
+  }
+
+  async getRelatedPosts(
+    currentPostId: string,
+    category: string,
+    tags: string[]
+  ): Promise<BlogPost[]> {
+    try {
+      // First try to get posts from the same category
+      const categoryQuery = query(
+        collection(db, this.collection),
+        where("status", "==", "published"),
+        where("category", "==", category),
+        limit(6)
+      );
+
+      const categorySnapshot = await getDocs(categoryQuery);
+      let relatedPosts = categorySnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() } as BlogPost))
+        .filter((post) => post.id !== currentPostId);
+
+      // If we don't have enough related posts, get any published posts
+      if (relatedPosts.length < 2) {
+        const generalQuery = query(
+          collection(db, this.collection),
+          where("status", "==", "published"),
+          limit(6)
+        );
+
+        const generalSnapshot = await getDocs(generalQuery);
+        const allPosts = generalSnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() } as BlogPost))
+          .filter((post) => post.id !== currentPostId);
+
+        // Combine and deduplicate
+        const combinedPosts = [...relatedPosts, ...allPosts];
+        const uniquePosts = Array.from(
+          new Map(combinedPosts.map((post) => [post.id, post])).values()
+        );
+
+        relatedPosts = uniquePosts;
+      }
+
+      // Sort by relevance (same tags, then by view count)
+      return relatedPosts
+        .sort((a, b) => {
+          const aTagMatches = a.tags.filter((tag) => tags.includes(tag)).length;
+          const bTagMatches = b.tags.filter((tag) => tags.includes(tag)).length;
+
+          if (aTagMatches !== bTagMatches) {
+            return bTagMatches - aTagMatches;
+          }
+
+          return b.viewCount - a.viewCount;
+        })
+        .slice(0, 2);
+    } catch (error) {
+      console.error("Error fetching related posts:", error);
+      return [];
+    }
+  }
+
+  async incrementViewCount(blogId: string): Promise<void> {
+    try {
+      await updateDoc(doc(db, this.collection, blogId), {
+        viewCount: increment(1),
+      });
+    } catch (error) {
+      console.error("Error incrementing view count:", error);
+    }
+  }
+
+  async incrementLikes(blogId: string): Promise<void> {
+    try {
+      // Note: You might want to add a likes field to your blog schema
+      // For now, we'll track this separately or use view count as a proxy
+      console.log("Like incremented for blog:", blogId);
+    } catch (error) {
+      console.error("Error incrementing likes:", error);
+    }
+  }
+}
+
+const blogDetailService = new BlogDetailService();
+
+// Get slug from URL - you'll need to implement this based on your routing
+const getBlogSlugFromURL = (): string => {
+  // This is a simple implementation - adjust based on your routing solution
+  const pathSegments = window.location.pathname.split("/");
+  return pathSegments[pathSegments.length - 1] || "";
+};
 
 const BlogDetail: React.FC = () => {
-  
+  const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
+  const [viewCountIncremented, setViewCountIncremented] =
+    useState<boolean>(false);
 
-  // Mock blog data - replace with actual API call
-  const blogPost: BlogPost = {
-    id: "1",
-    title: "The Future of Entrepreneurship: AI and Innovation",
-    slug: "future-entrepreneurship-ai-innovation",
-    excerpt:
-      "Exploring how artificial intelligence is reshaping the entrepreneurial landscape and creating new opportunities for startup founders.",
-    content: `
-      <p>The entrepreneurial landscape is undergoing a revolutionary transformation, driven primarily by advances in artificial intelligence and machine learning technologies. As we stand at the crossroads of innovation, entrepreneurs today have unprecedented opportunities to leverage AI for creating solutions that were unimaginable just a decade ago.</p>
+  const slug = getBlogSlugFromURL();
 
-      <h2>The AI Revolution in Startups</h2>
-      <p>Artificial Intelligence is no longer a futuristic concept relegated to science fiction. It has become a practical tool that entrepreneurs can harness to solve real-world problems, optimize operations, and create new business models. From natural language processing to computer vision, AI technologies are democratizing access to powerful capabilities that were once available only to tech giants.</p>
+  useEffect(() => {
+    if (slug) {
+      loadBlogPost(slug);
+    } else {
+      setError("No blog slug provided");
+      setLoading(false);
+    }
+  }, [slug]);
 
-      <p>Consider the impact of GPT models on content creation, or how computer vision is transforming retail through automated checkout systems. These technologies are not just enhancing existing businesses; they're creating entirely new categories of products and services.</p>
+  useEffect(() => {
+    // Increment view count after a short delay (to avoid bots)
+    if (blogPost && !viewCountIncremented) {
+      const timer = setTimeout(() => {
+        blogDetailService.incrementViewCount(blogPost.id!);
+        setViewCountIncremented(true);
+      }, 3000);
 
-      <h2>Key Areas of Innovation</h2>
-      <p>Several key areas are emerging as hotbeds for AI-driven entrepreneurship:</p>
+      return () => clearTimeout(timer);
+    }
+  }, [blogPost, viewCountIncremented]);
 
-      <h3>1. Healthcare Technology</h3>
-      <p>AI-powered diagnostic tools are revolutionizing healthcare delivery, making accurate diagnosis more accessible and affordable. Startups are developing AI systems that can detect diseases from medical imaging, predict health outcomes, and personalize treatment plans.</p>
+  const loadBlogPost = async (postSlug: string) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-      <h3>2. Education and Learning</h3>
-      <p>Personalized learning platforms powered by AI are transforming how we approach education. These systems adapt to individual learning styles and paces, making quality education more accessible and effective.</p>
+      const post = await blogDetailService.getBlogBySlug(postSlug);
 
-      <h3>3. Sustainable Technology</h3>
-      <p>AI is playing a crucial role in addressing climate change and sustainability challenges. From optimizing energy consumption to developing new materials, AI-driven startups are at the forefront of creating a more sustainable future.</p>
+      if (!post) {
+        setError("Blog post not found");
+        return;
+      }
 
-      <h2>Challenges and Opportunities</h2>
-      <p>While the opportunities are immense, entrepreneurs venturing into AI face unique challenges. The technical complexity of AI systems requires either deep technical expertise or strategic partnerships with AI specialists. Additionally, ethical considerations around AI deployment, data privacy, and algorithmic bias are increasingly important.</p>
+      setBlogPost(post);
 
-      <p>However, these challenges also represent opportunities for entrepreneurs who can navigate them successfully. Building ethical AI systems, creating user-friendly interfaces for complex technologies, and developing AI tools that enhance human capabilities rather than replace them are all areas ripe for innovation.</p>
+      // Load related posts
+      const related = await blogDetailService.getRelatedPosts(
+        post.id!,
+        post.category,
+        post.tags
+      );
+      setRelatedPosts(related);
 
-      <h2>The Road Ahead</h2>
-      <p>The future belongs to entrepreneurs who can effectively combine human creativity with AI capabilities. The most successful ventures will be those that use AI not as a replacement for human intelligence, but as an augmentation tool that amplifies human potential.</p>
+      // Update page title and meta description
+      document.title = post.seoTitle || post.title;
 
-      <p>As we look towards the future, the integration of AI in entrepreneurship will only deepen. The entrepreneurs who start building these capabilities today will be the ones leading the next wave of innovation. The question isn't whether AI will transform entrepreneurship, but how quickly entrepreneurs can adapt and harness its power for positive change.</p>
-    `,
-    featuredImage: "/images/blog/ai-entrepreneurship.jpg",
-    author: {
-      name: "Dr. Priya Sharma",
-      avatar: "/images/authors/priya-sharma.jpg",
-      bio: "AI Researcher and Startup Mentor with over 10 years of experience in machine learning and entrepreneurship. She has guided over 50 startups in implementing AI solutions.",
-    },
-    category: "Technology",
-    tags: [
-      "AI",
-      "Innovation",
-      "Startups",
-      "Future",
-      "Technology",
-      "Machine Learning",
-    ],
-    publishedAt: "2024-12-15",
-    updatedAt: "2024-12-15",
-    readTime: 8,
-    views: 1250,
-    likes: 89,
-    featured: true,
+      // Update meta description
+      const metaDescription = document.querySelector(
+        'meta[name="description"]'
+      );
+      if (metaDescription) {
+        metaDescription.setAttribute(
+          "content",
+          post.seoDescription || post.excerpt
+        );
+      }
+    } catch (err) {
+      setError("Failed to load blog post. Please try again later.");
+      console.error("Error loading blog post:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Related posts - mock data
-  const relatedPosts: BlogPost[] = [
-    {
-      id: "2",
-      title: "Building a Sustainable Startup: Lessons from IPS Academy",
-      slug: "building-sustainable-startup-ips-academy",
-      excerpt:
-        "Key insights and practical strategies for creating environmentally conscious businesses.",
-      content: "",
-      featuredImage: "/images/blog/sustainable-startup.jpg",
-      author: {
-        name: "Rahul Patel",
-        avatar: "/images/authors/rahul-patel.jpg",
-        bio: "Sustainability Expert",
-      },
-      category: "Sustainability",
-      tags: ["Sustainability", "Green Business"],
-      publishedAt: "2024-12-10",
-      updatedAt: "2024-12-10",
-      readTime: 6,
-      views: 980,
-      likes: 67,
-      featured: false,
-    },
-    {
-      id: "3",
-      title: "Mastering the Art of Pitching: A Complete Guide",
-      slug: "mastering-art-pitching-complete-guide",
-      excerpt:
-        "Everything you need to know about creating compelling pitch presentations.",
-      content: "",
-      featuredImage: "/images/blog/pitching-guide.jpg",
-      author: {
-        name: "Vikram Singh",
-        avatar: "/images/authors/vikram-singh.jpg",
-        bio: "Investment Banker and Pitch Coach",
-      },
-      category: "Business Skills",
-      tags: ["Pitching", "Presentation"],
-      publishedAt: "2024-11-28",
-      updatedAt: "2024-11-28",
-      readTime: 10,
-      views: 1680,
-      likes: 124,
-      featured: false,
-    },
-  ];
+  const handleLike = async () => {
+    if (!blogPost) return;
 
-  const handleLike = () => {
     setIsLiked(!isLiked);
+
+    if (!isLiked) {
+      await blogDetailService.incrementLikes(blogPost.id!);
+    }
   };
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
+
+    // You can implement bookmark functionality here
+    // For example, save to localStorage or user's account
+    if (!isBookmarked) {
+      localStorage.setItem(`bookmark_${blogPost?.id}`, "true");
+    } else {
+      localStorage.removeItem(`bookmark_${blogPost?.id}`);
+    }
   };
 
   const handleShare = (platform: string) => {
+    if (!blogPost) return;
+
     const url = window.location.href;
     const title = blogPost.title;
+    const text = blogPost.excerpt;
 
     switch (platform) {
       case "twitter":
         window.open(
           `https://twitter.com/intent/tweet?text=${encodeURIComponent(
             title
-          )}&url=${encodeURIComponent(url)}`
+          )}&url=${encodeURIComponent(url)}`,
+          "_blank"
         );
         break;
       case "facebook":
         window.open(
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
             url
-          )}`
+          )}`,
+          "_blank"
         );
         break;
       case "linkedin":
         window.open(
           `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
             url
-          )}`
+          )}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(
+            text
+          )}`,
+          "_blank"
         );
         break;
       case "copy":
-        navigator.clipboard.writeText(url);
-        alert("Link copied to clipboard!");
+        navigator.clipboard
+          .writeText(url)
+          .then(() => {
+            alert("Link copied to clipboard!");
+          })
+          .catch(() => {
+            alert("Failed to copy link");
+          });
         break;
     }
     setShowShareModal(false);
   };
 
-  // If post not found
-  if (!blogPost) {
+  const formatDate = (dateString?: string, timestamp?: Timestamp) => {
+    if (dateString) {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } else if (timestamp) {
+      return timestamp.toDate().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+    return "Unknown date";
+  };
+
+  const formatShortDate = (dateString?: string, timestamp?: Timestamp) => {
+    if (dateString) {
+      return new Date(dateString).toLocaleDateString();
+    } else if (timestamp) {
+      return timestamp.toDate().toLocaleDateString();
+    }
+    return "Unknown date";
+  };
+
+  // Loading state
+  if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Post Not Found</h1>
-          <Link
-            to="/blog"
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium"
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="mb-4"
+          >
+            <Loader className="w-8 h-8 text-purple-500 mx-auto" />
+          </motion.div>
+          <p className="text-gray-400">Loading blog post...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !blogPost) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-4">
+            {error || "Post Not Found"}
+          </h1>
+          <p className="text-gray-400 mb-6">
+            The blog post you're looking for doesn't exist or has been removed.
+          </p>
+          <a
+            href="/blog"
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
           >
             Back to Blog
-          </Link>
+          </a>
         </div>
       </div>
     );
@@ -202,13 +407,13 @@ const BlogDetail: React.FC = () => {
           animate={{ opacity: 1, x: 0 }}
           className="mb-8"
         >
-          <Link
-            to="/blog"
+          <a
+            href="/blog"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Blog
-          </Link>
+          </a>
         </motion.div>
 
         {/* Article Header */}
@@ -222,6 +427,11 @@ const BlogDetail: React.FC = () => {
             <span className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium">
               {blogPost.category}
             </span>
+            {blogPost.isFeature && (
+              <span className="ml-3 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full text-yellow-300 text-sm font-medium">
+                Featured
+              </span>
+            )}
           </div>
 
           {/* Title */}
@@ -234,22 +444,17 @@ const BlogDetail: React.FC = () => {
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               <span className="text-sm">
-                {new Date(blogPost.publishedAt).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {formatDate(blogPost.publishedDate, blogPost.createdAt)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              <span className="text-sm">{blogPost.readTime} min read</span>
+              <span className="text-sm">{blogPost.readTime || 5} min read</span>
             </div>
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4" />
               <span className="text-sm">
-                {blogPost.views.toLocaleString()} views
+                {blogPost.viewCount.toLocaleString()} views
               </span>
             </div>
           </div>
@@ -257,14 +462,24 @@ const BlogDetail: React.FC = () => {
           {/* Author Info */}
           <div className="flex items-center justify-between border-t border-b border-white/10 py-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
+              {blogPost.author.avatar ? (
+                <img
+                  src={blogPost.author.avatar}
+                  alt={blogPost.author.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+              )}
               <div>
                 <h3 className="text-lg font-semibold text-white">
                   {blogPost.author.name}
                 </h3>
-                <p className="text-gray-400 text-sm">{blogPost.author.bio}</p>
+                <p className="text-gray-400 text-sm">
+                  {blogPost.author.bio || "Contributing Author"}
+                </p>
               </div>
             </div>
 
@@ -280,7 +495,7 @@ const BlogDetail: React.FC = () => {
               >
                 <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
                 <span className="text-sm">
-                  {blogPost.likes + (isLiked ? 1 : 0)}
+                  {Math.floor(blogPost.viewCount * 0.1) + (isLiked ? 1 : 0)}
                 </span>
               </button>
 
@@ -291,6 +506,7 @@ const BlogDetail: React.FC = () => {
                     ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
                     : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20"
                 }`}
+                title={isBookmarked ? "Remove bookmark" : "Bookmark this post"}
               >
                 <Bookmark
                   className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`}
@@ -300,6 +516,7 @@ const BlogDetail: React.FC = () => {
               <button
                 onClick={() => setShowShareModal(true)}
                 className="p-2 bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20 rounded-full transition-all duration-300"
+                title="Share this post"
               >
                 <Share2 className="w-4 h-4" />
               </button>
@@ -308,33 +525,34 @@ const BlogDetail: React.FC = () => {
         </motion.header>
 
         {/* Featured Image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-12"
-        >
-          <div className="relative h-64 md:h-96 rounded-2xl overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-              <div className="text-center p-8">
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {blogPost.title}
-                </h2>
-                <p className="text-gray-300">Featured Image Placeholder</p>
-              </div>
+        {blogPost.featuredImage && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mb-12"
+          >
+            <div className="relative h-64 md:h-96 rounded-2xl overflow-hidden">
+              <img
+                src={blogPost.featuredImage}
+                alt={blogPost.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Article Content */}
         <motion.article
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="prose prose-invert prose-lg max-w-none mb-12"
+          className="mb-12"
         >
           <div
-            className="text-gray-300 leading-relaxed space-y-6"
+            className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
             style={{
               fontSize: "1.125rem",
@@ -344,24 +562,32 @@ const BlogDetail: React.FC = () => {
         </motion.article>
 
         {/* Tags */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mb-12"
-        >
-          <h3 className="text-lg font-semibold text-white mb-4">Tags</h3>
-          <div className="flex flex-wrap gap-3">
-            {blogPost.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-gray-300 rounded-full text-sm cursor-pointer transition-colors duration-300"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        </motion.div>
+        {blogPost.tags && blogPost.tags.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mb-12"
+          >
+            <h3 className="text-lg font-semibold text-white mb-4">Tags</h3>
+            <div className="flex flex-wrap gap-3">
+              {blogPost.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-4 py-2 bg-white/10 hover:bg-purple-500/20 hover:text-purple-300 border border-white/20 text-gray-300 rounded-full text-sm cursor-pointer transition-colors duration-300"
+                  onClick={() => {
+                    // Navigate to blog listing with tag filter
+                    window.location.href = `/blog?tag=${encodeURIComponent(
+                      tag
+                    )}`;
+                  }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Social Actions */}
         <motion.div
@@ -379,7 +605,7 @@ const BlogDetail: React.FC = () => {
             }`}
           >
             <ThumbsUp className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
-            Like this post
+            {isLiked ? "Liked!" : "Like this post"}
           </button>
 
           <button className="flex items-center gap-2 px-6 py-3 bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20 rounded-full transition-all duration-300">
@@ -397,54 +623,71 @@ const BlogDetail: React.FC = () => {
         </motion.div>
 
         {/* Related Posts */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0 }}
-        >
-          <h2 className="text-2xl font-bold text-white mb-8">Related Posts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {relatedPosts.map((post, index) => (
-              <motion.article
-                key={post.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 + index * 0.1 }}
-                className="group bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:bg-white/10 hover:border-white/20 transition-all duration-300"
-              >
-                <Link to={`/blog/${post.slug}`} className="block">
-                  {/* Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                      <div className="text-center p-4">
-                        <h3 className="text-white font-medium">{post.title}</h3>
+        {relatedPosts.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+          >
+            <h2 className="text-2xl font-bold text-white mb-8">
+              Related Posts
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {relatedPosts.map((post, index) => (
+                <motion.article
+                  key={post.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.1 + index * 0.1 }}
+                  className="group bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                >
+                  <a href={`/blog/${post.slug}`} className="block">
+                    {/* Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      {post.featuredImage ? (
+                        <img
+                          src={post.featuredImage}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+                          <div className="text-center p-4">
+                            <h3 className="text-white font-medium line-clamp-3">
+                              {post.title}
+                            </h3>
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
+                      <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white">
+                        {post.category}
                       </div>
                     </div>
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white">
-                      {post.category}
-                    </div>
-                  </div>
 
-                  {/* Content */}
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-purple-300 transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>
-                        {new Date(post.publishedAt).toLocaleDateString()}
-                      </span>
-                      <span>{post.readTime} min read</span>
+                    {/* Content */}
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-purple-300 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>
+                          {formatShortDate(post.publishedDate, post.createdAt)}
+                        </span>
+                        <span>{post.readTime || 5} min read</span>
+                        <span>{post.viewCount} views</span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.article>
-            ))}
-          </div>
-        </motion.section>
+                  </a>
+                </motion.article>
+              ))}
+            </div>
+          </motion.section>
+        )}
       </div>
 
       {/* Share Modal */}
