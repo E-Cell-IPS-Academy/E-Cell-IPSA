@@ -227,16 +227,11 @@ const AboutSection = () => {
             transition={{ duration: 1, delay: 0.3 }}
             className="relative"
           >
-            <div className="relative w-full h-96 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-3xl border border-white/10 flex items-center justify-center">
-              <div className="text-center">
-                <Building className="w-16 h-16 text-white/30 mx-auto mb-4" />
-                <p className="text-white/50">About Us Image</p>
-                <p className="text-white/30 text-sm">Replace with your image</p>
-              </div>
-              {/* Decorative elements */}
-              <div className="absolute top-4 right-4 w-8 h-8 bg-purple-500/20 rounded-full" />
-              <div className="absolute bottom-4 left-4 w-6 h-6 bg-blue-500/20 rounded-full" />
-            </div>
+            <img
+              src="/about.jpg" // Replace with the actual path to your image
+              alt="About Us"
+              className="w-full h-full object-cover rounded-3xl border border-white/10 shadow-lg"
+            />
           </motion.div>
         </div>
       </div>
@@ -424,16 +419,11 @@ const VisionSection = () => {
             transition={{ duration: 1 }}
             className="relative order-2 lg:order-1"
           >
-            <div className="relative w-full h-96 bg-gradient-to-br from-green-500/20 to-purple-500/20 rounded-3xl border border-white/10 flex items-center justify-center">
-              <div className="text-center">
-                <Globe className="w-16 h-16 text-white/30 mx-auto mb-4" />
-                <p className="text-white/50">Vision Image</p>
-                <p className="text-white/30 text-sm">Replace with your image</p>
-              </div>
-              {/* Decorative elements */}
-              <div className="absolute top-4 left-4 w-8 h-8 bg-green-500/20 rounded-full" />
-              <div className="absolute bottom-4 right-4 w-6 h-6 bg-purple-500/20 rounded-full" />
-            </div>
+            <img
+              src="/vision.jpg" 
+              alt="Our Vision"
+              className="w-full h-full object-cover rounded-3xl border border-white/10 shadow-lg"
+            />
           </motion.div>
 
           {/* Right Content */}

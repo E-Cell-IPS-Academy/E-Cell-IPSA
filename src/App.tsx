@@ -24,6 +24,7 @@ import ProtectedRoute from "./components/admin/ProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminGalleryComplete from "./pages/admin/AdminGalleryComplete";
 import ContactPage from "./pages/ContactPage";
+import StartupRegistration from "./pages/VypaarXPage";
 
 const App: React.FC = () => {
   const [showLoader, setShowLoader] = useState<boolean>(true);
@@ -116,6 +117,7 @@ const App: React.FC = () => {
               {/* User Authentication Routes - No Navbar/Footer */}
               <Route path="/login" element={<UserLogin />} />
               <Route path="/signup" element={<UserSignup />} />
+              <Route path="/register" element={<StartupRegistration />} />
 
               {/* User Dashboard - With Navbar/Footer */}
               <Route

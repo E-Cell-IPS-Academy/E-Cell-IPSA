@@ -23,13 +23,13 @@ interface FirebaseConfig {
 
 // Your web app's Firebase configuration
 const firebaseConfig: FirebaseConfig = {
-  apiKey: "AIzaSyCzA8s2v43KA2PfjEV7JNolsn3UWESZXV0",
-  authDomain: "e-cell-e8a39.firebaseapp.com",
-  projectId: "e-cell-e8a39",
-  storageBucket: "e-cell-e8a39.firebasestorage.app",
-  messagingSenderId: "270212670672",
-  appId: "1:270212670672:web:e8f098e691fbadc104ead5",
-  measurementId: "G-S99FB26Y1E",
+  apiKey: "AIzaSyAg4I31IL6HqcxlcwgBDGg_A41cIu0uUjI",
+  authDomain: "swasthya-link.firebaseapp.com",
+  projectId: "swasthya-link",
+  storageBucket: "swasthya-link.firebasestorage.app",
+  messagingSenderId: "796605318362",
+  appId: "1:796605318362:web:e5009d2c29cc110fd391e3",
+  measurementId: "G-50DB4HQH40",
 };
 
 // Initialize Firebase

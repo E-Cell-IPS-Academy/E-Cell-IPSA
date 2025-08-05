@@ -12,31 +12,15 @@ import {
   MapPin,
   User,
   Loader,
-  AlertCircle,
   Search,
 } from "lucide-react";
 
-// Firebase imports
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  updateDoc,
-  doc,
-  increment,
-  Timestamp,
-} from "firebase/firestore";
-import { db } from "../firebase/config"; // Adjust path as needed
-
 // Types
 interface GalleryImage {
-  id?: string;
+  id: string;
   title: string;
   description?: string;
   url: string;
-  publicId: string;
   thumbnailUrl?: string;
   category: string;
   album?: string;
@@ -65,109 +49,196 @@ interface GalleryImage {
     likes: number;
     shares: number;
   };
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+  createdAt: string;
+  updatedAt: string;
 }
+
+// Static Gallery Data
+const staticGalleryImages: GalleryImage[] = [
+  {
+    id: "1",
+    title: "Innovation Summit 2024",
+    description:
+      "Entrepreneurs showcasing their innovative solutions at our annual summit.",
+    url: "/gallery/1.jpg",
+    thumbnailUrl: "/gallery/1.jpg",
+    category: "Events",
+    album: "Annual Summit",
+    tags: ["innovation", "entrepreneurship", "summit", "networking"],
+    eventName: "Innovation Summit 2024",
+    eventDate: "2024-03-15",
+    location: "Mumbai, India",
+    photographer: "Rahul Sharma",
+    uploadedBy: "ecell-admin",
+    isFeature: true,
+    isFavorite: true,
+    status: "public",
+    fileSize: 2048000,
+    dimensions: { width: 1920, height: 1080 },
+    metadata: {
+      camera: "Canon EOS R5",
+      settings: "f/2.8, 1/200s, ISO 400",
+      dateCreated: "2024-03-15T10:30:00Z",
+    },
+    stats: { views: 2500, downloads: 450, likes: 320, shares: 89 },
+    createdAt: "2024-03-15T10:30:00Z",
+    updatedAt: "2024-03-15T10:30:00Z",
+  },
+  {
+    id: "2",
+    title: "Startup Pitch Competition",
+    description:
+      "Young entrepreneurs presenting their business ideas to a panel of judges.",
+    url: "/gallery/2.jpg",
+    thumbnailUrl:
+      "/gallery/2.jpg",
+    category: "Competitions",
+    album: "Pitch Events",
+    tags: ["startup", "pitch", "competition", "business"],
+    eventName: "VypaarX Pitch Competition",
+    eventDate: "2024-02-20",
+    location: "Bangalore, India",
+    photographer: "Priya Patel",
+    uploadedBy: "ecell-admin",
+    isFeature: true,
+    isFavorite: false,
+    status: "public",
+    fileSize: 1800000,
+    dimensions: { width: 1600, height: 900 },
+    metadata: {
+      camera: "Sony A7 III",
+      settings: "f/4.0, 1/125s, ISO 800",
+      dateCreated: "2024-02-20T14:15:00Z",
+    },
+    stats: { views: 1800, downloads: 280, likes: 195, shares: 67 },
+    createdAt: "2024-02-20T14:15:00Z",
+    updatedAt: "2024-02-20T14:15:00Z",
+  },
+  {
+    id: "3",
+    title: "Mentorship Session",
+    description:
+      "Industry experts sharing valuable insights with aspiring entrepreneurs.",
+    url: "/gallery/4.jpg",
+    thumbnailUrl:
+      "/gallery/4.jpg",
+    category: "Workshops",
+    album: "Learning Sessions",
+    tags: ["mentorship", "guidance", "learning", "experts"],
+    eventName: "Mentor Connect Session",
+    eventDate: "2024-01-10",
+    location: "Delhi, India",
+    photographer: "Amit Kumar",
+    uploadedBy: "ecell-admin",
+    isFeature: false,
+    isFavorite: true,
+    status: "public",
+    fileSize: 2200000,
+    dimensions: { width: 1920, height: 1280 },
+    metadata: {
+      camera: "Nikon D850",
+      settings: "f/5.6, 1/60s, ISO 1000",
+      dateCreated: "2024-01-10T16:45:00Z",
+    },
+    stats: { views: 1200, downloads: 180, likes: 145, shares: 34 },
+    createdAt: "2024-01-10T16:45:00Z",
+    updatedAt: "2024-01-10T16:45:00Z",
+  },
+  {
+    id: "4",
+    title: "Product Launch Event",
+    description:
+      "Celebrating the successful launch of a startup's innovative product.",
+    url: "/gallery/3.jpg",
+    thumbnailUrl:
+      "/gallery/3.jpg",
+    category: "Events",
+    album: "Product Launches",
+    tags: ["product", "launch", "innovation", "celebration"],
+    eventName: "TechStart Product Launch",
+    eventDate: "2023-12-05",
+    location: "Pune, India",
+    photographer: "Sarah Johnson",
+    uploadedBy: "ecell-admin",
+    isFeature: false,
+    isFavorite: false,
+    status: "public",
+    fileSize: 1900000,
+    dimensions: { width: 1600, height: 1067 },
+    metadata: {
+      camera: "Canon EOS 5D",
+      settings: "f/3.5, 1/100s, ISO 640",
+      dateCreated: "2023-12-05T19:20:00Z",
+    },
+    stats: { views: 980, downloads: 120, likes: 87, shares: 23 },
+    createdAt: "2023-12-05T19:20:00Z",
+    updatedAt: "2023-12-05T19:20:00Z",
+  },
+  {
+    id: "5",
+    title: "Team Building Workshop",
+    description: "Entrepreneurs learning collaboration and team dynamics.",
+    url: "/gallery/8.jpg",
+    thumbnailUrl:
+      "/gallery/8.jpg",
+    category: "Workshops",
+    album: "Skill Development",
+    tags: ["teamwork", "collaboration", "workshop", "skills"],
+    eventName: "Leadership & Team Building",
+    eventDate: "2023-11-18",
+    location: "Chennai, India",
+    photographer: "Michael Chen",
+    uploadedBy: "ecell-admin",
+    isFeature: true,
+    isFavorite: false,
+    status: "public",
+    fileSize: 1650000,
+    dimensions: { width: 1500, height: 1000 },
+    metadata: {
+      camera: "Fujifilm X-T4",
+      settings: "f/2.8, 1/160s, ISO 320",
+      dateCreated: "2023-11-18T11:30:00Z",
+    },
+    stats: { views: 1500, downloads: 210, likes: 167, shares: 45 },
+    createdAt: "2023-11-18T11:30:00Z",
+    updatedAt: "2023-11-18T11:30:00Z",
+  },
+  {
+    id: "6",
+    title: "Networking Mixer",
+    description:
+      "Entrepreneurs connecting and building valuable relationships.",
+    url: "/gallery/6.jpg",
+    thumbnailUrl:
+      "/gallery/6.jpg",
+    category: "Networking",
+    album: "Community Events",
+    tags: ["networking", "connections", "community", "relationships"],
+    eventName: "Monthly Networking Mixer",
+    eventDate: "2023-10-25",
+    location: "Hyderabad, India",
+    photographer: "Lisa Wang",
+    uploadedBy: "ecell-admin",
+    isFeature: false,
+    isFavorite: true,
+    status: "public",
+    fileSize: 1750000,
+    dimensions: { width: 1800, height: 1200 },
+    metadata: {
+      camera: "Canon EOS R6",
+      settings: "f/4.0, 1/80s, ISO 1600",
+      dateCreated: "2023-10-25T18:45:00Z",
+    },
+    stats: { views: 1100, downloads: 145, likes: 98, shares: 28 },
+    createdAt: "2023-10-25T18:45:00Z",
+    updatedAt: "2023-10-25T18:45:00Z",
+  },
+];
 
 // Utility function for className merging
 const cn = (...classes: (string | undefined)[]) => {
   return classes.filter(Boolean).join(" ");
 };
-
-// Gallery service
-class PublicGalleryService {
-  private imagesCollection = "gallery_images";
-
-  async getPublicImages(): Promise<GalleryImage[]> {
-    try {
-      const q = query(
-        collection(db, this.imagesCollection),
-        where("status", "==", "public"),
-        orderBy("createdAt", "desc")
-      );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as GalleryImage[];
-    } catch (error) {
-      console.error("Error fetching public images:", error);
-
-      // Fallback: try without orderBy
-      try {
-        const simpleQuery = query(
-          collection(db, this.imagesCollection),
-          where("status", "==", "public")
-        );
-        const fallbackSnapshot = await getDocs(simpleQuery);
-        const images = fallbackSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as GalleryImage[];
-
-        // Sort in memory
-        return images.sort((a, b) => {
-          const dateA = a.createdAt?.toDate().getTime() || 0;
-          const dateB = b.createdAt?.toDate().getTime() || 0;
-          return dateB - dateA;
-        });
-      } catch (fallbackError) {
-        console.error("Fallback query failed:", fallbackError);
-        throw new Error("Failed to fetch gallery images");
-      }
-    }
-  }
-
-  async getFeaturedImages(): Promise<GalleryImage[]> {
-    try {
-      const q = query(
-        collection(db, this.imagesCollection),
-        where("status", "==", "public"),
-        where("isFeature", "==", true)
-      );
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as GalleryImage[];
-    } catch (error) {
-      console.error("Error fetching featured images:", error);
-      return [];
-    }
-  }
-
-  async incrementViews(imageId: string): Promise<void> {
-    try {
-      await updateDoc(doc(db, this.imagesCollection, imageId), {
-        "stats.views": increment(1),
-      });
-    } catch (error) {
-      console.error("Error incrementing views:", error);
-    }
-  }
-
-  async incrementDownloads(imageId: string): Promise<void> {
-    try {
-      await updateDoc(doc(db, this.imagesCollection, imageId), {
-        "stats.downloads": increment(1),
-      });
-    } catch (error) {
-      console.error("Error incrementing downloads:", error);
-    }
-  }
-
-  async incrementShares(imageId: string): Promise<void> {
-    try {
-      await updateDoc(doc(db, this.imagesCollection, imageId), {
-        "stats.shares": increment(1),
-      });
-    } catch (error) {
-      console.error("Error incrementing shares:", error);
-    }
-  }
-}
-
-const galleryService = new PublicGalleryService();
 
 // BentoGrid Components
 const BentoGrid: React.FC<{
@@ -279,13 +350,6 @@ const Lightbox: React.FC<{
   const currentImage = images[currentIndex];
 
   useEffect(() => {
-    if (isOpen && currentImage?.id) {
-      // Increment view count when lightbox opens
-      galleryService.incrementViews(currentImage.id);
-    }
-  }, [isOpen, currentIndex, currentImage?.id]);
-
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
 
@@ -299,7 +363,7 @@ const Lightbox: React.FC<{
   }, [isOpen, onClose, onNext, onPrev]);
 
   const handleDownload = async () => {
-    if (!currentImage?.id) return;
+    if (!currentImage) return;
 
     try {
       // Create a link to download the image
@@ -308,16 +372,13 @@ const Lightbox: React.FC<{
       link.download = `${currentImage.title}.jpg`;
       link.target = "_blank";
       link.click();
-
-      // Increment download count
-      await galleryService.incrementDownloads(currentImage.id);
     } catch (error) {
       console.error("Download failed:", error);
     }
   };
 
   const handleShare = async () => {
-    if (!currentImage?.id) return;
+    if (!currentImage) return;
 
     try {
       if (navigator.share) {
@@ -331,9 +392,6 @@ const Lightbox: React.FC<{
         await navigator.clipboard.writeText(window.location.href);
         alert("Link copied to clipboard!");
       }
-
-      // Increment share count
-      await galleryService.incrementShares(currentImage.id);
     } catch (error) {
       console.error("Share failed:", error);
     }
@@ -530,7 +588,6 @@ const Lightbox: React.FC<{
 const Gallery: React.FC = () => {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -540,22 +597,16 @@ const Gallery: React.FC = () => {
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
 
   useEffect(() => {
-    loadGalleryImages();
-  }, []);
+    // Simulate loading time then set static data
+    const loadStaticImages = () => {
+      setTimeout(() => {
+        setImages(staticGalleryImages);
+        setLoading(false);
+      }, 1000); // 1 second loading simulation
+    };
 
-  const loadGalleryImages = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const galleryData = await galleryService.getPublicImages();
-      setImages(galleryData);
-    } catch (err) {
-      setError("Failed to load gallery images. Please try again later.");
-      console.error("Error loading gallery:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadStaticImages();
+  }, []);
 
   // Get unique categories from images
   const categories = [
@@ -683,21 +734,6 @@ const Gallery: React.FC = () => {
               </motion.div>
               <p className="text-gray-400">Loading gallery...</p>
             </div>
-          ) : error ? (
-            /* Error State */
-            <div className="flex flex-col items-center justify-center py-20">
-              <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">
-                Error Loading Gallery
-              </h3>
-              <p className="text-gray-400 text-center mb-6">{error}</p>
-              <button
-                onClick={loadGalleryImages}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
           ) : filteredImages.length === 0 ? (
             /* Empty State */
             <div className="text-center py-20">
@@ -752,46 +788,6 @@ const Gallery: React.FC = () => {
             </BentoGrid>
           )}
         </motion.div>
-
-        {/* Stats */}
-        {!loading && !error && filteredImages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ delay: 0.8 }}
-            className="text-center"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-              {[
-                {
-                  number: filteredImages.length,
-                  label: filteredImages.length === 1 ? "Photo" : "Photos",
-                },
-                {
-                  number: categories.length - 1,
-                  label: "Categories",
-                },
-                {
-                  number: filteredImages
-                    .reduce((sum, img) => sum + img.stats.views, 0)
-                    .toLocaleString(),
-                  label: "Total Views",
-                },
-                {
-                  number: filteredImages.filter((img) => img.isFeature).length,
-                  label: "Featured",
-                },
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <h3 className="text-3xl font-bold text-white mb-2">
-                    {stat.number}
-                  </h3>
-                  <p className="text-gray-400">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
       </div>
 
       {/* Lightbox */}

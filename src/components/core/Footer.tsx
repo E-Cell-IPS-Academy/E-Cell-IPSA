@@ -105,7 +105,7 @@ const Footer = () => {
             >
               <div className="flex items-center space-x-3 mb-4">
                 <img
-                  src="https://ecell-ipsa.iesipsacademystudentclubs.org/assets/EcellLogo-s1TM4fVH.png"
+                   src="/EcellLogo.png"
                   alt="E-Cell IPSA"
                   className="h-12 w-auto"
                 />

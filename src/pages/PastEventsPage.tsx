@@ -9,22 +9,76 @@ import {
   Lightbulb,
   User,
   Tag,
-  AlertCircle,
   Loader,
 } from "lucide-react";
 
-// Firebase imports
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  Timestamp,
-} from "firebase/firestore";
-import { db } from "../firebase/config"; // Adjust path as needed
+// Updated static events data with actual image URLs
+const staticEventsData = [
+  {
+    id: "induction-program-2024",
+    title: "Induction Program",
+    description:
+      "Empowering first-year students with entrepreneurial insights, fostering innovation, and setting the stage for future startup leaders.",
+    date: "2024-09-19",
+    time: "10:00 AM",
+    location: "IPS Academy Auditorium",
+    status: "completed" as const,
+    attendees: 250,
+    maxAttendees: 300,
+    category: "Workshop",
+    tags: ["first-year", "entrepreneurship", "innovation", "induction"],
+    speakers: [],
+    image:
+      "/gallery/1.jpg",
+  },
+  {
+    id: "pitching-contest-2024",
+    title: "Pitching Contest",
+    description:
+      "Organized a pitching competition to promote entrepreneurship at IPS Academy, providing early-stage startups with a platform to gain exposure and network with mentors.",
+    date: "2024-10-04",
+    time: "2:00 PM",
+    location: "Central Hall, IPS Academy",
+    status: "completed" as const,
+    attendees: 120,
+    maxAttendees: 150,
+    category: "Competition",
+    tags: ["pitching", "startups", "mentorship", "contest"],
+    speakers: [],
+    image:
+      "/gallery/7.jpg",
+  },
+  {
+    id: "ignitex-2024",
+    title: "IgniteX",
+    description:
+      "IgniteX 2024: Let's Talk Entrepreneurship! An exciting event with insightful speaker sessions, open discussions, and surprises & rewards for participants.",
+    date: "2024-12-03",
+    time: "11:00 AM",
+    location: "Main Seminar Hall",
+    status: "completed" as const,
+    attendees: 300,
+    maxAttendees: 350,
+    category: "Conference",
+    tags: ["IgniteX", "speakers", "discussions", "networking"],
+    speakers: [
+      {
+        name: "Guest Speaker 1",
+        title: "CEO, TechInnovate",
+        bio: "An experienced entrepreneur.",
+      },
+      {
+        name: "Guest Speaker 2",
+        title: "Founder, Creative Solutions",
+        bio: "A leader in creative industries.",
+      },
+    ],
+    image:
+      "/gallery/2.jpg",
+  },
+];
 
-// Types
+// Types remain the same
 interface Speaker {
   name: string;
   title: string;
@@ -52,94 +106,9 @@ interface Event {
   requirements?: string[];
   agenda?: string[];
   speakers?: Speaker[];
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
 }
 
-// Events service
-class PastEventsService {
-  private collection = "events";
-
-  async getPastEvents(): Promise<Event[]> {
-    try {
-      // First, get all events and filter/sort in memory
-      // This avoids the need for a composite index
-      const q = query(
-        collection(db, this.collection),
-        orderBy("createdAt", "desc")
-      );
-      const querySnapshot = await getDocs(q);
-      const allEvents = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Event[];
-
-      // Filter completed events and sort by date
-      const pastEvents = allEvents
-        .filter((event) => event.status === "completed")
-        .sort((a, b) => {
-          // Sort by date (newest first)
-          const dateA = new Date(a.date).getTime();
-          const dateB = new Date(b.date).getTime();
-          return dateB - dateA;
-        });
-
-      return pastEvents;
-    } catch (error) {
-      console.error("Error fetching past events:", error);
-
-      // Fallback: try simple query without orderBy
-      try {
-        const simpleQuery = query(
-          collection(db, this.collection),
-          where("status", "==", "completed")
-        );
-        const fallbackSnapshot = await getDocs(simpleQuery);
-        const fallbackEvents = fallbackSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Event[];
-
-        // Sort in memory
-        return fallbackEvents.sort((a, b) => {
-          const dateA = new Date(a.date).getTime();
-          const dateB = new Date(b.date).getTime();
-          return dateB - dateA;
-        });
-      } catch (fallbackError) {
-        console.error("Fallback query also failed:", fallbackError);
-        throw new Error("Failed to fetch past events");
-      }
-    }
-  }
-
-  // Alternative method that gets all events without any compound queries
-  async getAllEventsAndFilter(): Promise<Event[]> {
-    try {
-      const querySnapshot = await getDocs(collection(db, this.collection));
-      const allEvents = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Event[];
-
-      // Filter and sort in memory
-      return allEvents
-        .filter((event) => event.status === "completed")
-        .sort((a, b) => {
-          const dateA = new Date(a.date).getTime();
-          const dateB = new Date(b.date).getTime();
-          return dateB - dateA;
-        });
-    } catch (error) {
-      console.error("Error fetching all events:", error);
-      throw new Error("Failed to fetch past events");
-    }
-  }
-}
-
-const pastEventsService = new PastEventsService();
-
-// Floating Elements Component
+// Floating Elements Component remains the same
 interface FloatingElementProps {
   delay?: number;
   children: React.ReactNode;
@@ -169,7 +138,7 @@ const FloatingElement: React.FC<FloatingElementProps> = ({
   );
 };
 
-// Event Card Component
+// Updated Event Card Component with custom shaped images
 const EventCard: React.FC<{
   event: Event;
   index: number;
@@ -205,8 +174,23 @@ const EventCard: React.FC<{
     }
   };
 
+  // Different clip-path shapes for variety
+  const getImageShape = (index: number) => {
+    const shapes = [
+      "polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%)", // Cut top-right corner
+      "polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%)", // Cut bottom-right corner
+      "polygon(15% 0, 100% 0, 100% 100%, 0 100%, 0 15%)", // Cut top-left corner
+      "polygon(0 0, 100% 0, 100% 100%, 15% 100%, 0 85%)", // Cut bottom-left corner
+      "ellipse(80% 60% at 50% 40%)", // Oval top
+      "polygon(0 20%, 100% 0, 100% 80%, 0 100%)", // Diagonal cuts
+    ];
+    return shapes[index % shapes.length];
+  };
+
   const IconComponent = getEventIcon(event.category);
   const colorGradient = getEventColor(event.category);
+  const imageShape = getImageShape(index);
+  const isEven = index % 2 === 0;
 
   return (
     <motion.div
@@ -218,14 +202,12 @@ const EventCard: React.FC<{
       {/* Timeline Line */}
       <div className="absolute left-8 lg:left-1/2 lg:-translate-x-0.5 top-24 w-0.5 h-full bg-gradient-to-b from-white/20 via-white/10 to-transparent" />
 
-      <div
-        className={`grid grid-cols-1 lg:grid-cols-2 gap-8 items-center ${
-          index % 2 === 0 ? "" : "lg:grid-flow-col-dense"
-        }`}
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Event Content */}
         <motion.div
-          className={`space-y-6 ${index % 2 === 0 ? "" : "lg:col-start-2"}`}
+          className={`lg:col-span-7 space-y-6 ${
+            isEven ? "lg:order-1" : "lg:order-2"
+          }`}
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
@@ -345,25 +327,77 @@ const EventCard: React.FC<{
           </div>
         </motion.div>
 
-        {/* Event Visual */}
+        {/* Event Image with Custom Shape */}
         <motion.div
-          className={`relative ${index % 2 === 0 ? "" : "lg:col-start-1"}`}
+          className={`lg:col-span-5 relative ${
+            isEven ? "lg:order-2" : "lg:order-1"
+          }`}
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.3 }}
         >
-          <div
-            className={`relative w-full h-80 rounded-3xl border border-white/10 flex items-center justify-center overflow-hidden`}
-          >
-            {/* Event Image */}
+          <div className="relative w-full h-96 rounded-3xl overflow-hidden">
             {event.image ? (
-              <img
-                src={event.image}
-                alt={event.title}
-                className="w-full h-full object-cover"
-              />
+              <div className="relative w-full h-full">
+                {/* Custom shaped image container */}
+                <div
+                  className="w-full h-full relative overflow-hidden"
+                  style={{
+                    clipPath: imageShape,
+                  }}
+                >
+                  <motion.img
+                    src={event.image}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                    initial={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.2 }}
+                    transition={{ duration: 0.5 }}
+                  />
+
+                  {/* Gradient overlay for better text contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                </div>
+
+                {/* Decorative elements */}
+                <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-white/50" />
+                <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-white/50" />
+                <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-white/50" />
+                <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-white/50" />
+
+                {/* Floating particles effect */}
+                <motion.div
+                  className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/60 rounded-full"
+                  animate={{
+                    y: [-10, 10, -10],
+                    opacity: [0.3, 1, 0.3],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+                <motion.div
+                  className="absolute top-3/4 right-1/4 w-1 h-1 bg-white/40 rounded-full"
+                  animate={{
+                    y: [10, -10, 10],
+                    opacity: [0.2, 0.8, 0.2],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 1,
+                  }}
+                />
+              </div>
             ) : (
+              // Fallback for events without images
               <div
-                className={`w-full h-full bg-gradient-to-br ${colorGradient}/20 flex items-center justify-center`}
+                className={`w-full h-full bg-gradient-to-br ${colorGradient}/20 flex items-center justify-center relative overflow-hidden`}
+                style={{
+                  clipPath: imageShape,
+                }}
               >
                 <motion.div
                   className={`w-24 h-24 bg-gradient-to-r ${colorGradient} rounded-full flex items-center justify-center`}
@@ -382,69 +416,50 @@ const EventCard: React.FC<{
               </div>
             )}
 
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-            {/* Corner decorations */}
-            <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-white/30" />
-            <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-white/30" />
-            <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-white/30" />
-            <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-white/30" />
-          </div>
-
-          {/* Timeline dot */}
-          <motion.div
-            className={`absolute top-1/2 ${
-              index % 2 === 0 ? "-right-4" : "-left-4"
-            } lg:left-1/2 lg:-translate-x-1/2 w-8 h-8 bg-gradient-to-r ${colorGradient} rounded-full border-4 border-black flex items-center justify-center z-10`}
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : { scale: 0 }}
-            transition={{ delay: index * 0.2 + 0.5, duration: 0.5 }}
-          >
+            {/* Timeline dot */}
             <motion.div
-              className="w-2 h-2 bg-white rounded-full"
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [1, 0.5, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </motion.div>
+              className={`absolute top-1/2 ${
+                isEven ? "-left-4" : "-right-4"
+              } lg:left-1/2 lg:-translate-x-1/2 w-8 h-8 bg-gradient-to-r ${colorGradient} rounded-full border-4 border-black flex items-center justify-center z-10`}
+              initial={{ scale: 0 }}
+              animate={isInView ? { scale: 1 } : { scale: 0 }}
+              transition={{ delay: index * 0.2 + 0.5, duration: 0.5 }}
+            >
+              <motion.div
+                className="w-2 h-2 bg-white rounded-full"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [1, 0.5, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     </motion.div>
   );
 };
 
+// Rest of the component remains the same
 const PastEventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
 
   useEffect(() => {
-    loadPastEvents();
-  }, []);
-
-  const loadPastEvents = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const pastEvents = await pastEventsService.getPastEvents();
-      setEvents(pastEvents);
-    } catch (err) {
-      setError("Failed to load past events. Please try again later.");
-      console.error("Error loading past events:", err);
-    } finally {
+    setLoading(true);
+    setTimeout(() => {
+      setEvents(staticEventsData);
       setLoading(false);
-    }
-  };
+    }, 500);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black pt-20">
@@ -508,9 +523,8 @@ const PastEventsPage: React.FC = () => {
       {/* Events Timeline */}
       <section ref={sectionRef} className="relative py-20">
         <div className="container mx-auto px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             {loading ? (
-              /* Loading State */
               <div className="flex flex-col items-center justify-center py-20">
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -521,23 +535,7 @@ const PastEventsPage: React.FC = () => {
                 </motion.div>
                 <p className="text-gray-400">Loading past events...</p>
               </div>
-            ) : error ? (
-              /* Error State */
-              <div className="flex flex-col items-center justify-center py-20">
-                <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">
-                  Error Loading Events
-                </h3>
-                <p className="text-gray-400 text-center mb-6">{error}</p>
-                <button
-                  onClick={loadPastEvents}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
-                >
-                  Try Again
-                </button>
-              </div>
             ) : events.length === 0 ? (
-              /* Empty State */
               <div className="flex flex-col items-center justify-center py-20">
                 <Calendar className="w-16 h-16 text-gray-500 mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">
@@ -548,7 +546,6 @@ const PastEventsPage: React.FC = () => {
                 </p>
               </div>
             ) : (
-              /* Events List */
               events.map((event, index) => (
                 <EventCard
                   key={event.id}

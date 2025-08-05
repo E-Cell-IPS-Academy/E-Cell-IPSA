@@ -38,10 +38,10 @@ const ECellStatsSection = () => {
     return count;
   };
 
-  const years = useCounter(8, 2000, 300);
-  const startups = useCounter(150, 2500, 600);
-  const funding = useCounter(25, 2000, 900);
-  const events = useCounter(200, 2200, 1200);
+  const years = useCounter(1, 2000, 300);
+  const startups = useCounter(3, 2500, 600);
+  const funding = useCounter(3, 2000, 900);
+  const events = useCounter(20, 2200, 1200);
 
   // Handle video loading
   useEffect(() => {
