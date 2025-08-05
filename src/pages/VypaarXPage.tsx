@@ -59,7 +59,7 @@ const StartupRegistration: React.FC = () => {
     "Others",
   ];
 
-  const teamSizes = ["1", "2-3", "4-5", "6-8", "9+"];
+  const teamSizes = ["1", "2", "3", "4"];
 
   const handleInputChange = (
     e: React.ChangeEvent<
