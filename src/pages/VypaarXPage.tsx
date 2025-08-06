@@ -562,9 +562,9 @@ const StartupRegistration: React.FC = () => {
               <Lightbulb className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
-              Startup Registration
+              VyapaarX 2.O Registration
             </h1>
-            <p className="text-gray-400">Join the E-Cell pitch competition</p>
+            <p className="text-gray-400">E-Cell IPSA Pitching Competition</p>
           </motion.div>
 
           {/* Progress Bar */}
