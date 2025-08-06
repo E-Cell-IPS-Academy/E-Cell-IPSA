@@ -75,38 +75,108 @@ const StartupRegistration: React.FC = () => {
     }
   };
 
+  // Enhanced validation function with all fields required
   const validateStep = (step: number): boolean => {
     const newErrors: Partial<FormData> = {};
 
     if (step === 1) {
-      if (!formData.startupName.trim())
+      // Startup Name validation
+      if (!formData.startupName.trim()) {
         newErrors.startupName = "Startup name is required";
-      if (!formData.leaderName.trim())
+      } else if (formData.startupName.trim().length < 2) {
+        newErrors.startupName =
+          "Startup name must be at least 2 characters long";
+      }
+
+      // Leader Name validation
+      if (!formData.leaderName.trim()) {
         newErrors.leaderName = "Team leader name is required";
-      if (!formData.leaderEmail.trim())
+      } else if (formData.leaderName.trim().length < 2) {
+        newErrors.leaderName = "Name must be at least 2 characters long";
+      }
+
+      // Email validation
+      if (!formData.leaderEmail.trim()) {
         newErrors.leaderEmail = "Email is required";
-      if (!formData.leaderPhone.trim())
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.leaderEmail)) {
+        newErrors.leaderEmail = "Please enter a valid email address";
+      }
+
+      // Phone validation
+      if (!formData.leaderPhone.trim()) {
         newErrors.leaderPhone = "Phone number is required";
+      } else if (
+        !/^[+]?[\d\s\-\(\)]{10,15}$/.test(
+          formData.leaderPhone.replace(/\s/g, "")
+        )
+      ) {
+        newErrors.leaderPhone =
+          "Please enter a valid phone number (10-15 digits)";
+      }
     }
 
     if (step === 2) {
-      if (!formData.cityCollege.trim())
+      // City & College validation
+      if (!formData.cityCollege.trim()) {
         newErrors.cityCollege = "City & College is required";
-      if (!formData.teamSize) newErrors.teamSize = "Team size is required";
-      if (!formData.teamMembers.trim())
-        newErrors.teamMembers = "Team members list is required";
+      } else if (formData.cityCollege.trim().length < 5) {
+        newErrors.cityCollege =
+          "Please provide complete city and college information";
+      }
+
+      // Team Size validation
+      if (!formData.teamSize) {
+        newErrors.teamSize = "Team size is required";
+      }
     }
 
     if (step === 3) {
-      if (!formData.category) newErrors.category = "Category is required";
-      if (formData.category === "Others" && !formData.customCategory.trim()) {
-        newErrors.customCategory = "Please specify your category";
+      // Category validation
+      if (!formData.category) {
+        newErrors.category = "Category is required";
       }
-      if (!formData.description.trim())
+
+      // Custom Category validation (if Others is selected)
+      if (formData.category === "Others") {
+        if (!formData.customCategory.trim()) {
+          newErrors.customCategory = "Please specify your category";
+        } else if (formData.customCategory.trim().length < 3) {
+          newErrors.customCategory =
+            "Custom category must be at least 3 characters long";
+        }
+      }
+
+      // Description validation
+      if (!formData.description.trim()) {
         newErrors.description = "Description is required";
-      if (formData.description.split(" ").length > 200) {
-        newErrors.description = "Description must be under 200 words";
+      } else {
+        const wordCount = formData.description
+          .split(" ")
+          .filter((word) => word.length > 0).length;
+        if (wordCount < 20) {
+          newErrors.description = "Description must be at least 20 words";
+        } else if (wordCount > 200) {
+          newErrors.description = "Description must be under 200 words";
+        }
       }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Enhanced final validation for step 4
+  const validateFinalStep = (): boolean => {
+    const newErrors: Partial<FormData> = {};
+
+    // Previous Competition validation
+    if (!formData.previousCompetition) {
+      newErrors.previousCompetition = "Please select an option";
+    }
+
+    // Guidance validation
+    if (!formData.wantGuidance) {
+      newErrors.wantGuidance = "Please select an option";
     }
 
     setErrors(newErrors);
@@ -126,21 +196,14 @@ const StartupRegistration: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !validateStep(3) ||
-      !formData.previousCompetition ||
-      !formData.wantGuidance
-    ) {
-      if (!formData.previousCompetition)
-        setErrors((prev) => ({
-          ...prev,
-          previousCompetition: "Please select an option",
-        }));
-      if (!formData.wantGuidance)
-        setErrors((prev) => ({
-          ...prev,
-          wantGuidance: "Please select an option",
-        }));
+    // Validate all previous steps and final step
+    const step1Valid = validateStep(1);
+    const step2Valid = validateStep(2);
+    const step3Valid = validateStep(3);
+    const finalStepValid = validateFinalStep();
+
+    if (!step1Valid || !step2Valid || !step3Valid || !finalStepValid) {
+      alert("Please fill in all required fields correctly before submitting.");
       return;
     }
 
@@ -174,6 +237,7 @@ const StartupRegistration: React.FC = () => {
         wantGuidance: "",
       });
       setCurrentStep(1);
+      setErrors({});
     } catch (error) {
       console.error("Registration error:", error);
       alert("Registration failed. Please try again.");
@@ -202,6 +266,8 @@ const StartupRegistration: React.FC = () => {
             name="startupName"
             value={formData.startupName}
             onChange={handleInputChange}
+            required
+            minLength={2}
             className={`w-full bg-white/5 border ${
               errors.startupName ? "border-red-500" : "border-white/10"
             } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -225,6 +291,8 @@ const StartupRegistration: React.FC = () => {
             name="leaderName"
             value={formData.leaderName}
             onChange={handleInputChange}
+            required
+            minLength={2}
             className={`w-full bg-white/5 border ${
               errors.leaderName ? "border-red-500" : "border-white/10"
             } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -248,6 +316,7 @@ const StartupRegistration: React.FC = () => {
             name="leaderEmail"
             value={formData.leaderEmail}
             onChange={handleInputChange}
+            required
             className={`w-full bg-white/5 border ${
               errors.leaderEmail ? "border-red-500" : "border-white/10"
             } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -271,6 +340,8 @@ const StartupRegistration: React.FC = () => {
             name="leaderPhone"
             value={formData.leaderPhone}
             onChange={handleInputChange}
+            required
+            pattern="[+]?[\d\s\-\(\)]{10,15}"
             className={`w-full bg-white/5 border ${
               errors.leaderPhone ? "border-red-500" : "border-white/10"
             } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -304,6 +375,8 @@ const StartupRegistration: React.FC = () => {
             name="cityCollege"
             value={formData.cityCollege}
             onChange={handleInputChange}
+            required
+            minLength={5}
             className={`w-full bg-white/5 border ${
               errors.cityCollege ? "border-red-500" : "border-white/10"
             } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -326,6 +399,7 @@ const StartupRegistration: React.FC = () => {
             name="teamSize"
             value={formData.teamSize}
             onChange={handleInputChange}
+            required
             className={`w-full bg-white/5 border ${
               errors.teamSize ? "border-red-500" : "border-white/10"
             } rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -349,6 +423,12 @@ const StartupRegistration: React.FC = () => {
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Names of All Team Members *
+          {formData.teamSize && (
+            <span className="text-purple-400 text-xs ml-2">
+              (List {formData.teamSize} member
+              {formData.teamSize !== "1" ? "s" : ""}, one per line)
+            </span>
+          )}
         </label>
         <textarea
           name="teamMembers"
@@ -386,6 +466,7 @@ const StartupRegistration: React.FC = () => {
             name="category"
             value={formData.category}
             onChange={handleInputChange}
+            required
             className={`w-full bg-white/5 border ${
               errors.category ? "border-red-500" : "border-white/10"
             } rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -419,6 +500,8 @@ const StartupRegistration: React.FC = () => {
             name="customCategory"
             value={formData.customCategory}
             onChange={handleInputChange}
+            required
+            minLength={3}
             className={`w-full bg-white/5 border ${
               errors.customCategory ? "border-red-500" : "border-white/10"
             } rounded-lg p-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
@@ -433,13 +516,14 @@ const StartupRegistration: React.FC = () => {
       {/* Description */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
-          Brief Description of Your Startup Idea (Max 200 words) *
+          Brief Description of Your Startup Idea (20-200 words) *
         </label>
         <textarea
           name="description"
           value={formData.description}
           onChange={handleInputChange}
           rows={6}
+          required
           className={`w-full bg-white/5 border ${
             errors.description ? "border-red-500" : "border-white/10"
           } rounded-lg p-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 resize-none`}
@@ -449,7 +533,18 @@ const StartupRegistration: React.FC = () => {
           {errors.description && (
             <p className="text-red-400 text-sm">{errors.description}</p>
           )}
-          <p className="text-gray-400 text-sm ml-auto">
+          <p
+            className={`text-sm ml-auto ${
+              formData.description.split(" ").filter((word) => word.length > 0)
+                .length < 20
+                ? "text-red-400"
+                : formData.description
+                    .split(" ")
+                    .filter((word) => word.length > 0).length > 200
+                ? "text-red-400"
+                : "text-gray-400"
+            }`}
+          >
             {
               formData.description.split(" ").filter((word) => word.length > 0)
                 .length
@@ -485,6 +580,7 @@ const StartupRegistration: React.FC = () => {
                 value={option}
                 checked={formData.previousCompetition === option}
                 onChange={handleInputChange}
+                required
                 className="w-4 h-4 text-purple-500 bg-white/5 border-white/20 focus:ring-purple-500/20"
               />
               <span className="ml-3 text-white">{option}</span>
@@ -512,6 +608,7 @@ const StartupRegistration: React.FC = () => {
                 value={option}
                 checked={formData.wantGuidance === option}
                 onChange={handleInputChange}
+                required
                 className="w-4 h-4 text-purple-500 bg-white/5 border-white/20 focus:ring-purple-500/20"
               />
               <span className="ml-3 text-white">{option}</span>
