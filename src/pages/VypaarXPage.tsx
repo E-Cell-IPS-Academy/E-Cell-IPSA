@@ -1,751 +1,246 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mail,
-  Phone,
-  User,
-  Users,
-  Building,
+  Clock,
+  X,
   ArrowLeft,
-  MapPin,
-  Lightbulb,
+  AlertCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/config";
 
-interface FormData {
-  startupName: string;
-  leaderName: string;
-  leaderEmail: string;
-  leaderPhone: string;
-  cityCollege: string;
-  teamSize: string;
-  teamMembers: string;
-  category: string;
-  customCategory: string;
-  description: string;
-  previousCompetition: string;
-  wantGuidance: string;
-}
+const RegistrationClosed: React.FC = () => {
+  const [timeDisplay, setTimeDisplay] = useState("00:00:00");
+  const [showConfetti, setShowConfetti] = useState(false);
 
-const StartupRegistration: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    startupName: "",
-    leaderName: "",
-    leaderEmail: "",
-    leaderPhone: "",
-    cityCollege: "",
-    teamSize: "",
-    teamMembers: "",
-    category: "",
-    customCategory: "",
-    description: "",
-    previousCompetition: "",
-    wantGuidance: "",
-  });
+  useEffect(() => {
+    // Set time to 00:00:00 immediately to show registration ended
+    setTimeDisplay("00:00:00");
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+    // Trigger confetti animation after component loads
+    const timer = setTimeout(() => {
+      setShowConfetti(true);
+    }, 1000);
 
-  const categories = [
-    "Fintech",
-    "EdTech",
-    "HealthTech",
-    "AgriTech",
-    "Social Impact",
-    "SaaS / Tech",
-    "Others",
-  ];
+    return () => clearTimeout(timer);
+  }, []);
 
-  const teamSizes = ["1", "2", "3", "4"];
-
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Clear error for this field
-    if (errors[name as keyof FormData]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
-
-  // Enhanced validation function with all fields required
-  const validateStep = (step: number): boolean => {
-    const newErrors: Partial<FormData> = {};
-
-    if (step === 1) {
-      // Startup Name validation
-      if (!formData.startupName.trim()) {
-        newErrors.startupName = "Startup name is required";
-      } else if (formData.startupName.trim().length < 2) {
-        newErrors.startupName =
-          "Startup name must be at least 2 characters long";
-      }
-
-      // Leader Name validation
-      if (!formData.leaderName.trim()) {
-        newErrors.leaderName = "Team leader name is required";
-      } else if (formData.leaderName.trim().length < 2) {
-        newErrors.leaderName = "Name must be at least 2 characters long";
-      }
-
-      // Email validation
-      if (!formData.leaderEmail.trim()) {
-        newErrors.leaderEmail = "Email is required";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.leaderEmail)) {
-        newErrors.leaderEmail = "Please enter a valid email address";
-      }
-
-      // Phone validation
-      if (!formData.leaderPhone.trim()) {
-        newErrors.leaderPhone = "Phone number is required";
-      } else if (
-        !/^[+]?[\d\s\-\(\)]{10,15}$/.test(
-          formData.leaderPhone.replace(/\s/g, "")
-        )
-      ) {
-        newErrors.leaderPhone =
-          "Please enter a valid phone number (10-15 digits)";
-      }
-    }
-
-    if (step === 2) {
-      // City & College validation
-      if (!formData.cityCollege.trim()) {
-        newErrors.cityCollege = "City & College is required";
-      } else if (formData.cityCollege.trim().length < 5) {
-        newErrors.cityCollege =
-          "Please provide complete city and college information";
-      }
-
-      // Team Size validation
-      if (!formData.teamSize) {
-        newErrors.teamSize = "Team size is required";
-      }
-    }
-
-    if (step === 3) {
-      // Category validation
-      if (!formData.category) {
-        newErrors.category = "Category is required";
-      }
-
-      // Custom Category validation (if Others is selected)
-      if (formData.category === "Others") {
-        if (!formData.customCategory.trim()) {
-          newErrors.customCategory = "Please specify your category";
-        } else if (formData.customCategory.trim().length < 3) {
-          newErrors.customCategory =
-            "Custom category must be at least 3 characters long";
-        }
-      }
-
-      // Description validation
-      if (!formData.description.trim()) {
-        newErrors.description = "Description is required";
-      } else {
-        const wordCount = formData.description
-          .split(" ")
-          .filter((word) => word.length > 0).length;
-        if (wordCount < 20) {
-          newErrors.description = "Description must be at least 20 words";
-        } else if (wordCount > 200) {
-          newErrors.description = "Description must be under 200 words";
-        }
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Enhanced final validation for step 4
-  const validateFinalStep = (): boolean => {
-    const newErrors: Partial<FormData> = {};
-
-    // Previous Competition validation
-    if (!formData.previousCompetition) {
-      newErrors.previousCompetition = "Please select an option";
-    }
-
-    // Guidance validation
-    if (!formData.wantGuidance) {
-      newErrors.wantGuidance = "Please select an option";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
-    }
-  };
-
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate all previous steps and final step
-    const step1Valid = validateStep(1);
-    const step2Valid = validateStep(2);
-    const step3Valid = validateStep(3);
-    const finalStepValid = validateFinalStep();
-
-    if (!step1Valid || !step2Valid || !step3Valid || !finalStepValid) {
-      alert("Please fill in all required fields correctly before submitting.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Save to Firebase Firestore
-      const registrationData = {
-        ...formData,
-        registrationDate: serverTimestamp(),
-        status: "pending",
-      };
-
-      await addDoc(collection(db, "startup-registrations"), registrationData);
-
-      alert("Registration successful! We'll contact you soon.");
-
-      // Reset form
-      setFormData({
-        startupName: "",
-        leaderName: "",
-        leaderEmail: "",
-        leaderPhone: "",
-        cityCollege: "",
-        teamSize: "",
-        teamMembers: "",
-        category: "",
-        customCategory: "",
-        description: "",
-        previousCompetition: "",
-        wantGuidance: "",
-      });
-      setCurrentStep(1);
-      setErrors({});
-    } catch (error) {
-      console.error("Registration error:", error);
-      alert("Registration failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const renderStep1 = () => (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-6"
-    >
-      <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
-
-      {/* Startup Name */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Startup / Team Name *
-        </label>
-        <div className="relative">
-          <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            name="startupName"
-            value={formData.startupName}
-            onChange={handleInputChange}
-            required
-            minLength={2}
-            className={`w-full bg-white/5 border ${
-              errors.startupName ? "border-red-500" : "border-white/10"
-            } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-            placeholder="Enter your startup name"
-          />
-        </div>
-        {errors.startupName && (
-          <p className="text-red-400 text-sm mt-1">{errors.startupName}</p>
-        )}
-      </div>
-
-      {/* Team Leader Name */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Team Leader's Full Name *
-        </label>
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            name="leaderName"
-            value={formData.leaderName}
-            onChange={handleInputChange}
-            required
-            minLength={2}
-            className={`w-full bg-white/5 border ${
-              errors.leaderName ? "border-red-500" : "border-white/10"
-            } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-            placeholder="Enter team leader's full name"
-          />
-        </div>
-        {errors.leaderName && (
-          <p className="text-red-400 text-sm mt-1">{errors.leaderName}</p>
-        )}
-      </div>
-
-      {/* Email */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Team Leader's Email Address *
-        </label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="email"
-            name="leaderEmail"
-            value={formData.leaderEmail}
-            onChange={handleInputChange}
-            required
-            className={`w-full bg-white/5 border ${
-              errors.leaderEmail ? "border-red-500" : "border-white/10"
-            } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-            placeholder="Enter email address"
-          />
-        </div>
-        {errors.leaderEmail && (
-          <p className="text-red-400 text-sm mt-1">{errors.leaderEmail}</p>
-        )}
-      </div>
-
-      {/* Phone */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Team Leader's Phone Number *
-        </label>
-        <div className="relative">
-          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="tel"
-            name="leaderPhone"
-            value={formData.leaderPhone}
-            onChange={handleInputChange}
-            required
-            pattern="[+]?[\d\s\-\(\)]{10,15}"
-            className={`w-full bg-white/5 border ${
-              errors.leaderPhone ? "border-red-500" : "border-white/10"
-            } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-            placeholder="Enter phone number"
-          />
-        </div>
-        {errors.leaderPhone && (
-          <p className="text-red-400 text-sm mt-1">{errors.leaderPhone}</p>
-        )}
-      </div>
-    </motion.div>
-  );
-
-  const renderStep2 = () => (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-6"
-    >
-      <h2 className="text-2xl font-bold text-white mb-6">Team Information</h2>
-
-      {/* City & College */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          City & College Name *
-        </label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            name="cityCollege"
-            value={formData.cityCollege}
-            onChange={handleInputChange}
-            required
-            minLength={5}
-            className={`w-full bg-white/5 border ${
-              errors.cityCollege ? "border-red-500" : "border-white/10"
-            } rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-            placeholder="e.g., Mumbai, IIT Bombay"
-          />
-        </div>
-        {errors.cityCollege && (
-          <p className="text-red-400 text-sm mt-1">{errors.cityCollege}</p>
-        )}
-      </div>
-
-      {/* Team Size */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Number of Team Members *
-        </label>
-        <div className="relative">
-          <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <select
-            name="teamSize"
-            value={formData.teamSize}
-            onChange={handleInputChange}
-            required
-            className={`w-full bg-white/5 border ${
-              errors.teamSize ? "border-red-500" : "border-white/10"
-            } rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-          >
-            <option value="" className="bg-gray-800">
-              Select team size
-            </option>
-            {teamSizes.map((size) => (
-              <option key={size} value={size} className="bg-gray-800">
-                {size}
-              </option>
-            ))}
-          </select>
-        </div>
-        {errors.teamSize && (
-          <p className="text-red-400 text-sm mt-1">{errors.teamSize}</p>
-        )}
-      </div>
-
-      {/* Team Members */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Names of All Team Members *
-          {formData.teamSize && (
-            <span className="text-purple-400 text-xs ml-2">
-              (List {formData.teamSize} member
-              {formData.teamSize !== "1" ? "s" : ""}, one per line)
-            </span>
-          )}
-        </label>
-        <textarea
-          name="teamMembers"
-          value={formData.teamMembers}
-          onChange={handleInputChange}
-          rows={4}
-          className={`w-full bg-white/5 border ${
-            errors.teamMembers ? "border-red-500" : "border-white/10"
-          } rounded-lg p-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 resize-none`}
-          placeholder="List all team member names (one per line)"
-        />
-        {errors.teamMembers && (
-          <p className="text-red-400 text-sm mt-1">{errors.teamMembers}</p>
-        )}
-      </div>
-    </motion.div>
-  );
-
-  const renderStep3 = () => (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-6"
-    >
-      <h2 className="text-2xl font-bold text-white mb-6">Startup Details</h2>
-
-      {/* Category */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Startup Category *
-        </label>
-        <div className="relative">
-          <Lightbulb className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            required
-            className={`w-full bg-white/5 border ${
-              errors.category ? "border-red-500" : "border-white/10"
-            } rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-          >
-            <option value="" className="bg-gray-800">
-              Select category
-            </option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat} className="bg-gray-800">
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-        {errors.category && (
-          <p className="text-red-400 text-sm mt-1">{errors.category}</p>
-        )}
-      </div>
-
-      {/* Custom Category */}
-      {formData.category === "Others" && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-        >
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Specify Your Startup Category *
-          </label>
-          <input
-            type="text"
-            name="customCategory"
-            value={formData.customCategory}
-            onChange={handleInputChange}
-            required
-            minLength={3}
-            className={`w-full bg-white/5 border ${
-              errors.customCategory ? "border-red-500" : "border-white/10"
-            } rounded-lg p-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300`}
-            placeholder="Enter your startup category"
-          />
-          {errors.customCategory && (
-            <p className="text-red-400 text-sm mt-1">{errors.customCategory}</p>
-          )}
-        </motion.div>
-      )}
-
-      {/* Description */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Brief Description of Your Startup Idea (20-200 words) *
-        </label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
-          rows={6}
-          required
-          className={`w-full bg-white/5 border ${
-            errors.description ? "border-red-500" : "border-white/10"
-          } rounded-lg p-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 resize-none`}
-          placeholder="Describe your startup idea, problem it solves, and target audience..."
-        />
-        <div className="flex justify-between mt-1">
-          {errors.description && (
-            <p className="text-red-400 text-sm">{errors.description}</p>
-          )}
-          <p
-            className={`text-sm ml-auto ${
-              formData.description.split(" ").filter((word) => word.length > 0)
-                .length < 20
-                ? "text-red-400"
-                : formData.description
-                    .split(" ")
-                    .filter((word) => word.length > 0).length > 200
-                ? "text-red-400"
-                : "text-gray-400"
-            }`}
-          >
-            {
-              formData.description.split(" ").filter((word) => word.length > 0)
-                .length
-            }
-            /200 words
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  const renderStep4 = () => (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-6"
-    >
-      <h2 className="text-2xl font-bold text-white mb-6">
-        Additional Information
-      </h2>
-
-      {/* Previous Competition */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-4">
-          Have you participated in any pitch competition before? *
-        </label>
-        <div className="space-y-3">
-          {["Yes", "No"].map((option) => (
-            <label key={option} className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="previousCompetition"
-                value={option}
-                checked={formData.previousCompetition === option}
-                onChange={handleInputChange}
-                required
-                className="w-4 h-4 text-purple-500 bg-white/5 border-white/20 focus:ring-purple-500/20"
-              />
-              <span className="ml-3 text-white">{option}</span>
-            </label>
-          ))}
-        </div>
-        {errors.previousCompetition && (
-          <p className="text-red-400 text-sm mt-1">
-            {errors.previousCompetition}
-          </p>
-        )}
-      </div>
-
-      {/* Guidance */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-4">
-          Do you want pitch preparation guidance from mentors? *
-        </label>
-        <div className="space-y-3">
-          {["Yes", "No"].map((option) => (
-            <label key={option} className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="wantGuidance"
-                value={option}
-                checked={formData.wantGuidance === option}
-                onChange={handleInputChange}
-                required
-                className="w-4 h-4 text-purple-500 bg-white/5 border-white/20 focus:ring-purple-500/20"
-              />
-              <span className="ml-3 text-white">{option}</span>
-            </label>
-          ))}
-        </div>
-        {errors.wantGuidance && (
-          <p className="text-red-400 text-sm mt-1">{errors.wantGuidance}</p>
-        )}
-      </div>
-    </motion.div>
-  );
+  // Confetti particles
+  const confettiParticles = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 3,
+    color: ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444"][
+      Math.floor(Math.random() * 5)
+    ],
+  }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-purple-500/10 rounded-full blur-xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-blue-500/10 rounded-full blur-xl" />
-        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-green-500/10 rounded-full blur-xl" />
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-purple-500/10 rounded-full blur-xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-blue-500/10 rounded-full blur-xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-red-500/10 rounded-full blur-xl animate-pulse delay-500" />
       </div>
+
+      {/* Animated Confetti */}
+      <AnimatePresence>
+        {showConfetti && (
+          <div className="absolute inset-0 pointer-events-none">
+            {confettiParticles.map((particle) => (
+              <motion.div
+                key={particle.id}
+                className="absolute w-3 h-3 rounded-full"
+                style={{
+                  backgroundColor: particle.color,
+                  left: `${particle.x}%`,
+                  top: "-10px",
+                }}
+                initial={{ y: -10, opacity: 1, rotate: 0 }}
+                animate={{
+                  y: window.innerHeight + 10,
+                  opacity: 0,
+                  rotate: 360,
+                  x: Math.random() * 200 - 100,
+                }}
+                transition={{
+                  duration: 3 + Math.random() * 2,
+                  delay: particle.delay,
+                  ease: "easeOut",
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Back to Home Link */}
       <Link
         to="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200"
+        className="absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200 z-10"
       >
         <ArrowLeft className="w-5 h-5" />
         Back to Home
       </Link>
 
-      {/* Registration Card */}
+      {/* Main Content */}
       <motion.div
-        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative z-10 w-full max-w-2xl"
       >
-        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-8 shadow-2xl">
-          {/* Header */}
+        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-8 shadow-2xl text-center">
+          {/* Animated Icon */}
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{
+              delay: 0.3,
+              duration: 0.8,
+              type: "spring",
+              stiffness: 200,
+            }}
+            className="w-20 h-20 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 relative"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            >
+              <Clock className="w-10 h-10 text-white" />
+            </motion.div>
+
+            {/* Pulsing ring */}
+            <motion.div
+              className="absolute inset-0 border-4 border-red-400 rounded-full"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.7, 0, 0.7] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </motion.div>
+
+          {/* Title Animation */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="text-4xl font-bold text-white mb-4"
+          >
+            <motion.span
+              animate={{ color: ["#ffffff", "#ef4444", "#ffffff"] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              Registration Closed
+            </motion.span>
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="text-gray-400 text-lg mb-8"
+          >
+            VyapaarX 2.0 - E-Cell IPSA Pitching Competition
+          </motion.p>
+
+          {/* Stopwatch Display */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.9, duration: 0.6 }}
+            className="bg-black/30 border border-white/20 rounded-2xl p-6 mb-8"
+          >
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Clock className="w-6 h-6 text-red-400" />
+              <h2 className="text-xl font-semibold text-white">
+                Registration Timer
+              </h2>
+            </div>
+
+            <motion.div
+              className="text-6xl font-mono font-bold mb-2"
+              animate={{ color: ["#ef4444", "#dc2626", "#ef4444"] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              {timeDisplay}
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              className="text-red-400 font-semibold text-lg"
+            >
+              Time Ended
+            </motion.p>
+          </motion.div>
+
+          {/* Status Cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-center mb-8"
+            transition={{ delay: 1.1, duration: 0.6 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
           >
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lightbulb className="w-8 h-8 text-white" />
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <X className="w-5 h-5 text-red-400" />
+                <span className="text-red-400 font-semibold">Registration</span>
+              </div>
+              <p className="text-white font-bold">CLOSED</p>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              VyapaarX 2.O Registration
-            </h1>
-            <p className="text-gray-400">E-Cell IPSA Pitching Competition</p>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <AlertCircle className="w-5 h-5 text-yellow-400" />
+                <span className="text-yellow-400 font-semibold">Status</span>
+              </div>
+              <p className="text-white font-bold">ENDED</p>
+            </div>
           </motion.div>
 
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex justify-between mb-2">
-              {[1, 2, 3, 4].map((step) => (
-                <div
-                  key={step}
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-all duration-300 ${
-                    step <= currentStep
-                      ? "bg-purple-500 text-white"
-                      : "bg-white/10 text-gray-400"
-                  }`}
-                >
-                  {step}
-                </div>
-              ))}
-            </div>
-            <div className="w-full bg-white/10 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${(currentStep / 4) * 100}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-400">
-              <span>Basic Info</span>
-              <span>Team Info</span>
-              <span>Startup Details</span>
-              <span>Final</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            {/* Step Content */}
-            {currentStep === 1 && renderStep1()}
-            {currentStep === 2 && renderStep2()}
-            {currentStep === 3 && renderStep3()}
-            {currentStep === 4 && renderStep4()}
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8">
-              {currentStep > 1 ? (
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="flex items-center gap-2 px-6 py-3 text-gray-400 hover:text-white transition-colors duration-200"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Previous
-                </button>
-              ) : (
-                <div />
-              )}
-
-              {currentStep < 4 ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300 transform hover:scale-[1.02]"
-                >
-                  Next Step
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02]"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                      Submitting...
-                    </div>
-                  ) : (
-                    "Submit Registration"
-                  )}
-                </button>
-              )}
-            </div>
-          </form>
+          {/* Thank You Message */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3, duration: 0.6 }}
+            className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8"
+          >
+            <h3 className="text-xl font-bold text-white mb-3">Thank You!</h3>
+            <p className="text-gray-300 leading-relaxed">
+              Thank you for your interest in VyapaarX 2.0. The registration
+              period has ended. We received an overwhelming response and are
+              excited to see the innovation from our participants.
+            </p>
+          </motion.div>
         </div>
       </motion.div>
+
+      {/* Floating particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(10)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-white/20 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [-20, 20, -20],
+              x: [-10, 10, -10],
+              opacity: [0.2, 0.8, 0.2],
+            }}
+            transition={{
+              duration: 4 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
-export default StartupRegistration;
+export default RegistrationClosed;
