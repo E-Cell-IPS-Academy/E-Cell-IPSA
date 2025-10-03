@@ -464,7 +464,7 @@ const BlogListing: React.FC = () => {
           className="text-center mb-12"
         >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-thin text-white leading-tight mb-4">
-            E-Cell
+            E-Cell IPS ACADEMY
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
               Blog
