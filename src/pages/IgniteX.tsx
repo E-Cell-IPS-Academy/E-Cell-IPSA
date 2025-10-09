@@ -52,7 +52,7 @@ const IgniteXRegistration = () => {
   );
 
   const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
-  const campuses = ["Vijaynagar Campus", "Rajendra Nagar Campus"];
+  const campuses = ["Off Campus (Vijaynagar Campus)", "Main Campus"];
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
