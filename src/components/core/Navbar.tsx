@@ -111,10 +111,10 @@ const Navbar: React.FC = () => {
               transition={{ duration: 0.2 }}
             >
               <Link
-                to="/register"
+                to="/register-ignitex"
                 className="relative px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg "
               >
-                <span className="relative z-10">VypaarX </span>
+                <span className="relative z-10">IgniteX </span>
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   initial={false}
@@ -210,11 +210,11 @@ const Navbar: React.FC = () => {
                   className="px-2 pt-2"
                 >
                   <Link
-                    to="/register"
+                    to="/register-ignitex"
                     className="block w-full text-center py-3 px-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    VypaarX Registration
+                    IgniteX
                   </Link>
                 </motion.div>
               </div>

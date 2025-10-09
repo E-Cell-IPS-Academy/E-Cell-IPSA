@@ -25,7 +25,8 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminGalleryComplete from "./pages/admin/AdminGalleryComplete";
 import ContactPage from "./pages/ContactPage";
 import StartupRegistration from "./pages/VypaarXPage";
-import Response from "./pages/ResponsePage";
+import IgniteXResponses from "./pages/ResponsePage";
+import IgniteXRegistration from "./pages/IgniteX";
 
 const App: React.FC = () => {
   const [showLoader, setShowLoader] = useState<boolean>(true);
@@ -119,7 +120,7 @@ const App: React.FC = () => {
               <Route path="/login" element={<UserLogin />} />
               <Route path="/signup" element={<UserSignup />} />
               <Route path="/register" element={<StartupRegistration />} />
-              <Route path="/response" element={<Response />} />
+              <Route path="/response" element={<IgniteXResponses />} />
 
               {/* User Dashboard - With Navbar/Footer */}
               <Route
@@ -147,6 +148,10 @@ const App: React.FC = () => {
                       <Route path="/contact" element={<ContactPage />} />
                       <Route path="/startup" element={<StartupOfWeek />} />
                       <Route path="/blog/:slug" element={<BlogDetail />} />
+                      <Route
+                        path="/register-ignitex"
+                        element={<IgniteXRegistration />}
+                      />
                     </Routes>
                     <Footer />
                   </div>

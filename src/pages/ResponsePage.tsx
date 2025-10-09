@@ -10,12 +10,14 @@ import {
   X,
   Save,
   Users,
-  Building,
+  GraduationCap,
   Mail,
   Phone,
   MapPin,
   Calendar,
   ArrowLeft,
+  BookOpen,
+  Hash,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -30,73 +32,98 @@ import {
 import { db } from "../firebase/config";
 import * as XLSX from "xlsx";
 
-interface Registration {
+interface IgniteXRegistration {
   id: string;
-  startupName: string;
-  leaderName: string;
-  leaderEmail: string;
-  leaderPhone: string;
-  cityCollege: string;
-  teamSize: string;
-  teamMembers: string;
-  category: string;
-  customCategory: string;
-  description: string;
-  previousCompetition: string;
-  wantGuidance: string;
+  studentName: string;
+  year: string;
+  branch: string;
+  enrollmentNumber: string;
+  phoneNumber: string;
+  email: string;
+  campus: string;
   registrationDate: any;
   status: string;
 }
 
-const Response: React.FC = () => {
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [filteredData, setFilteredData] = useState<Registration[]>([]);
+const IgniteXResponses: React.FC = () => {
+  const [registrations, setRegistrations] = useState<IgniteXRegistration[]>([]);
+  const [filteredData, setFilteredData] = useState<IgniteXRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterYear, setFilterYear] = useState("");
+  const [filterCampus, setFilterCampus] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Registration | null>(null);
+  const [editForm, setEditForm] = useState<IgniteXRegistration | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
 
-  const categories = [
-    "All",
-    "Fintech",
-    "EdTech",
-    "HealthTech",
-    "AgriTech",
-    "Social Impact",
-    "SaaS / Tech",
-    "Others",
-  ];
+  const years = ["All", "1st Year", "2nd Year", "3rd Year", "4th Year"];
+  const campuses = ["All", "Vijaynagar Campus", "Rajendra Nagar Campus"];
 
   // Fetch data from Firebase
+  // Improved fetchRegistrations function
   const fetchRegistrations = async () => {
     try {
       setIsLoading(true);
-      const q = query(
-        collection(db, "startup-registrations"),
-        orderBy("registrationDate", "desc")
-      );
-      const querySnapshot = await getDocs(q);
-      const data: Registration[] = [];
 
-      querySnapshot.forEach((doc) => {
-        data.push({
-          id: doc.id,
-          ...doc.data(),
-        } as Registration);
-      });
+      // Try with orderBy first
+      try {
+        const q = query(
+          collection(db, "ignitex-registrations"),
+          orderBy("registrationDate", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const data: IgniteXRegistration[] = [];
 
-      setRegistrations(data);
-      setFilteredData(data);
+        querySnapshot.forEach((doc) => {
+          data.push({
+            id: doc.id,
+            ...doc.data(),
+          } as IgniteXRegistration);
+        });
+
+        setRegistrations(data);
+        setFilteredData(data);
+        console.log("Fetched registrations:", data.length);
+      } catch (orderError) {
+        console.warn("OrderBy failed, trying without ordering:", orderError);
+
+        // Fallback: fetch without orderBy
+        const querySnapshot = await getDocs(
+          collection(db, "ignitex-registrations")
+        );
+        const data: IgniteXRegistration[] = [];
+
+        querySnapshot.forEach((doc) => {
+          data.push({
+            id: doc.id,
+            ...doc.data(),
+          } as IgniteXRegistration);
+        });
+
+        // Sort in memory by registrationDate
+        data.sort((a, b) => {
+          const dateA = a.registrationDate?.toDate?.()?.getTime() || 0;
+          const dateB = b.registrationDate?.toDate?.()?.getTime() || 0;
+          return dateB - dateA;
+        });
+
+        setRegistrations(data);
+        setFilteredData(data);
+        console.log("Fetched registrations (fallback):", data.length);
+      }
     } catch (error) {
       console.error("Error fetching registrations:", error);
-      alert("Error fetching data. Please try again.");
+
+      // Show detailed error
+      if (error instanceof Error) {
+        alert(`Error fetching data: ${error.message}`);
+      } else {
+        alert("Error fetching data. Please check console for details.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchRegistrations();
   }, []);
@@ -109,35 +136,38 @@ const Response: React.FC = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (reg) =>
-          reg.startupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          reg.leaderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          reg.leaderEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          reg.cityCollege.toLowerCase().includes(searchTerm.toLowerCase())
+          reg.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reg.enrollmentNumber
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          reg.branch.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Apply category filter
-    if (filterCategory && filterCategory !== "All") {
-      filtered = filtered.filter((reg) => reg.category === filterCategory);
+    // Apply year filter
+    if (filterYear && filterYear !== "All") {
+      filtered = filtered.filter((reg) => reg.year === filterYear);
+    }
+
+    // Apply campus filter
+    if (filterCampus && filterCampus !== "All") {
+      filtered = filtered.filter((reg) => reg.campus === filterCampus);
     }
 
     setFilteredData(filtered);
-  }, [searchTerm, filterCategory, registrations]);
+  }, [searchTerm, filterYear, filterCampus, registrations]);
 
   // Export to Excel
   const exportToExcel = () => {
     const exportData = filteredData.map((reg) => ({
-      "Startup Name": reg.startupName,
-      "Leader Name": reg.leaderName,
-      "Leader Email": reg.leaderEmail,
-      "Leader Phone": reg.leaderPhone,
-      "City & College": reg.cityCollege,
-      "Team Size": reg.teamSize,
-      "Team Members": reg.teamMembers,
-      Category: reg.category === "Others" ? reg.customCategory : reg.category,
-      Description: reg.description,
-      "Previous Competition": reg.previousCompetition,
-      "Want Guidance": reg.wantGuidance,
+      "Student Name": reg.studentName,
+      Year: reg.year,
+      Branch: reg.branch,
+      "Enrollment Number": reg.enrollmentNumber,
+      "Phone Number": reg.phoneNumber,
+      Email: reg.email,
+      Campus: reg.campus,
       Status: reg.status,
       "Registration Date":
         reg.registrationDate?.toDate?.()?.toLocaleString() || "N/A",
@@ -145,10 +175,10 @@ const Response: React.FC = () => {
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+    XLSX.utils.book_append_sheet(wb, ws, "IgniteX Registrations");
     XLSX.writeFile(
       wb,
-      `VyapaarX_Registrations_${new Date().toISOString().split("T")[0]}.xlsx`
+      `IgniteX_2.0_Registrations_${new Date().toISOString().split("T")[0]}.xlsx`
     );
   };
 
@@ -156,7 +186,7 @@ const Response: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this registration?")) {
       try {
-        await deleteDoc(doc(db, "startup-registrations", id));
+        await deleteDoc(doc(db, "ignitex-registrations", id));
         setRegistrations(registrations.filter((reg) => reg.id !== id));
         alert("Registration deleted successfully!");
       } catch (error) {
@@ -167,7 +197,7 @@ const Response: React.FC = () => {
   };
 
   // Start editing
-  const startEdit = (registration: Registration) => {
+  const startEdit = (registration: IgniteXRegistration) => {
     setEditingId(registration.id);
     setEditForm({ ...registration });
   };
@@ -178,7 +208,7 @@ const Response: React.FC = () => {
 
     try {
       const { id, ...updateData } = editForm;
-      await updateDoc(doc(db, "startup-registrations", id), updateData);
+      await updateDoc(doc(db, "ignitex-registrations", id), updateData);
 
       setRegistrations(
         registrations.map((reg) => (reg.id === id ? editForm : reg))
@@ -200,7 +230,11 @@ const Response: React.FC = () => {
   };
 
   // View details modal
-  const ViewModal = ({ registration }: { registration: Registration }) => (
+  const ViewModal = ({
+    registration,
+  }: {
+    registration: IgniteXRegistration;
+  }) => (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -231,72 +265,58 @@ const Response: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Startup Name
+                Student Name
               </label>
               <p className="text-gray-800 font-medium">
-                {registration.startupName}
+                {registration.studentName}
               </p>
             </div>
             <div>
+              <label className="text-sm font-medium text-gray-600">Year</label>
+              <p className="text-gray-800">{registration.year}</p>
+            </div>
+            <div>
               <label className="text-sm font-medium text-gray-600">
-                Leader Name
+                Branch
               </label>
-              <p className="text-gray-800">{registration.leaderName}</p>
+              <p className="text-gray-800">{registration.branch}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">
+                Enrollment Number
+              </label>
+              <p className="text-gray-800">{registration.enrollmentNumber}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">Email</label>
-              <p className="text-gray-800">{registration.leaderEmail}</p>
+              <p className="text-gray-800">{registration.email}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">Phone</label>
-              <p className="text-gray-800">{registration.leaderPhone}</p>
+              <p className="text-gray-800">{registration.phoneNumber}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
-                City & College
+                Campus
               </label>
-              <p className="text-gray-800">{registration.cityCollege}</p>
+              <p className="text-gray-800">{registration.campus}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Team Size
+                Status
               </label>
-              <p className="text-gray-800">{registration.teamSize}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">
-                Category
-              </label>
-              <p className="text-gray-800">
-                {registration.category === "Others"
-                  ? registration.customCategory
-                  : registration.category}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">
-                Previous Competition
-              </label>
-              <p className="text-gray-800">
-                {registration.previousCompetition}
-              </p>
+              <p className="text-gray-800">{registration.status}</p>
             </div>
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-600">
-              Team Members
+              Registration Date
             </label>
-            <p className="text-gray-800 whitespace-pre-line">
-              {registration.teamMembers}
+            <p className="text-gray-800">
+              {registration.registrationDate?.toDate?.()?.toLocaleString() ||
+                "N/A"}
             </p>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-600">
-              Description
-            </label>
-            <p className="text-gray-800">{registration.description}</p>
           </div>
         </div>
       </motion.div>
@@ -319,7 +339,7 @@ const Response: React.FC = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 gap-4">
             <div className="flex items-center space-x-4">
               <Link
                 to="/"
@@ -329,8 +349,8 @@ const Response: React.FC = () => {
                 Back to Home
               </Link>
               <div className="h-6 w-px bg-gray-300"></div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Admin Dashboard
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                IgniteX 2.0 - Admin Dashboard
               </h1>
             </div>
             <div className="flex items-center space-x-4">
@@ -344,44 +364,62 @@ const Response: React.FC = () => {
 
       {/* Controls */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search registrations..."
+                placeholder="Search by name, email, enrollment..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
-            {/* Filter */}
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat === "All" ? "" : cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Year Filter */}
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <select
+                  value={filterYear}
+                  onChange={(e) => setFilterYear(e.target.value)}
+                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white w-full sm:w-auto"
+                >
+                  {years.map((year) => (
+                    <option key={year} value={year === "All" ? "" : year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Export Button */}
-            <button
-              onClick={exportToExcel}
-              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export Excel
-            </button>
+              {/* Campus Filter */}
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <select
+                  value={filterCampus}
+                  onChange={(e) => setFilterCampus(e.target.value)}
+                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white w-full sm:w-auto"
+                >
+                  {campuses.map((campus) => (
+                    <option key={campus} value={campus === "All" ? "" : campus}>
+                      {campus}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Export Button */}
+              <button
+                onClick={exportToExcel}
+                className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
+              >
+                <Download className="w-4 h-4" />
+                Export Excel
+              </button>
+            </div>
           </div>
         </div>
 
@@ -392,16 +430,16 @@ const Response: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Startup Info
+                    Student Info
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Leader Details
+                    Academic Details
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Team & Location
+                    Contact Info
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
+                    Campus
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date
@@ -416,63 +454,59 @@ const Response: React.FC = () => {
                   <tr key={registration.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <Building className="w-8 h-8 text-purple-600 mr-3" />
+                        <Users className="w-8 h-8 text-purple-600 mr-3 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {registration.startupName}
+                            {registration.studentName}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {registration.category === "Others"
-                              ? registration.customCategory
-                              : registration.category}
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                            <Hash className="w-3 h-3" />
+                            {registration.enrollmentNumber}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <Users className="w-8 h-8 text-blue-600 mr-3" />
+                        <GraduationCap className="w-8 h-8 text-blue-600 mr-3 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {registration.leaderName}
+                            {registration.year}
                           </div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {registration.leaderEmail}
-                          </div>
-                          <div className="text-sm text-gray-500 flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {registration.leaderPhone}
+                            <BookOpen className="w-3 h-3" />
+                            {registration.branch}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <MapPin className="w-8 h-8 text-green-600 mr-3" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            Team Size: {registration.teamSize}
+                    <td className="px-6 py-4">
+                      <div className="flex items-start">
+                        <Mail className="w-8 h-8 text-green-600 mr-3 flex-shrink-0 mt-1" />
+                        <div className="min-w-0">
+                          <div className="text-sm text-gray-900 truncate">
+                            {registration.email}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {registration.cityCollege}
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                            <Phone className="w-3 h-3 flex-shrink-0" />
+                            {registration.phoneNumber}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        {registration.category === "Others"
-                          ? registration.customCategory
-                          : registration.category}
+                        {registration.campus.replace(" Campus", "")}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-500">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {registration.registrationDate
-                          ?.toDate?.()
-                          ?.toLocaleDateString() || "N/A"}
+                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">
+                          {registration.registrationDate
+                            ?.toDate?.()
+                            ?.toLocaleDateString() || "N/A"}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -542,13 +576,13 @@ const Response: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Startup Name
+                  Student Name
                 </label>
                 <input
                   type="text"
-                  value={editForm.startupName}
+                  value={editForm.studentName}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, startupName: e.target.value })
+                    setEditForm({ ...editForm, studentName: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -556,13 +590,48 @@ const Response: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Leader Name
+                  Year
+                </label>
+                <select
+                  value={editForm.year}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, year: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Branch
                 </label>
                 <input
                   type="text"
-                  value={editForm.leaderName}
+                  value={editForm.branch}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, leaderName: e.target.value })
+                    setEditForm({ ...editForm, branch: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Enrollment Number
+                </label>
+                <input
+                  type="text"
+                  value={editForm.enrollmentNumber}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      enrollmentNumber: e.target.value,
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -574,9 +643,9 @@ const Response: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  value={editForm.leaderEmail}
+                  value={editForm.email}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, leaderEmail: e.target.value })
+                    setEditForm({ ...editForm, email: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -584,150 +653,52 @@ const Response: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone
+                  Phone Number
                 </label>
                 <input
                   type="tel"
-                  value={editForm.leaderPhone}
+                  value={editForm.phoneNumber}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, leaderPhone: e.target.value })
+                    setEditForm({ ...editForm, phoneNumber: e.target.value })
                   }
+                  maxLength={10}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City & College
-                </label>
-                <input
-                  type="text"
-                  value={editForm.cityCollege}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, cityCollege: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Team Size
+                  Campus
                 </label>
                 <select
-                  value={editForm.teamSize}
+                  value={editForm.campus}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, teamSize: e.target.value })
+                    setEditForm({ ...editForm, campus: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Team Members
-                </label>
-                <textarea
-                  value={editForm.teamMembers}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, teamMembers: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  value={editForm.category}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, category: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="Fintech">Fintech</option>
-                  <option value="EdTech">EdTech</option>
-                  <option value="HealthTech">HealthTech</option>
-                  <option value="AgriTech">AgriTech</option>
-                  <option value="Social Impact">Social Impact</option>
-                  <option value="SaaS / Tech">SaaS / Tech</option>
-                  <option value="Others">Others</option>
-                </select>
-              </div>
-
-              {editForm.category === "Others" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Custom Category
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.customCategory}
-                    onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        customCategory: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-              )}
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={editForm.description}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, description: e.target.value })
-                  }
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Previous Competition
-                </label>
-                <select
-                  value={editForm.previousCompetition}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      previousCompetition: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
+                  <option value="Vijaynagar Campus">Vijaynagar Campus</option>
+                  <option value="Rajendra Nagar Campus">
+                    Rajendra Nagar Campus
+                  </option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Want Guidance
+                  Status
                 </label>
                 <select
-                  value={editForm.wantGuidance}
+                  value={editForm.status}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, wantGuidance: e.target.value })
+                    setEditForm({ ...editForm, status: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
+                  <option value="registered">Registered</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="attended">Attended</option>
+                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
             </div>
@@ -761,4 +732,4 @@ const Response: React.FC = () => {
   );
 };
 
-export default Response;
+export default IgniteXResponses;
