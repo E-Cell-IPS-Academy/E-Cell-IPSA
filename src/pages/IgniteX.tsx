@@ -6,43 +6,52 @@ import {
   Phone,
   BookOpen,
   GraduationCap,
-  MapPin,
+  Building2,
   Hash,
   CheckCircle,
   AlertCircle,
+  Users,
+  Code,
 } from "lucide-react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/config";
 
 interface FormData {
   studentName: string;
+  initials: string;
   year: string;
   branch: string;
   enrollmentNumber: string;
+  computerCode: string;
   phoneNumber: string;
   email: string;
-  campus: string;
+  gender: string;
+  collegeName: string;
 }
 
 interface FormErrors {
   studentName?: string;
+  initials?: string;
   year?: string;
   branch?: string;
-  enrollmentNumber?: string;
   phoneNumber?: string;
   email?: string;
-  campus?: string;
+  gender?: string;
+  collegeName?: string;
 }
 
 const IgniteXRegistration = () => {
   const [formData, setFormData] = useState<FormData>({
     studentName: "",
+    initials: "",
     year: "",
     branch: "",
     enrollmentNumber: "",
+    computerCode: "",
     phoneNumber: "",
     email: "",
-    campus: "",
+    gender: "",
+    collegeName: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -51,8 +60,22 @@ const IgniteXRegistration = () => {
     null
   );
 
-  const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
-  const campuses = ["Off Campus (Vijaynagar Campus)", "Main Campus"];
+  const years = ["I", "II", "III", "IV"];
+  const branches = [
+    "Computer Science & Engineering",
+    "Information Technology",
+    "Electronics & Communication Engineering",
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Artificial Intelligence & Data Science",
+    "Artificial Intelligence & Machine Learning",
+  ];
+  const genders = ["Male", "Female", "Other", "Prefer not to say"];
+  const colleges = [
+    "IPS Academy Institute of Engineering and Science, Indore",
+    "IPS Academy Institute of Engineering and Science, Indore (Off-Campus 1)",
+  ];
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -65,20 +88,18 @@ const IgniteXRegistration = () => {
       newErrors.studentName = "Name should only contain letters";
     }
 
+    if (!formData.initials.trim()) {
+      newErrors.initials = "Initials are required";
+    } else if (!/^[a-zA-Z\s.]+$/.test(formData.initials)) {
+      newErrors.initials = "Initials should only contain letters and dots";
+    }
+
     if (!formData.year) {
       newErrors.year = "Please select your year";
     }
 
-    if (!formData.branch.trim()) {
-      newErrors.branch = "Branch is required";
-    } else if (formData.branch.trim().length < 2) {
-      newErrors.branch = "Branch must be at least 2 characters";
-    }
-
-    if (!formData.enrollmentNumber.trim()) {
-      newErrors.enrollmentNumber = "Enrollment number is required";
-    } else if (formData.enrollmentNumber.trim().length < 5) {
-      newErrors.enrollmentNumber = "Invalid enrollment number";
+    if (!formData.branch) {
+      newErrors.branch = "Please select your branch";
     }
 
     if (!formData.phoneNumber.trim()) {
@@ -96,8 +117,12 @@ const IgniteXRegistration = () => {
       newErrors.email = "Invalid email address";
     }
 
-    if (!formData.campus) {
-      newErrors.campus = "Please select your campus";
+    if (!formData.gender) {
+      newErrors.gender = "Please select your gender";
+    }
+
+    if (!formData.collegeName) {
+      newErrors.collegeName = "Please select your college";
     }
 
     setErrors(newErrors);
@@ -146,12 +171,15 @@ const IgniteXRegistration = () => {
       // Reset form
       setFormData({
         studentName: "",
+        initials: "",
         year: "",
         branch: "",
         enrollmentNumber: "",
+        computerCode: "",
         phoneNumber: "",
         email: "",
-        campus: "",
+        gender: "",
+        collegeName: "",
       });
       setErrors({});
 
@@ -230,38 +258,74 @@ const IgniteXRegistration = () => {
           className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6 md:p-8 lg:p-12"
         >
           <div className="space-y-6">
-            {/* Student Name */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Student Name *
-              </label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  name="studentName"
-                  value={formData.studentName}
-                  onChange={handleChange}
-                  className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
-                    errors.studentName ? "border-red-500" : "border-white/20"
-                  } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
-                  placeholder="Enter your full name"
-                />
-              </div>
-              {errors.studentName && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-1 text-sm text-red-400"
-                >
-                  {errors.studentName}
-                </motion.p>
-              )}
-            </motion.div>
+            {/* Student Name and Initials */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Student Name */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Student Name *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="studentName"
+                    value={formData.studentName}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
+                      errors.studentName ? "border-red-500" : "border-white/20"
+                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                {errors.studentName && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-1 text-sm text-red-400"
+                  >
+                    {errors.studentName}
+                  </motion.p>
+                )}
+              </motion.div>
+
+              {/* Initials */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Initials *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="initials"
+                    value={formData.initials}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
+                      errors.initials ? "border-red-500" : "border-white/20"
+                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
+                    placeholder="e.g., A. K."
+                  />
+                </div>
+                {errors.initials && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-1 text-sm text-red-400"
+                  >
+                    {errors.initials}
+                  </motion.p>
+                )}
+              </motion.div>
+            </div>
 
             {/* Year and Branch */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -315,17 +379,28 @@ const IgniteXRegistration = () => {
                   Branch *
                 </label>
                 <div className="relative">
-                  <BookOpen className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
+                  <BookOpen className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+                  <select
                     name="branch"
                     value={formData.branch}
                     onChange={handleChange}
                     className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
                       errors.branch ? "border-red-500" : "border-white/20"
-                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
-                    placeholder="e.g., Computer Science"
-                  />
+                    } rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none cursor-pointer`}
+                  >
+                    <option value="" className="bg-gray-900">
+                      Select Branch
+                    </option>
+                    {branches.map((branch) => (
+                      <option
+                        key={branch}
+                        value={branch}
+                        className="bg-gray-900"
+                      >
+                        {branch}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 {errors.branch && (
                   <motion.p
@@ -339,40 +414,52 @@ const IgniteXRegistration = () => {
               </motion.div>
             </div>
 
-            {/* Enrollment Number */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Enrollment Number *
-              </label>
-              <div className="relative">
-                <Hash className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  name="enrollmentNumber"
-                  value={formData.enrollmentNumber}
-                  onChange={handleChange}
-                  className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
-                    errors.enrollmentNumber
-                      ? "border-red-500"
-                      : "border-white/20"
-                  } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
-                  placeholder="Enter enrollment number"
-                />
-              </div>
-              {errors.enrollmentNumber && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-1 text-sm text-red-400"
-                >
-                  {errors.enrollmentNumber}
-                </motion.p>
-              )}
-            </motion.div>
+            {/* Enrollment Number and Computer Code */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Enrollment Number */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Enrollment Number
+                </label>
+                <div className="relative">
+                  <Hash className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="enrollmentNumber"
+                    value={formData.enrollmentNumber}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                    placeholder="Optional"
+                  />
+                </div>
+              </motion.div>
+
+              {/* Computer Code */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Computer Code
+                </label>
+                <div className="relative">
+                  <Code className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="computerCode"
+                    value={formData.computerCode}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                    placeholder="Optional"
+                  />
+                </div>
+              </motion.div>
+            </div>
 
             {/* Contact Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -444,45 +531,96 @@ const IgniteXRegistration = () => {
               </motion.div>
             </div>
 
-            {/* Campus */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 }}
-            >
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Campus *
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
-                <select
-                  name="campus"
-                  value={formData.campus}
-                  onChange={handleChange}
-                  className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
-                    errors.campus ? "border-red-500" : "border-white/20"
-                  } rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none cursor-pointer`}
-                >
-                  <option value="" className="bg-gray-900">
-                    Select Campus
-                  </option>
-                  {campuses.map((campus) => (
-                    <option key={campus} value={campus} className="bg-gray-900">
-                      {campus}
+            {/* Gender and College */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Gender */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Gender *
+                </label>
+                <div className="relative">
+                  <Users className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
+                      errors.gender ? "border-red-500" : "border-white/20"
+                    } rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none cursor-pointer`}
+                  >
+                    <option value="" className="bg-gray-900">
+                      Select Gender
                     </option>
-                  ))}
-                </select>
-              </div>
-              {errors.campus && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-1 text-sm text-red-400"
-                >
-                  {errors.campus}
-                </motion.p>
-              )}
-            </motion.div>
+                    {genders.map((gender) => (
+                      <option
+                        key={gender}
+                        value={gender}
+                        className="bg-gray-900"
+                      >
+                        {gender}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {errors.gender && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-1 text-sm text-red-400"
+                  >
+                    {errors.gender}
+                  </motion.p>
+                )}
+              </motion.div>
+
+              {/* College Name */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  College Name *
+                </label>
+                <div className="relative">
+                  <Building2 className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+                  <select
+                    name="collegeName"
+                    value={formData.collegeName}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
+                      errors.collegeName ? "border-red-500" : "border-white/20"
+                    } rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none cursor-pointer`}
+                  >
+                    <option value="" className="bg-gray-900">
+                      Select College
+                    </option>
+                    {colleges.map((college) => (
+                      <option
+                        key={college}
+                        value={college}
+                        className="bg-gray-900"
+                      >
+                        {college}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {errors.collegeName && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-1 text-sm text-red-400"
+                  >
+                    {errors.collegeName}
+                  </motion.p>
+                )}
+              </motion.div>
+            </div>
 
             {/* Submit Button */}
             <motion.button

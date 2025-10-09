@@ -13,11 +13,13 @@ import {
   GraduationCap,
   Mail,
   Phone,
-  MapPin,
+  Building2,
   Calendar,
   ArrowLeft,
   BookOpen,
   Hash,
+  Code,
+  User,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -35,12 +37,15 @@ import * as XLSX from "xlsx";
 interface IgniteXRegistration {
   id: string;
   studentName: string;
+  initials: string;
   year: string;
   branch: string;
   enrollmentNumber: string;
+  computerCode: string;
   phoneNumber: string;
   email: string;
-  campus: string;
+  gender: string;
+  collegeName: string;
   registrationDate: any;
   status: string;
 }
@@ -51,16 +56,31 @@ const IgniteXResponses: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterYear, setFilterYear] = useState("");
-  const [filterCampus, setFilterCampus] = useState("");
+  const [filterCollege, setFilterCollege] = useState("");
+  const [filterGender, setFilterGender] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<IgniteXRegistration | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
 
-  const years = ["All", "1st Year", "2nd Year", "3rd Year", "4th Year"];
-  const campuses = ["All", "Vijaynagar Campus", "Rajendra Nagar Campus"];
+  const years = ["All", "I", "II", "III", "IV"];
+  const colleges = [
+    "All",
+    "IPS Academy Institute of Engineering and Science, Indore",
+    "IPS Academy Institute of Engineering and Science, Indore (Off-Campus 1)",
+  ];
+  const genders = ["All", "Male", "Female", "Other", "Prefer not to say"];
+  const branches = [
+    "Computer Science & Engineering",
+    "Information Technology",
+    "Electronics & Communication Engineering",
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Artificial Intelligence & Data Science",
+    "Artificial Intelligence & Machine Learning",
+  ];
 
   // Fetch data from Firebase
-  // Improved fetchRegistrations function
   const fetchRegistrations = async () => {
     try {
       setIsLoading(true);
@@ -124,6 +144,7 @@ const IgniteXResponses: React.FC = () => {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     fetchRegistrations();
   }, []);
@@ -137,10 +158,12 @@ const IgniteXResponses: React.FC = () => {
       filtered = filtered.filter(
         (reg) =>
           reg.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reg.initials.toLowerCase().includes(searchTerm.toLowerCase()) ||
           reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
           reg.enrollmentNumber
-            .toLowerCase()
+            ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
+          reg.computerCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           reg.branch.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -150,24 +173,32 @@ const IgniteXResponses: React.FC = () => {
       filtered = filtered.filter((reg) => reg.year === filterYear);
     }
 
-    // Apply campus filter
-    if (filterCampus && filterCampus !== "All") {
-      filtered = filtered.filter((reg) => reg.campus === filterCampus);
+    // Apply college filter
+    if (filterCollege && filterCollege !== "All") {
+      filtered = filtered.filter((reg) => reg.collegeName === filterCollege);
+    }
+
+    // Apply gender filter
+    if (filterGender && filterGender !== "All") {
+      filtered = filtered.filter((reg) => reg.gender === filterGender);
     }
 
     setFilteredData(filtered);
-  }, [searchTerm, filterYear, filterCampus, registrations]);
+  }, [searchTerm, filterYear, filterCollege, filterGender, registrations]);
 
   // Export to Excel
   const exportToExcel = () => {
     const exportData = filteredData.map((reg) => ({
       "Student Name": reg.studentName,
+      Initials: reg.initials,
       Year: reg.year,
       Branch: reg.branch,
-      "Enrollment Number": reg.enrollmentNumber,
+      "Enrollment Number": reg.enrollmentNumber || "N/A",
+      "Computer Code": reg.computerCode || "N/A",
       "Phone Number": reg.phoneNumber,
       Email: reg.email,
-      Campus: reg.campus,
+      Gender: reg.gender,
+      "College Name": reg.collegeName,
       Status: reg.status,
       "Registration Date":
         reg.registrationDate?.toDate?.()?.toLocaleString() || "N/A",
@@ -272,6 +303,12 @@ const IgniteXResponses: React.FC = () => {
               </p>
             </div>
             <div>
+              <label className="text-sm font-medium text-gray-600">
+                Initials
+              </label>
+              <p className="text-gray-800">{registration.initials || "N/A"}</p>
+            </div>
+            <div>
               <label className="text-sm font-medium text-gray-600">Year</label>
               <p className="text-gray-800">{registration.year}</p>
             </div>
@@ -285,7 +322,17 @@ const IgniteXResponses: React.FC = () => {
               <label className="text-sm font-medium text-gray-600">
                 Enrollment Number
               </label>
-              <p className="text-gray-800">{registration.enrollmentNumber}</p>
+              <p className="text-gray-800">
+                {registration.enrollmentNumber || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">
+                Computer Code
+              </label>
+              <p className="text-gray-800">
+                {registration.computerCode || "N/A"}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">Email</label>
@@ -297,9 +344,17 @@ const IgniteXResponses: React.FC = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Campus
+                Gender
               </label>
-              <p className="text-gray-800">{registration.campus}</p>
+              <p className="text-gray-800">{registration.gender || "N/A"}</p>
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium text-gray-600">
+                College Name
+              </label>
+              <p className="text-gray-800">
+                {registration.collegeName || "N/A"}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
@@ -307,16 +362,15 @@ const IgniteXResponses: React.FC = () => {
               </label>
               <p className="text-gray-800">{registration.status}</p>
             </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-600">
-              Registration Date
-            </label>
-            <p className="text-gray-800">
-              {registration.registrationDate?.toDate?.()?.toLocaleString() ||
-                "N/A"}
-            </p>
+            <div>
+              <label className="text-sm font-medium text-gray-600">
+                Registration Date
+              </label>
+              <p className="text-gray-800">
+                {registration.registrationDate?.toDate?.()?.toLocaleString() ||
+                  "N/A"}
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -365,13 +419,13 @@ const IgniteXResponses: React.FC = () => {
       {/* Controls */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+          <div className="flex flex-col gap-4">
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by name, email, enrollment..."
+                placeholder="Search by name, initials, email, enrollment, computer code..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -380,32 +434,56 @@ const IgniteXResponses: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Year Filter */}
-              <div className="relative">
+              <div className="relative flex-1">
                 <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 <select
                   value={filterYear}
                   onChange={(e) => setFilterYear(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white w-full sm:w-auto"
+                  className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
                 >
                   {years.map((year) => (
                     <option key={year} value={year === "All" ? "" : year}>
-                      {year}
+                      {year === "All" ? "All Years" : `Year ${year}`}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Campus Filter */}
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              {/* Gender Filter */}
+              <div className="relative flex-1">
+                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 <select
-                  value={filterCampus}
-                  onChange={(e) => setFilterCampus(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white w-full sm:w-auto"
+                  value={filterGender}
+                  onChange={(e) => setFilterGender(e.target.value)}
+                  className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
                 >
-                  {campuses.map((campus) => (
-                    <option key={campus} value={campus === "All" ? "" : campus}>
-                      {campus}
+                  {genders.map((gender) => (
+                    <option key={gender} value={gender === "All" ? "" : gender}>
+                      {gender === "All" ? "All Genders" : gender}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* College Filter */}
+              <div className="relative flex-1">
+                <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <select
+                  value={filterCollege}
+                  onChange={(e) => setFilterCollege(e.target.value)}
+                  className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
+                >
+                  {colleges.map((college) => (
+                    <option
+                      key={college}
+                      value={college === "All" ? "" : college}
+                    >
+                      {college === "All"
+                        ? "All Colleges"
+                        : college.replace(
+                            "IPS Academy Institute of Engineering and Science, Indore",
+                            "IPSAIES"
+                          )}
                     </option>
                   ))}
                 </select>
@@ -439,7 +517,7 @@ const IgniteXResponses: React.FC = () => {
                     Contact Info
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Campus
+                    College & Gender
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date
@@ -454,15 +532,24 @@ const IgniteXResponses: React.FC = () => {
                   <tr key={registration.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <Users className="w-8 h-8 text-purple-600 mr-3 flex-shrink-0" />
+                        <User className="w-8 h-8 text-purple-600 mr-3 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
+                            {registration.initials
+                              ? `${registration.initials} `
+                              : ""}
                             {registration.studentName}
                           </div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <Hash className="w-3 h-3" />
-                            {registration.enrollmentNumber}
+                            {registration.enrollmentNumber || "N/A"}
                           </div>
+                          {registration.computerCode && (
+                            <div className="text-xs text-gray-400 flex items-center gap-1">
+                              <Code className="w-3 h-3" />
+                              {registration.computerCode}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -471,11 +558,11 @@ const IgniteXResponses: React.FC = () => {
                         <GraduationCap className="w-8 h-8 text-blue-600 mr-3 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {registration.year}
+                            Year {registration.year || "N/A"}
                           </div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <BookOpen className="w-3 h-3" />
-                            {registration.branch}
+                            {registration.branch || "N/A"}
                           </div>
                         </div>
                       </div>
@@ -494,10 +581,20 @@ const IgniteXResponses: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        {registration.campus.replace(" Campus", "")}
-                      </span>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          <Building2 className="w-3 h-3 mr-1" />
+                          {registration.collegeName?.includes("Off-Campus")
+                            ? "Off-Campus 1"
+                            : "Main Campus"}
+                        </span>
+                        <br />
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <Users className="w-3 h-3 mr-1" />
+                          {registration.gender || "N/A"}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-500">
@@ -590,6 +687,20 @@ const IgniteXResponses: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Initials
+                </label>
+                <input
+                  type="text"
+                  value={editForm.initials}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, initials: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Year
                 </label>
                 <select
@@ -599,10 +710,10 @@ const IgniteXResponses: React.FC = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
+                  <option value="I">I</option>
+                  <option value="II">II</option>
+                  <option value="III">III</option>
+                  <option value="IV">IV</option>
                 </select>
               </div>
 
@@ -610,14 +721,19 @@ const IgniteXResponses: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Branch
                 </label>
-                <input
-                  type="text"
+                <select
                   value={editForm.branch}
                   onChange={(e) =>
                     setEditForm({ ...editForm, branch: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                >
+                  {branches.map((branch) => (
+                    <option key={branch} value={branch}>
+                      {branch}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -631,6 +747,23 @@ const IgniteXResponses: React.FC = () => {
                     setEditForm({
                       ...editForm,
                       enrollmentNumber: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Computer Code
+                </label>
+                <input
+                  type="text"
+                  value={editForm.computerCode}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      computerCode: e.target.value,
                     })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -668,18 +801,39 @@ const IgniteXResponses: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Campus
+                  Gender
                 </label>
                 <select
-                  value={editForm.campus}
+                  value={editForm.gender}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, campus: e.target.value })
+                    setEditForm({ ...editForm, gender: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="Vijaynagar Campus">Vijaynagar Campus</option>
-                  <option value="Rajendra Nagar Campus">
-                    Rajendra Nagar Campus
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  College Name
+                </label>
+                <select
+                  value={editForm.collegeName}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, collegeName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="IPS Academy Institute of Engineering and Science, Indore">
+                    IPS Academy Institute of Engineering and Science, Indore
+                  </option>
+                  <option value="IPS Academy Institute of Engineering and Science, Indore (Off-Campus 1)">
+                    IPS Academy Institute of Engineering and Science, Indore
+                    (Off-Campus 1)
                   </option>
                 </select>
               </div>
