@@ -63,13 +63,19 @@ const IgniteXRegistration = () => {
   const years = ["I", "II", "III", "IV"];
   const branches = [
     "Computer Science & Engineering",
+    "Computer Science & Engineering (IOT)",
     "Information Technology",
     "Electronics & Communication Engineering",
     "Electrical Engineering",
     "Mechanical Engineering",
     "Civil Engineering",
-    "Artificial Intelligence & Data Science",
+    "Data Science",
+    "Civil Engineering",
+    "Chemical Engineering",
     "Artificial Intelligence & Machine Learning",
+    "Fire Tech & Safety Engineering",
+    "Mechanical Engineering",
+    "Computer Science & Engineering (CS)",
   ];
   const genders = ["Male", "Female", "Other", "Prefer not to say"];
   const colleges = [
@@ -312,7 +318,7 @@ const IgniteXRegistration = () => {
                     className={`w-full pl-12 pr-4 py-3 bg-white/5 border ${
                       errors.initials ? "border-red-500" : "border-white/20"
                     } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
-                    placeholder="e.g., A. K."
+                    placeholder="Mr./Ms."
                   />
                 </div>
                 {errors.initials && (
