@@ -148,10 +148,7 @@ const App: React.FC = () => {
                       <Route path="/contact" element={<ContactPage />} />
                       <Route path="/startup" element={<StartupOfWeek />} />
                       <Route path="/blog/:slug" element={<BlogDetail />} />
-                      <Route
-                        path="/register-ignitex"
-                        element={<IgniteXRegistration />}
-                      />
+                      <Route path="/hiring" element={<IgniteXRegistration />} />
                     </Routes>
                     <Footer />
                   </div>

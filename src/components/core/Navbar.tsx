@@ -91,7 +91,7 @@ const Navbar: React.FC = () => {
                 transition={{ duration: 0.2 }}
               >
                 <Link
-                  to="/register-ignitex"
+                  to="/hiring"
                   className="relative px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-purple-500/30"
                 >
                   <span className="relative z-10">Hiring</span>
@@ -107,7 +107,7 @@ const Navbar: React.FC = () => {
               transition={{ duration: 0.2 }}
             >
               <Link
-                to="/register-ignitex"
+                to="/hiring"
                 className="relative px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-semibold rounded-full shadow-lg shadow-purple-500/30"
               >
                 Hiring
