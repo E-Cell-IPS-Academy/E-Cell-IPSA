@@ -13,13 +13,12 @@ import {
   GraduationCap,
   Mail,
   Phone,
-  Building2,
   Calendar,
   ArrowLeft,
   BookOpen,
   Hash,
-  Code,
   User,
+  Briefcase,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -34,105 +33,114 @@ import {
 import { db } from "../firebase/config";
 import * as XLSX from "xlsx";
 
-interface IgniteXRegistration {
+interface HiringApplication {
   id: string;
-  studentName: string;
-  initials: string;
-  year: string;
+  name: string;
+  enrollmentNo: string;
   branch: string;
-  enrollmentNumber: string;
-  computerCode: string;
-  phoneNumber: string;
+  year: string;
+  contactNo: string;
   email: string;
-  gender: string;
-  collegeName: string;
-  registrationDate: any;
+  domain: string;
+  experience: string;
+  hasStartup: boolean;
+  startupTurnover: string;
   status: string;
+  submittedAt: any;
 }
 
-const IgniteXResponses: React.FC = () => {
-  const [registrations, setRegistrations] = useState<IgniteXRegistration[]>([]);
-  const [filteredData, setFilteredData] = useState<IgniteXRegistration[]>([]);
+const HiringResponses: React.FC = () => {
+  const [applications, setApplications] = useState<HiringApplication[]>([]);
+  const [filteredData, setFilteredData] = useState<HiringApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterYear, setFilterYear] = useState("");
-  const [filterCollege, setFilterCollege] = useState("");
-  const [filterGender, setFilterGender] = useState("");
+  const [filterDomain, setFilterDomain] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<IgniteXRegistration | null>(null);
+  const [editForm, setEditForm] = useState<HiringApplication | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
 
-  const years = ["All", "I", "II", "III", "IV"];
-  const colleges = [
+  const years = ["All", "1st Year", "2nd Year", "3rd Year", "4th Year"];
+  const domains = [
     "All",
-    "IPS Academy Institute of Engineering and Science, Indore",
-    "IPS Academy Institute of Engineering and Science, Indore (Off-Campus 1)",
+    "Public Relation (PR)",
+    "Marketing",
+    "Social Media Management",
+    "Graphics & Video Editing",
+    "Web Development",
+    "Promotions",
+    "Event Management",
   ];
-  const genders = ["All", "Male", "Female", "Other", "Prefer not to say"];
+  const statuses = ["All", "pending", "reviewed", "accepted", "rejected"];
   const branches = [
     "Computer Science & Engineering",
+    "Computer Science & Engineering (IOT)",
     "Information Technology",
     "Electronics & Communication Engineering",
     "Electrical Engineering",
     "Mechanical Engineering",
     "Civil Engineering",
-    "Artificial Intelligence & Data Science",
+    "Data Science",
+    "Chemical Engineering",
     "Artificial Intelligence & Machine Learning",
+    "Fire Tech & Safety Engineering",
+    "Computer Science & Engineering (CS)",
   ];
 
   // Fetch data from Firebase
-  const fetchRegistrations = async () => {
+  const fetchApplications = async () => {
     try {
       setIsLoading(true);
 
       // Try with orderBy first
       try {
         const q = query(
-          collection(db, "ignitex-registrations"),
-          orderBy("registrationDate", "desc")
+          collection(db, "hiring-applications"),
+          orderBy("submittedAt", "desc")
         );
         const querySnapshot = await getDocs(q);
-        const data: IgniteXRegistration[] = [];
+        const data: HiringApplication[] = [];
 
         querySnapshot.forEach((doc) => {
           data.push({
             id: doc.id,
             ...doc.data(),
-          } as IgniteXRegistration);
+          } as HiringApplication);
         });
 
-        setRegistrations(data);
+        setApplications(data);
         setFilteredData(data);
-        console.log("Fetched registrations:", data.length);
+        console.log("Fetched applications:", data.length);
       } catch (orderError) {
         console.warn("OrderBy failed, trying without ordering:", orderError);
 
         // Fallback: fetch without orderBy
         const querySnapshot = await getDocs(
-          collection(db, "ignitex-registrations")
+          collection(db, "hiring-applications")
         );
-        const data: IgniteXRegistration[] = [];
+        const data: HiringApplication[] = [];
 
         querySnapshot.forEach((doc) => {
           data.push({
             id: doc.id,
             ...doc.data(),
-          } as IgniteXRegistration);
+          } as HiringApplication);
         });
 
-        // Sort in memory by registrationDate
+        // Sort in memory by submittedAt
         data.sort((a, b) => {
-          const dateA = a.registrationDate?.toDate?.()?.getTime() || 0;
-          const dateB = b.registrationDate?.toDate?.()?.getTime() || 0;
+          const dateA = a.submittedAt?.toDate?.()?.getTime() || 0;
+          const dateB = b.submittedAt?.toDate?.()?.getTime() || 0;
           return dateB - dateA;
         });
 
-        setRegistrations(data);
+        setApplications(data);
         setFilteredData(data);
-        console.log("Fetched registrations (fallback):", data.length);
+        console.log("Fetched applications (fallback):", data.length);
       }
     } catch (error) {
-      console.error("Error fetching registrations:", error);
+      console.error("Error fetching applications:", error);
 
       // Show detailed error
       if (error instanceof Error) {
@@ -146,91 +154,89 @@ const IgniteXResponses: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchRegistrations();
+    fetchApplications();
   }, []);
 
   // Filter and search functionality
   useEffect(() => {
-    let filtered = registrations;
+    let filtered = applications;
 
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(
-        (reg) =>
-          reg.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          reg.initials.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          reg.enrollmentNumber
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          reg.computerCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          reg.branch.toLowerCase().includes(searchTerm.toLowerCase())
+        (app) =>
+          app.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          app.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          app.enrollmentNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          app.domain?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          app.branch?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Apply year filter
     if (filterYear && filterYear !== "All") {
-      filtered = filtered.filter((reg) => reg.year === filterYear);
+      filtered = filtered.filter((app) => app.year === filterYear);
     }
 
-    // Apply college filter
-    if (filterCollege && filterCollege !== "All") {
-      filtered = filtered.filter((reg) => reg.collegeName === filterCollege);
+    // Apply domain filter
+    if (filterDomain && filterDomain !== "All") {
+      filtered = filtered.filter((app) => app.domain === filterDomain);
     }
 
-    // Apply gender filter
-    if (filterGender && filterGender !== "All") {
-      filtered = filtered.filter((reg) => reg.gender === filterGender);
+    // Apply status filter
+    if (filterStatus && filterStatus !== "All") {
+      filtered = filtered.filter((app) => app.status === filterStatus);
     }
 
     setFilteredData(filtered);
-  }, [searchTerm, filterYear, filterCollege, filterGender, registrations]);
+  }, [searchTerm, filterYear, filterDomain, filterStatus, applications]);
 
   // Export to Excel
   const exportToExcel = () => {
-    const exportData = filteredData.map((reg) => ({
-      "Student Name": reg.studentName,
-      Initials: reg.initials,
-      Year: reg.year,
-      Branch: reg.branch,
-      "Enrollment Number": reg.enrollmentNumber || "N/A",
-      "Computer Code": reg.computerCode || "N/A",
-      "Phone Number": reg.phoneNumber,
-      Email: reg.email,
-      Gender: reg.gender,
-      "College Name": reg.collegeName,
-      Status: reg.status,
-      "Registration Date":
-        reg.registrationDate?.toDate?.()?.toLocaleString() || "N/A",
+    const exportData = filteredData.map((app) => ({
+      Name: app.name,
+      "Enrollment No": app.enrollmentNo || "N/A",
+      Year: app.year,
+      Branch: app.branch,
+      "Contact No": app.contactNo,
+      Email: app.email,
+      Domain: app.domain,
+      Experience: app.experience,
+      "Has Startup": app.hasStartup ? "Yes" : "No",
+      "Startup Turnover": app.startupTurnover || "N/A",
+      Status: app.status,
+      "Submitted At": app.submittedAt?.toDate?.()?.toLocaleString() || "N/A",
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "IgniteX Registrations");
+    XLSX.utils.book_append_sheet(wb, ws, "Hiring Applications");
     XLSX.writeFile(
       wb,
-      `IgniteX_2.0_Registrations_${new Date().toISOString().split("T")[0]}.xlsx`
+      `E-Cell_Hiring_Applications_${
+        new Date().toISOString().split("T")[0]
+      }.xlsx`
     );
   };
 
-  // Delete registration
+  // Delete application
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this registration?")) {
+    if (window.confirm("Are you sure you want to delete this application?")) {
       try {
-        await deleteDoc(doc(db, "ignitex-registrations", id));
-        setRegistrations(registrations.filter((reg) => reg.id !== id));
-        alert("Registration deleted successfully!");
+        await deleteDoc(doc(db, "hiring-applications", id));
+        setApplications(applications.filter((app) => app.id !== id));
+        alert("Application deleted successfully!");
       } catch (error) {
-        console.error("Error deleting registration:", error);
-        alert("Error deleting registration. Please try again.");
+        console.error("Error deleting application:", error);
+        alert("Error deleting application. Please try again.");
       }
     }
   };
 
   // Start editing
-  const startEdit = (registration: IgniteXRegistration) => {
-    setEditingId(registration.id);
-    setEditForm({ ...registration });
+  const startEdit = (application: HiringApplication) => {
+    setEditingId(application.id);
+    setEditForm({ ...application });
   };
 
   // Save edit
@@ -239,18 +245,18 @@ const IgniteXResponses: React.FC = () => {
 
     try {
       const { id, ...updateData } = editForm;
-      await updateDoc(doc(db, "ignitex-registrations", id), updateData);
+      await updateDoc(doc(db, "hiring-applications", id), updateData);
 
-      setRegistrations(
-        registrations.map((reg) => (reg.id === id ? editForm : reg))
+      setApplications(
+        applications.map((app) => (app.id === id ? editForm : app))
       );
 
       setEditingId(null);
       setEditForm(null);
-      alert("Registration updated successfully!");
+      alert("Application updated successfully!");
     } catch (error) {
-      console.error("Error updating registration:", error);
-      alert("Error updating registration. Please try again.");
+      console.error("Error updating application:", error);
+      alert("Error updating application. Please try again.");
     }
   };
 
@@ -261,11 +267,7 @@ const IgniteXResponses: React.FC = () => {
   };
 
   // View details modal
-  const ViewModal = ({
-    registration,
-  }: {
-    registration: IgniteXRegistration;
-  }) => (
+  const ViewModal = ({ application }: { application: HiringApplication }) => (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -282,7 +284,7 @@ const IgniteXResponses: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            Registration Details
+            Application Details
           </h2>
           <button
             onClick={() => setViewingId(null)}
@@ -296,79 +298,94 @@ const IgniteXResponses: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Student Name
+                Full Name
               </label>
-              <p className="text-gray-800 font-medium">
-                {registration.studentName}
-              </p>
+              <p className="text-gray-800 font-medium">{application.name}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Initials
+                Enrollment No
               </label>
-              <p className="text-gray-800">{registration.initials || "N/A"}</p>
+              <p className="text-gray-800">
+                {application.enrollmentNo || "N/A"}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">Year</label>
-              <p className="text-gray-800">{registration.year}</p>
+              <p className="text-gray-800">{application.year}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
                 Branch
               </label>
-              <p className="text-gray-800">{registration.branch}</p>
+              <p className="text-gray-800">{application.branch}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Enrollment Number
+                Domain Applied
               </label>
-              <p className="text-gray-800">
-                {registration.enrollmentNumber || "N/A"}
-              </p>
+              <p className="text-gray-800 font-medium">{application.domain}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Computer Code
+                Contact No
               </label>
-              <p className="text-gray-800">
-                {registration.computerCode || "N/A"}
-              </p>
+              <p className="text-gray-800">{application.contactNo}</p>
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium text-gray-600">Email</label>
-              <p className="text-gray-800">{registration.email}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">Phone</label>
-              <p className="text-gray-800">{registration.phoneNumber}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">
-                Gender
-              </label>
-              <p className="text-gray-800">{registration.gender || "N/A"}</p>
+              <p className="text-gray-800">{application.email}</p>
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium text-gray-600">
-                College Name
+                Experience / Skills
               </label>
-              <p className="text-gray-800">
-                {registration.collegeName || "N/A"}
+              <p className="text-gray-800 whitespace-pre-wrap bg-gray-50 p-3 rounded-lg">
+                {application.experience || "N/A"}
               </p>
             </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600">
+                Has Startup?
+              </label>
+              <p className="text-gray-800">
+                {application.hasStartup ? "Yes" : "No"}
+              </p>
+            </div>
+            {application.hasStartup && (
+              <div>
+                <label className="text-sm font-medium text-gray-600">
+                  Startup Turnover
+                </label>
+                <p className="text-gray-800">
+                  {application.startupTurnover || "N/A"}
+                </p>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-gray-600">
                 Status
               </label>
-              <p className="text-gray-800">{registration.status}</p>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  application.status === "accepted"
+                    ? "bg-green-100 text-green-800"
+                    : application.status === "rejected"
+                    ? "bg-red-100 text-red-800"
+                    : application.status === "reviewed"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {application.status}
+              </span>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">
-                Registration Date
+                Submitted At
               </label>
               <p className="text-gray-800">
-                {registration.registrationDate?.toDate?.()?.toLocaleString() ||
-                  "N/A"}
+                {application.submittedAt?.toDate?.()?.toLocaleString() || "N/A"}
               </p>
             </div>
           </div>
@@ -382,7 +399,7 @@ const IgniteXResponses: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading registrations...</p>
+          <p className="text-gray-600">Loading applications...</p>
         </div>
       </div>
     );
@@ -404,12 +421,12 @@ const IgniteXResponses: React.FC = () => {
               </Link>
               <div className="h-6 w-px bg-gray-300"></div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                IgniteX 2.0 - Admin Dashboard
+                E-Cell Hiring - Applications Dashboard
               </h1>
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                {filteredData.length} Registrations
+                {filteredData.length} Applications
               </div>
             </div>
           </div>
@@ -425,7 +442,7 @@ const IgniteXResponses: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by name, initials, email, enrollment, computer code..."
+                placeholder="Search by name, email, enrollment, domain, branch..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -443,47 +460,41 @@ const IgniteXResponses: React.FC = () => {
                 >
                   {years.map((year) => (
                     <option key={year} value={year === "All" ? "" : year}>
-                      {year === "All" ? "All Years" : `Year ${year}`}
+                      {year === "All" ? "All Years" : year}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Gender Filter */}
+              {/* Domain Filter */}
               <div className="relative flex-1">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 <select
-                  value={filterGender}
-                  onChange={(e) => setFilterGender(e.target.value)}
+                  value={filterDomain}
+                  onChange={(e) => setFilterDomain(e.target.value)}
                   className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
                 >
-                  {genders.map((gender) => (
-                    <option key={gender} value={gender === "All" ? "" : gender}>
-                      {gender === "All" ? "All Genders" : gender}
+                  {domains.map((domain) => (
+                    <option key={domain} value={domain === "All" ? "" : domain}>
+                      {domain === "All" ? "All Domains" : domain}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* College Filter */}
+              {/* Status Filter */}
               <div className="relative flex-1">
-                <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 <select
-                  value={filterCollege}
-                  onChange={(e) => setFilterCollege(e.target.value)}
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
                   className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
                 >
-                  {colleges.map((college) => (
-                    <option
-                      key={college}
-                      value={college === "All" ? "" : college}
-                    >
-                      {college === "All"
-                        ? "All Colleges"
-                        : college.replace(
-                            "IPS Academy Institute of Engineering and Science, Indore",
-                            "IPSAIES"
-                          )}
+                  {statuses.map((status) => (
+                    <option key={status} value={status === "All" ? "" : status}>
+                      {status === "All"
+                        ? "All Statuses"
+                        : status.charAt(0).toUpperCase() + status.slice(1)}
                     </option>
                   ))}
                 </select>
@@ -508,19 +519,19 @@ const IgniteXResponses: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Student Info
+                    Applicant Info
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Academic Details
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact Info
+                    Domain & Contact
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    College & Gender
+                    Experience
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -528,28 +539,19 @@ const IgniteXResponses: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredData.map((registration) => (
-                  <tr key={registration.id} className="hover:bg-gray-50">
+                {filteredData.map((application) => (
+                  <tr key={application.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <User className="w-8 h-8 text-purple-600 mr-3 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {registration.initials
-                              ? `${registration.initials} `
-                              : ""}
-                            {registration.studentName}
+                            {application.name}
                           </div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <Hash className="w-3 h-3" />
-                            {registration.enrollmentNumber || "N/A"}
+                            {application.enrollmentNo || "N/A"}
                           </div>
-                          {registration.computerCode && (
-                            <div className="text-xs text-gray-400 flex items-center gap-1">
-                              <Code className="w-3 h-3" />
-                              {registration.computerCode}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </td>
@@ -558,49 +560,63 @@ const IgniteXResponses: React.FC = () => {
                         <GraduationCap className="w-8 h-8 text-blue-600 mr-3 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            Year {registration.year || "N/A"}
+                            {application.year || "N/A"}
                           </div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <BookOpen className="w-3 h-3" />
-                            {registration.branch || "N/A"}
+                            {application.branch || "N/A"}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-start">
-                        <Mail className="w-8 h-8 text-green-600 mr-3 flex-shrink-0 mt-1" />
+                        <Briefcase className="w-8 h-8 text-purple-600 mr-3 flex-shrink-0 mt-1" />
                         <div className="min-w-0">
-                          <div className="text-sm text-gray-900 truncate">
-                            {registration.email}
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {application.domain}
+                          </div>
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                            <Mail className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">
+                              {application.email}
+                            </span>
                           </div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <Phone className="w-3 h-3 flex-shrink-0" />
-                            {registration.phoneNumber}
+                            {application.contactNo}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          <Building2 className="w-3 h-3 mr-1" />
-                          {registration.collegeName?.includes("Off-Campus")
-                            ? "Off-Campus 1"
-                            : "Main Campus"}
-                        </span>
-                        <br />
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          <Users className="w-3 h-3 mr-1" />
-                          {registration.gender || "N/A"}
-                        </span>
+                      <div className="text-sm text-gray-900 max-w-xs truncate">
+                        {application.experience || "N/A"}
                       </div>
+                      {application.hasStartup && (
+                        <div className="text-xs text-green-600 mt-1">
+                          Has Startup
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          application.status === "accepted"
+                            ? "bg-green-100 text-green-800"
+                            : application.status === "rejected"
+                            ? "bg-red-100 text-red-800"
+                            : application.status === "reviewed"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {application.status}
+                      </span>
+                      <div className="flex items-center text-xs text-gray-500 mt-1">
+                        <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
                         <span className="truncate">
-                          {registration.registrationDate
+                          {application.submittedAt
                             ?.toDate?.()
                             ?.toLocaleDateString() || "N/A"}
                         </span>
@@ -609,21 +625,21 @@ const IgniteXResponses: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => setViewingId(registration.id)}
+                          onClick={() => setViewingId(application.id)}
                           className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => startEdit(registration)}
+                          onClick={() => startEdit(application)}
                           className="text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(registration.id)}
+                          onClick={() => handleDelete(application.id)}
                           className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete"
                         >
@@ -640,7 +656,7 @@ const IgniteXResponses: React.FC = () => {
           {filteredData.length === 0 && (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No registrations found</p>
+              <p className="text-gray-500">No applications found</p>
             </div>
           )}
         </div>
@@ -660,7 +676,7 @@ const IgniteXResponses: React.FC = () => {
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
-                Edit Registration
+                Edit Application
               </h2>
               <button
                 onClick={cancelEdit}
@@ -673,13 +689,13 @@ const IgniteXResponses: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Student Name
+                  Name
                 </label>
                 <input
                   type="text"
-                  value={editForm.studentName}
+                  value={editForm.name}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, studentName: e.target.value })
+                    setEditForm({ ...editForm, name: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -687,13 +703,13 @@ const IgniteXResponses: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Initials
+                  Enrollment No
                 </label>
                 <input
                   type="text"
-                  value={editForm.initials}
+                  value={editForm.enrollmentNo}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, initials: e.target.value })
+                    setEditForm({ ...editForm, enrollmentNo: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -710,10 +726,10 @@ const IgniteXResponses: React.FC = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="I">I</option>
-                  <option value="II">II</option>
-                  <option value="III">III</option>
-                  <option value="IV">IV</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
                 </select>
               </div>
 
@@ -738,40 +754,6 @@ const IgniteXResponses: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Enrollment Number
-                </label>
-                <input
-                  type="text"
-                  value={editForm.enrollmentNumber}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      enrollmentNumber: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Computer Code
-                </label>
-                <input
-                  type="text"
-                  value={editForm.computerCode}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      computerCode: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email
                 </label>
                 <input
@@ -786,13 +768,13 @@ const IgniteXResponses: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
+                  Contact No
                 </label>
                 <input
                   type="tel"
-                  value={editForm.phoneNumber}
+                  value={editForm.contactNo}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, phoneNumber: e.target.value })
+                    setEditForm({ ...editForm, contactNo: e.target.value })
                   }
                   maxLength={10}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -801,42 +783,76 @@ const IgniteXResponses: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gender
+                  Domain
                 </label>
                 <select
-                  value={editForm.gender}
+                  value={editForm.domain}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, gender: e.target.value })
+                    setEditForm({ ...editForm, domain: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
+                  {domains
+                    .filter((d) => d !== "All")
+                    .map((domain) => (
+                      <option key={domain} value={domain}>
+                        {domain}
+                      </option>
+                    ))}
                 </select>
               </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  College Name
+                  Experience / Skills
+                </label>
+                <textarea
+                  value={editForm.experience}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, experience: e.target.value })
+                  }
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Has Startup?
                 </label>
                 <select
-                  value={editForm.collegeName}
+                  value={editForm.hasStartup ? "true" : "false"}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, collegeName: e.target.value })
+                    setEditForm({
+                      ...editForm,
+                      hasStartup: e.target.value === "true",
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="IPS Academy Institute of Engineering and Science, Indore">
-                    IPS Academy Institute of Engineering and Science, Indore
-                  </option>
-                  <option value="IPS Academy Institute of Engineering and Science, Indore (Off-Campus 1)">
-                    IPS Academy Institute of Engineering and Science, Indore
-                    (Off-Campus 1)
-                  </option>
+                  <option value="false">No</option>
+                  <option value="true">Yes</option>
                 </select>
               </div>
+
+              {editForm.hasStartup && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Startup Turnover
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.startupTurnover}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        startupTurnover: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -849,10 +865,10 @@ const IgniteXResponses: React.FC = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="registered">Registered</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="attended">Attended</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="pending">Pending</option>
+                  <option value="reviewed">Reviewed</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
             </div>
@@ -879,11 +895,11 @@ const IgniteXResponses: React.FC = () => {
       {/* View Modal */}
       {viewingId && (
         <ViewModal
-          registration={registrations.find((r) => r.id === viewingId)!}
+          application={applications.find((app) => app.id === viewingId)!}
         />
       )}
     </div>
   );
 };
 
-export default IgniteXResponses;
+export default HiringResponses;

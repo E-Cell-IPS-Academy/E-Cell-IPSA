@@ -25,7 +25,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminGalleryComplete from "./pages/admin/AdminGalleryComplete";
 import ContactPage from "./pages/ContactPage";
 import StartupRegistration from "./pages/VypaarXPage";
-import IgniteXResponses from "./pages/ResponsePage";
+import HiringResponses from "./pages/ResponsePage";
 import IgniteXRegistration from "./pages/IgniteX";
 
 const App: React.FC = () => {
@@ -120,7 +120,7 @@ const App: React.FC = () => {
               <Route path="/login" element={<UserLogin />} />
               <Route path="/signup" element={<UserSignup />} />
               <Route path="/register" element={<StartupRegistration />} />
-              <Route path="/response" element={<IgniteXResponses />} />
+              <Route path="/response" element={<HiringResponses />} />
 
               {/* User Dashboard - With Navbar/Footer */}
               <Route

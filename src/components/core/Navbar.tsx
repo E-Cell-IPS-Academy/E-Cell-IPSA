@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Home, Calendar, Image, FileText, Phone } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const location = useLocation();
-
-  console.log(activeDropdown);
 
   useEffect(() => {
     const handleScroll = (): void => {
@@ -19,64 +15,56 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (): void => {
-      setActiveDropdown(null);
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Past Events", href: "/past-events" },
-    { name: "Gallery", href: "/gallery" },
-    { name: "Blogs", href: "/blog" },
-    { name: "Contact Us", href: "/contact" },
+    { name: "Home", href: "/", icon: Home },
+    { name: "Events", href: "/past-events", icon: Calendar },
+    { name: "Gallery", href: "/gallery", icon: Image },
+    { name: "Blogs", href: "/blog", icon: FileText },
+    { name: "Contact", href: "/contact", icon: Phone },
   ];
 
   return (
-    <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? "bg-black/90 backdrop-blur-2xl border-b border-white/20 shadow-2xl shadow-black/50"
-          : "bg-black/20 backdrop-blur-md border-b border-white/5"
-      }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6 }}
-      style={{
-        backdropFilter: isScrolled
-          ? "blur(40px) saturate(150%)"
-          : "blur(20px) saturate(120%)",
-        WebkitBackdropFilter: isScrolled
-          ? "blur(40px) saturate(150%)"
-          : "blur(20px) saturate(120%)",
-      }}
-    >
-      <div className="container mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <motion.div
-            className="flex-shrink-0"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Link to="/" className="flex items-center">
-              <img
-                src="/EcellLogo.png"
-                alt="E-Cell IPSA Logo"
-                className="h-10 lg:h-12 w-auto object-contain drop-shadow-lg"
-              />
-            </Link>
-          </motion.div>
+    <>
+      {/* Top Navbar */}
+      <motion.nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? "bg-black/70 backdrop-blur-2xl border-b border-white/20 shadow-2xl shadow-black/50"
+            : "bg-black/30 backdrop-blur-xl border-b border-white/10"
+        }`}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+        style={{
+          backdropFilter: isScrolled
+            ? "blur(40px) saturate(180%)"
+            : "blur(20px) saturate(150%)",
+          WebkitBackdropFilter: isScrolled
+            ? "blur(40px) saturate(180%)"
+            : "blur(20px) saturate(150%)",
+        }}
+      >
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 lg:h-20">
+            {/* Logo */}
+            <motion.div
+              className="flex-shrink-0"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link to="/" className="flex items-center">
+                <img
+                  src="/EcellLogo.png"
+                  alt="E-Cell IPSA Logo"
+                  className="h-8 lg:h-12 w-auto object-contain drop-shadow-lg"
+                />
+              </Link>
+            </motion.div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <motion.div key={item.name}>
-                {item.href.startsWith("/") ? (
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-8">
+              {navItems.map((item) => (
+                <motion.div key={item.name}>
                   <Link
                     to={item.href}
                     className={`relative text-sm font-medium transition-all duration-300 py-2 drop-shadow-sm ${
@@ -93,136 +81,98 @@ const Navbar: React.FC = () => {
                       />
                     )}
                   </Link>
-                ) : (
-                  <a
-                    href={item.href}
-                    className="relative text-sm font-medium text-gray-200 hover:text-white transition-all duration-300 py-2 drop-shadow-sm"
-                  >
-                    {item.name}
-                  </a>
-                )}
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
 
-            {/* VypaarX Registration Button */}
+              {/* IgniteX Registration Button */}
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link
+                  to="/register-ignitex"
+                  className="relative px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-purple-500/30"
+                >
+                  <span className="relative z-10">IgniteX</span>
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Mobile IgniteX Button */}
             <motion.div
+              className="lg:hidden"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
               <Link
                 to="/register-ignitex"
-                className="relative px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg "
+                className="relative px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-semibold rounded-full shadow-lg shadow-purple-500/30"
               >
-                <span className="relative z-10">IgniteX </span>
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  initial={false}
-                />
+                Hiring
               </Link>
             </motion.div>
           </div>
-
-          {/* Mobile Menu Button */}
-          <motion.button
-            className="lg:hidden p-2"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            whileTap={{ scale: 0.95 }}
-          >
-            <AnimatePresence mode="wait">
-              {isMobileMenuOpen ? (
-                <motion.div
-                  key="close"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <X className="w-6 h-6 text-white" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Menu className="w-6 h-6 text-white" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
         </div>
+      </motion.nav>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              className="lg:hidden border-t border-white/20 bg-black/80 backdrop-blur-xl"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                backdropFilter: "blur(30px) saturate(150%)",
-                WebkitBackdropFilter: "blur(30px) saturate(150%)",
-              }}
-            >
-              <div className="py-4 space-y-4">
-                {/* Navigation Items */}
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    {item.href.startsWith("/") ? (
-                      <Link
-                        to={item.href}
-                        className={`block py-3 px-2 rounded-lg transition-colors duration-300 ${
-                          location.pathname === item.href
-                            ? "text-white bg-white/10"
-                            : "text-gray-200 hover:text-white hover:bg-white/5"
-                        }`}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    ) : (
-                      <a
-                        href={item.href}
-                        className="block text-gray-200 hover:text-white transition-colors duration-300 py-3 px-2 rounded-lg hover:bg-white/5"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {item.name}
-                      </a>
-                    )}
-                  </motion.div>
-                ))}
-
-                {/* VypaarX Registration Button - Mobile */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: navItems.length * 0.1 }}
-                  className="px-2 pt-2"
+      {/* Mobile Bottom Navigation */}
+      <motion.div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50"
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <div
+          className="mx-3 mb-3 rounded-2xl border border-white/20 bg-black/60 shadow-2xl shadow-black/50"
+          style={{
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+          }}
+        >
+          <div className="flex items-center justify-around py-2 px-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 relative"
                 >
-                  <Link
-                    to="/register-ignitex"
-                    className="block w-full text-center py-3 px-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  {isActive && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-xl border border-purple-500/30"
+                      layoutId="activeBottomTab"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <Icon
+                    className={`w-5 h-5 transition-all duration-300 relative z-10 ${
+                      isActive
+                        ? "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
+                        : "text-gray-400"
+                    }`}
+                  />
+                  <span
+                    className={`text-[10px] mt-1 font-medium relative z-10 transition-all duration-300 ${
+                      isActive ? "text-purple-300" : "text-gray-400"
+                    }`}
                   >
-                    IgniteX
-                  </Link>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.nav>
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    </>
   );
 };
 
