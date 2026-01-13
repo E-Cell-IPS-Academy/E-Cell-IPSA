@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
                   to="/register-ignitex"
                   className="relative px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-purple-500/30"
                 >
-                  <span className="relative z-10">IgniteX</span>
+                  <span className="relative z-10">Hiring</span>
                 </Link>
               </motion.div>
             </div>
