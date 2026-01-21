@@ -52,13 +52,13 @@ const HiringPage: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(false);
 
   const domains = [
-    "Public Relation (PR)",
-    "Marketing",
-    "Social Media Management",
-    "Graphics & Video Editing",
+    "Innovation & Research",
+    "Business & Market Analytics",
+    "Digital Marketing & PR",
+    "Creative Media & Design",
     "Web Development",
-    "Promotions",
-    "Event Management",
+    "Event Operations & Management",
+    "Strategic Alliances & Outreach",
   ];
 
   const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
@@ -83,7 +83,7 @@ const HiringPage: React.FC = () => {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
@@ -346,30 +346,6 @@ const HiringPage: React.FC = () => {
                   </span>
                 ))}
               </div>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="grid grid-cols-3 gap-4"
-            >
-              {[
-                { number: "50+", label: "Members" },
-                { number: "10+", label: "Events" },
-                { number: "7", label: "Domains" },
-              ].map((stat, index) => (
-                <div
-                  key={index}
-                  className="text-center p-3 bg-white/5 rounded-xl border border-white/10"
-                >
-                  <h4 className="text-xl font-bold text-white">
-                    {stat.number}
-                  </h4>
-                  <p className="text-xs text-gray-400">{stat.label}</p>
-                </div>
-              ))}
             </motion.div>
           </motion.div>
 

@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
                   to="/hiring"
                   className="relative px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-purple-500/30"
                 >
-                  <span className="relative z-10">Hiring</span>
+                  <span className="relative z-10"> We're Hiring</span>
                 </Link>
               </motion.div>
             </div>
@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
                 to="/hiring"
                 className="relative px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-semibold rounded-full shadow-lg shadow-purple-500/30"
               >
-                Hiring
+                We're Hiring
               </Link>
             </motion.div>
           </div>
