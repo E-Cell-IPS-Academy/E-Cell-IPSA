@@ -14,6 +14,7 @@ import {
   Loader,
   Search,
 } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 
 // Types
 interface GalleryImage {
@@ -263,11 +264,12 @@ const BentoGridItem: React.FC<{
   description: string;
   header: React.ReactNode;
   onClick?: () => void;
-}> = ({ className, title, description, header, onClick }) => {
+  isDark: boolean;
+}> = ({ className, title, description, header, onClick, isDark }) => {
   return (
     <motion.div
       className={cn(
-        "group/bento cursor-pointer row-span-1 flex flex-col justify-between space-y-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 transition duration-300 hover:bg-white/10 hover:border-white/20",
+        `group/bento cursor-pointer row-span-1 flex flex-col justify-between space-y-4 rounded-xl border ${isDark ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20" : "border-gray-200 bg-white/80 hover:bg-white hover:border-gray-300"} backdrop-blur-sm p-4 transition duration-300`,
         className
       )}
       onClick={onClick}
@@ -276,10 +278,10 @@ const BentoGridItem: React.FC<{
     >
       {header}
       <div className="transition duration-200 group-hover/bento:translate-x-2">
-        <div className="mt-2 mb-2 font-sans font-bold text-white text-lg">
+        <div className={`mt-2 mb-2 font-sans font-light ${isDark ? "text-white" : "text-gray-900"} text-base`}>
           {title}
         </div>
-        <div className="font-sans text-sm font-normal text-gray-300 line-clamp-2">
+        <div className={`font-sans text-sm font-light ${isDark ? "text-gray-300" : "text-gray-600"} line-clamp-2`}>
           {description}
         </div>
       </div>
@@ -304,24 +306,24 @@ const GalleryImageComponent: React.FC<{
     <div className="absolute inset-0 bg-black/0 group-hover/bento:bg-black/30 transition-all duration-300" />
 
     {/* Category Badge */}
-    <div className="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white">
+    <div className="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white font-light">
       {image.category}
     </div>
 
     {/* Featured Badge */}
     {image.isFeature && (
-      <div className="absolute top-3 left-3 px-2 py-1 bg-purple-500/80 backdrop-blur-sm rounded-full text-xs text-white font-medium">
+      <div className="absolute top-3 left-3 px-2 py-1 bg-purple-500/80 backdrop-blur-sm rounded-full text-xs text-white font-light">
         Featured
       </div>
     )}
 
     {/* Stats Overlay */}
     <div className="absolute bottom-3 left-3 flex items-center gap-3 opacity-0 group-hover/bento:opacity-100 transition-opacity">
-      <div className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white">
+      <div className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white font-light">
         <Eye className="w-3 h-3" />
         {image.stats.views}
       </div>
-      <div className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white">
+      <div className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white font-light">
         <Heart className="w-3 h-3" />
         {image.stats.likes}
       </div>
@@ -330,7 +332,7 @@ const GalleryImageComponent: React.FC<{
     {/* Event Info */}
     {image.eventName && (
       <div className="absolute bottom-3 right-3 opacity-0 group-hover/bento:opacity-100 transition-opacity">
-        <div className="px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white">
+        <div className="px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white font-light">
           {image.eventName}
         </div>
       </div>
@@ -477,17 +479,17 @@ const Lightbox: React.FC<{
           >
             <div className="flex items-end justify-between">
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-lg font-light text-white mb-2">
                   {currentImage.title}
                 </h3>
                 {currentImage.description && (
-                  <p className="text-gray-300 text-sm mb-3">
+                  <p className="text-gray-300 text-sm font-light mb-3">
                     {currentImage.description}
                   </p>
                 )}
 
                 {/* Event Details */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400 mb-3">
+                <div className="flex flex-wrap items-center gap-4 text-sm font-light text-gray-400 mb-3">
                   {currentImage.eventName && (
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
@@ -519,7 +521,7 @@ const Lightbox: React.FC<{
                     {currentImage.tags.slice(0, 5).map((tag, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-white/20 text-white text-xs rounded-full"
+                        className="px-2 py-1 bg-white/20 text-white text-xs font-light rounded-full"
                       >
                         #{tag}
                       </span>
@@ -548,19 +550,19 @@ const Lightbox: React.FC<{
 
             {/* Stats */}
             <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/20">
-              <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <div className="flex items-center gap-2 text-gray-400 text-sm font-light">
                 <Eye className="w-4 h-4" />
                 <span>{currentImage.stats.views} views</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <div className="flex items-center gap-2 text-gray-400 text-sm font-light">
                 <Download className="w-4 h-4" />
                 <span>{currentImage.stats.downloads} downloads</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <div className="flex items-center gap-2 text-gray-400 text-sm font-light">
                 <Heart className="w-4 h-4" />
                 <span>{currentImage.stats.likes} likes</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <div className="flex items-center gap-2 text-gray-400 text-sm font-light">
                 <Share2 className="w-4 h-4" />
                 <span>{currentImage.stats.shares} shares</span>
               </div>
@@ -573,7 +575,7 @@ const Lightbox: React.FC<{
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-sm"
+              className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-sm font-light"
             >
               {currentIndex + 1} / {images.length}
             </motion.div>
@@ -586,6 +588,7 @@ const Lightbox: React.FC<{
 
 // Main Gallery Component
 const Gallery: React.FC = () => {
+  const { isDark } = useTheme();
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
@@ -653,7 +656,7 @@ const Gallery: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 pt-24 pb-12">
+    <div className={`min-h-screen ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} pt-24 pb-12`}>
       <div className="container mx-auto px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -661,14 +664,14 @@ const Gallery: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-thin text-white leading-tight mb-4">
+          <h1 className={`text-3xl md:text-4xl lg:text-5xl font-thin ${isDark ? "text-white" : "text-gray-900"} leading-tight mb-4`}>
             Event
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
               Gallery
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className={`text-lg font-light ${isDark ? "text-gray-300" : "text-gray-600"} max-w-3xl mx-auto`}>
             Explore moments from our entrepreneurial journey and community
             events
           </p>
@@ -682,13 +685,13 @@ const Gallery: React.FC = () => {
           className="max-w-md mx-auto mb-8"
         >
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
             <input
               type="text"
               placeholder="Search images..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+              className={`w-full pl-12 pr-4 py-3 ${isDark ? "bg-white/10 border-white/20 text-white placeholder-gray-400" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"} border rounded-lg focus:outline-none focus:border-purple-500 text-sm font-light`}
             />
           </div>
         </motion.div>
@@ -704,10 +707,10 @@ const Gallery: React.FC = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${
+              className={`px-6 py-2 rounded-full font-light text-sm transition-all duration-300 ${
                 selectedCategory === category
                   ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg"
-                  : "bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white"
+                  : isDark ? "bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white" : "bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200"
               }`}
             >
               {category}
@@ -732,7 +735,7 @@ const Gallery: React.FC = () => {
               >
                 <Loader className="w-8 h-8 text-purple-500" />
               </motion.div>
-              <p className="text-gray-400">Loading gallery...</p>
+              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>Loading gallery...</p>
             </div>
           ) : filteredImages.length === 0 ? (
             /* Empty State */
@@ -740,10 +743,10 @@ const Gallery: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className={`text-lg font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}>
                 No Images Found
               </h3>
-              <p className="text-gray-400 mb-6">
+              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light mb-6`}>
                 {searchTerm
                   ? "Try adjusting your search terms or filters"
                   : `No images found in ${selectedCategory} category`}
@@ -754,7 +757,7 @@ const Gallery: React.FC = () => {
                     setSearchTerm("");
                     setSelectedCategory("All");
                   }}
-                  className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm transition-colors"
+                  className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-light transition-colors"
                 >
                   Clear Filters
                 </button>
@@ -782,6 +785,7 @@ const Gallery: React.FC = () => {
                       index % 7 === 3 || index % 7 === 6 ? "md:col-span-2" : ""
                     } ${index % 11 === 5 ? "md:row-span-2" : ""}`}
                     onClick={() => openLightbox(index)}
+                    isDark={isDark}
                   />
                 </motion.div>
               ))}

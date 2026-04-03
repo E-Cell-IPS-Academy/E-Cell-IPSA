@@ -155,6 +155,7 @@ const categoryColors: Record<string, string> = {
 };
 
 const FAQPage: React.FC = () => {
+  const { isDark } = useTheme();
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -226,14 +227,14 @@ const FAQPage: React.FC = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className={`min-h-screen ${isDark ? "bg-black" : "bg-gray-50"}`}>
       {/* Hero Section */}
       <section
         ref={heroRef}
         className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
       >
         {/* Animated background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-950/40 to-black" />
+        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-black via-purple-950/40 to-black" : "bg-gradient-to-br from-white via-purple-50 to-white"}`} />
 
         {/* Floating question marks */}
         {questionMarks.map((qm) => (

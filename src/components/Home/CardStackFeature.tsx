@@ -116,10 +116,10 @@ const StickyCard = ({
       }}
     >
       <div
-        className={`relative rounded-2xl md:rounded-3xl border border-white/[0.08] overflow-hidden ${card.gradient}`}
+        className={`relative rounded-2xl md:rounded-3xl border ${isDark ? "border-white/[0.08]" : "border-gray-200"} overflow-hidden ${card.gradient}`}
       >
         {/* Glassmorphism backdrop */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" />
+        <div className={`absolute inset-0 ${isDark ? "bg-black/60" : "bg-white/80"} backdrop-blur-2xl`} />
 
         {/* Subtle noise texture */}
         <div
@@ -135,7 +135,7 @@ const StickyCard = ({
             <div className="flex-shrink-0">
               <div className="relative">
                 <div
-                  className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${card.accentColor} border border-white/10 flex items-center justify-center`}
+                  className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${card.accentColor} border ${isDark ? "border-white/10" : "border-gray-200"} flex items-center justify-center`}
                 >
                   {card.icon}
                 </div>
@@ -149,15 +149,15 @@ const StickyCard = ({
             {/* Text content */}
             <div className="space-y-3 md:space-y-4 flex-1">
               <div className="flex items-center gap-4">
-                <span className="text-xs font-mono text-white/30 tracking-wider">
+                <span className={`text-xs font-mono ${isDark ? "text-white/30" : "text-gray-400"} tracking-wider`}>
                   0{index + 1}
                 </span>
-                <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-white/20 to-transparent" />
+                <div className={`h-px flex-1 max-w-[60px] bg-gradient-to-r ${isDark ? "from-white/20" : "from-gray-300"} to-transparent`} />
               </div>
-              <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight">
+              <h3 className={`text-xl md:text-2xl lg:text-3xl font-light ${isDark ? "text-white" : "text-gray-900"} tracking-tight`}>
                 {card.title}
               </h3>
-              <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-2xl">
+              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm md:text-base font-light leading-relaxed max-w-2xl`}>
                 {card.description}
               </p>
             </div>
