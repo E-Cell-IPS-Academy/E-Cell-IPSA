@@ -11,6 +11,7 @@ import {
   Building,
   BookOpen,
 } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
 import {
   RocketLaunchIllustration,
   IdeaBulbIllustration,
@@ -82,6 +83,7 @@ const OrbitingElements = () => (
 
 // About Section with Parallax and Illustration
 const AboutSection = () => {
+  const { isDark } = useTheme();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
   const { scrollYProgress } = useScroll({
@@ -92,7 +94,7 @@ const AboutSection = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
 
   return (
-    <section ref={sectionRef} className="relative py-20 bg-black overflow-hidden">
+    <section ref={sectionRef} className={`relative py-20 ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}>
       <div className="container mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
@@ -106,7 +108,7 @@ const AboutSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.2 }}
-              className="text-sm text-purple-400 tracking-[0.3em] uppercase font-light"
+              className={`text-xs tracking-[0.3em] uppercase font-light ${isDark ? "text-purple-400" : "text-purple-600"}`}
             >
               ABOUT US
             </motion.div>
@@ -115,7 +117,7 @@ const AboutSection = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-thin text-white leading-tight"
+              className={`text-3xl md:text-4xl lg:text-5xl font-thin ${isDark ? "text-white" : "text-gray-900"} leading-tight`}
             >
               Nurturing
               <br />
@@ -128,7 +130,7 @@ const AboutSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.5 }}
-              className="text-lg text-gray-300 leading-relaxed"
+              className={`text-sm font-light ${isDark ? "text-gray-300" : "text-gray-600"} leading-relaxed`}
             >
               Entrepreneurship Cell (E-Cell) is a non-profit organisation run by
               students of IPS Academy, Indore. We create awareness among the
@@ -140,7 +142,7 @@ const AboutSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.6 }}
-              className="text-lg text-gray-300 leading-relaxed"
+              className={`text-sm font-light ${isDark ? "text-gray-300" : "text-gray-600"} leading-relaxed`}
             >
               To create a thriving entrepreneurial ecosystem that nurtures
               innovation and empowers the next generation of business leaders.
@@ -160,11 +162,11 @@ const AboutSection = () => {
               ].map((item, index) => (
                 <motion.div
                   key={index}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 hover:bg-white/10 transition-all duration-300"
+                  className={`flex items-center gap-2 px-4 py-2 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-full border ${isDark ? "border-white/10" : "border-gray-200"} ${isDark ? "hover:bg-white/10" : "hover:bg-black/10"} transition-all duration-300`}
                   whileHover={{ scale: 1.05, y: -2 }}
                 >
-                  <item.icon className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm text-gray-300">{item.text}</span>
+                  <item.icon className={`w-4 h-4 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
+                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>{item.text}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -192,6 +194,7 @@ const AboutSection = () => {
 
 // Mission Section with 3D Elements
 const MissionSection = () => {
+  const { isDark } = useTheme();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
   const { scrollYProgress } = useScroll({
@@ -203,7 +206,7 @@ const MissionSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 bg-gradient-to-br from-gray-900 via-black to-purple-900/20 overflow-hidden"
+      className={`relative py-20 ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900/20" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} overflow-hidden`}
     >
       {/* 3D Background */}
       <div className="absolute inset-0 overflow-hidden">
@@ -228,7 +231,7 @@ const MissionSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ delay: 0.2 }}
-            className="text-sm text-blue-400 tracking-[0.3em] uppercase font-light mb-8"
+            className={`text-xs tracking-[0.3em] uppercase font-light mb-8 ${isDark ? "text-blue-400" : "text-blue-600"}`}
           >
             OUR MISSION
           </motion.div>
@@ -237,7 +240,7 @@ const MissionSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-thin text-white leading-tight mb-8"
+            className={`text-3xl md:text-4xl lg:text-5xl font-thin ${isDark ? "text-white" : "text-gray-900"} leading-tight mb-8`}
           >
             Igniting
             <br />
@@ -250,7 +253,7 @@ const MissionSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ delay: 0.5 }}
-            className="text-xl text-gray-300 leading-relaxed mb-12"
+            className={`text-lg md:text-xl font-light ${isDark ? "text-gray-300" : "text-gray-600"} leading-relaxed mb-12`}
           >
             Our mission at the Entrepreneurship Cell is to ignite creativity and
             foster an entrepreneurial spirit by providing exceptional mentorship,
@@ -288,12 +291,12 @@ const MissionSection = () => {
                 className="relative group"
                 whileHover={{ y: -8 }}
               >
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div className={`${isDark ? "bg-white/5" : "bg-black/5"} backdrop-blur-sm rounded-2xl p-8 border ${isDark ? "border-white/10" : "border-gray-200"} ${isDark ? "hover:bg-white/10" : "hover:bg-black/10"} transition-all duration-300`}>
                   <div className={`w-16 h-16 bg-gradient-to-r ${item.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-2">{item.number}</h3>
-                  <p className="text-gray-400">{item.text}</p>
+                  <h3 className={`text-3xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-2`}>{item.number}</h3>
+                  <p className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{item.text}</p>
                 </div>
               </motion.div>
             ))}
@@ -306,6 +309,7 @@ const MissionSection = () => {
 
 // Vision Section with Parallax
 const VisionSection = () => {
+  const { isDark } = useTheme();
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
   const { scrollYProgress } = useScroll({

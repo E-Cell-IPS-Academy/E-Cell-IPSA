@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import { useTheme } from "../../context/ThemeContext";
 
 const ECellStatsSection = () => {
+  const { isDark } = useTheme();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
@@ -110,7 +112,7 @@ const ECellStatsSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.3 }}
-              className="text-xs sm:text-sm text-gray-400 tracking-[0.3em] uppercase font-light"
+              className={`text-xs sm:text-sm ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.3em] uppercase font-light`}
             >
               WHO WE ARE
             </motion.div>
@@ -120,7 +122,7 @@ const ECellStatsSection = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-thin text-white leading-tight"
+              className={`text-3xl md:text-4xl lg:text-5xl font-thin ${isDark ? "text-white" : "text-gray-900"} leading-tight`}
               style={{
                 fontFamily: "system-ui, -apple-system, sans-serif",
               }}
@@ -137,7 +139,7 @@ const ECellStatsSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.6 }}
-              className="text-lg md:text-xl text-gray-300 leading-relaxed max-w-2xl"
+              className={`text-lg md:text-xl font-light ${isDark ? "text-gray-300" : "text-gray-600"} leading-relaxed max-w-2xl`}
             >
               We strive to provide cutting-edge entrepreneurial education and
               startup support for aspiring innovators seeking transformational
@@ -151,7 +153,7 @@ const ECellStatsSection = () => {
               transition={{ delay: 0.8 }}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 overflow-hidden shadow-2xl shadow-purple-500/25"
+              className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-full font-light text-sm transition-all duration-300 overflow-hidden shadow-2xl shadow-purple-500/25"
             >
               <span className="relative z-10">Join Our Community</span>
               <motion.div
@@ -183,12 +185,12 @@ const ECellStatsSection = () => {
               className="text-center group"
             >
               <motion.div
-                className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-thin text-white mb-4"
+                className={`text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-4`}
                 style={{ textShadow: "0 0 30px rgba(255,255,255,0.2)" }}
               >
                 {years}
               </motion.div>
-              <div className="text-xs md:text-sm text-gray-400 tracking-[0.2em] uppercase">
+              <div className={`text-xs md:text-sm ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}>
                 YEARS OF
                 <br />
                 EXCELLENCE
@@ -205,12 +207,12 @@ const ECellStatsSection = () => {
               className="text-center group"
             >
               <motion.div
-                className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-thin text-white mb-4"
+                className={`text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-4`}
                 style={{ textShadow: "0 0 30px rgba(255,255,255,0.2)" }}
               >
                 {startups}+
               </motion.div>
-              <div className="text-xs md:text-sm text-gray-400 tracking-[0.2em] uppercase">
+              <div className={`text-xs md:text-sm ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}>
                 STARTUPS
                 <br />
                 INCUBATED
@@ -227,12 +229,12 @@ const ECellStatsSection = () => {
               className="text-center group"
             >
               <motion.div
-                className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-thin text-white mb-4"
+                className={`text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-4`}
                 style={{ textShadow: "0 0 30px rgba(255,255,255,0.2)" }}
               >
                 ₹{funding}Cr
               </motion.div>
-              <div className="text-xs md:text-sm text-gray-400 tracking-[0.2em] uppercase">
+              <div className={`text-xs md:text-sm ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}>
                 FUNDING
                 <br />
                 FACILITATED
@@ -249,12 +251,12 @@ const ECellStatsSection = () => {
               className="text-center group"
             >
               <motion.div
-                className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-thin text-white mb-4"
+                className={`text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-4`}
                 style={{ textShadow: "0 0 30px rgba(255,255,255,0.2)" }}
               >
                 {events}+
               </motion.div>
-              <div className="text-xs md:text-sm text-gray-400 tracking-[0.2em] uppercase">
+              <div className={`text-xs md:text-sm ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}>
                 EVENTS &<br />
                 WORKSHOPS
               </div>

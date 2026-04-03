@@ -1,11 +1,9 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Star } from "lucide-react";
 import { db } from "../../firebase/config";
 import { doc, getDoc } from "firebase/firestore";
 import { useTheme } from "../../context/ThemeContext";
-
-const HeroBackground3D = lazy(() => import("../3d/HeroBackground3D"));
 
 interface HeroContent {
   title: string;
@@ -146,7 +144,9 @@ const HeroSection = () => {
   );
 
   return (
-    <section className={`relative min-h-screen ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}>
+    <section
+      className={`relative min-h-screen ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}
+    >
       {/* Background Video */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <video
@@ -165,11 +165,6 @@ const HeroSection = () => {
         </video>
       </div>
 
-      {/* Three.js 3D Background Overlay */}
-      <Suspense fallback={null}>
-        <HeroBackground3D className="absolute inset-0 z-[1] opacity-60 pointer-events-none" />
-      </Suspense>
-
       {/* Content Container */}
       <div className="relative z-10 flex items-center min-h-screen">
         <div className="container mx-auto px-6 lg:px-8">
@@ -179,9 +174,15 @@ const HeroSection = () => {
               {/* Loading shimmer - subtle, doesn't break layout */}
               {loading && (
                 <div className="space-y-4 animate-pulse">
-                  <div className={`h-10 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-lg w-3/4`} />
-                  <div className={`h-6 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-lg w-1/2`} />
-                  <div className={`h-4 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-lg w-2/3`} />
+                  <div
+                    className={`h-10 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-lg w-3/4`}
+                  />
+                  <div
+                    className={`h-6 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-lg w-1/2`}
+                  />
+                  <div
+                    className={`h-4 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-lg w-2/3`}
+                  />
                 </div>
               )}
 
@@ -241,7 +242,9 @@ const HeroSection = () => {
               {/* Main Glass Container */}
               <div className="relative w-80 h-96 mx-auto">
                 {/* Glassmorphism Card */}
-                <div className={`absolute inset-0 ${isDark ? "bg-white/5" : "bg-black/5"} backdrop-blur-xl rounded-3xl border ${isDark ? "border-white/10" : "border-gray-200"} overflow-hidden`}>
+                <div
+                  className={`absolute inset-0 ${isDark ? "bg-white/5" : "bg-black/5"} backdrop-blur-xl rounded-3xl border ${isDark ? "border-white/10" : "border-gray-200"} overflow-hidden`}
+                >
                   {/* Animated gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10" />
 
@@ -260,11 +263,15 @@ const HeroSection = () => {
                       <div className="space-y-3">
                         {/* Startup Success Rate */}
                         <div className="space-y-1">
-                          <div className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                          <div
+                            className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                          >
                             <span>Startup Success</span>
                             <span>85%</span>
                           </div>
-                          <div className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}>
+                          <div
+                            className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}
+                          >
                             <motion.div
                               className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
                               initial={{ width: 0 }}
@@ -280,11 +287,15 @@ const HeroSection = () => {
 
                         {/* Innovation Index */}
                         <div className="space-y-1">
-                          <div className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                          <div
+                            className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                          >
                             <span>Innovation Index</span>
                             <span>92%</span>
                           </div>
-                          <div className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}>
+                          <div
+                            className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}
+                          >
                             <motion.div
                               className="h-full bg-gradient-to-r from-purple-400 to-blue-500"
                               initial={{ width: 0 }}
@@ -300,11 +311,15 @@ const HeroSection = () => {
 
                         {/* Market Impact */}
                         <div className="space-y-1">
-                          <div className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                          <div
+                            className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                          >
                             <span>Market Impact</span>
                             <span>78%</span>
                           </div>
-                          <div className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}>
+                          <div
+                            className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}
+                          >
                             <motion.div
                               className="h-full bg-gradient-to-r from-orange-400 to-red-500"
                               initial={{ width: 0 }}
@@ -340,13 +355,15 @@ const HeroSection = () => {
                           >
                             {word}
                           </motion.div>
-                        )
+                        ),
                       )}
                     </div>
 
                     {/* Bottom section - Network effect */}
                     <div className="space-y-2">
-                      <div className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}>
+                      <div
+                        className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}
+                      >
                         Network Effect
                       </div>
                       <div className="flex items-center justify-between">
@@ -410,15 +427,23 @@ const HeroSection = () => {
                   </div>
 
                   {/* Corner accents */}
-                  <div className={`absolute top-4 left-4 w-6 h-6 border-l border-t ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
-                  <div className={`absolute top-4 right-4 w-6 h-6 border-r border-t ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
-                  <div className={`absolute bottom-4 left-4 w-6 h-6 border-l border-b ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
-                  <div className={`absolute bottom-4 right-4 w-6 h-6 border-r border-b ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
+                  <div
+                    className={`absolute top-4 left-4 w-6 h-6 border-l border-t ${isDark ? "border-white/30" : "border-gray-400/30"}`}
+                  />
+                  <div
+                    className={`absolute top-4 right-4 w-6 h-6 border-r border-t ${isDark ? "border-white/30" : "border-gray-400/30"}`}
+                  />
+                  <div
+                    className={`absolute bottom-4 left-4 w-6 h-6 border-l border-b ${isDark ? "border-white/30" : "border-gray-400/30"}`}
+                  />
+                  <div
+                    className={`absolute bottom-4 right-4 w-6 h-6 border-r border-b ${isDark ? "border-white/30" : "border-gray-400/30"}`}
+                  />
                 </div>
 
                 {/* Rotating innovation ring */}
                 <motion.div
-                  className="absolute -inset-6 rounded-full border border-white/5"
+                  className={`absolute -inset-6 rounded-full border ${isDark ? "border-white/5" : "border-gray-200/30"}`}
                   animate={{ rotate: 360 }}
                   transition={{
                     duration: 25,
@@ -430,7 +455,7 @@ const HeroSection = () => {
                   {[0, 60, 120, 180, 240, 300].map((angle, i) => (
                     <motion.div
                       key={i}
-                      className="absolute w-1 h-1 bg-white/30 rounded-full"
+                      className={`absolute w-1 h-1 ${isDark ? "bg-white/30" : "bg-gray-400/50"} rounded-full`}
                       style={{
                         top: "50%",
                         left: "50%",
@@ -475,7 +500,7 @@ const HeroSection = () => {
         {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-0.5 h-0.5 bg-white/10 rounded-full"
+            className={`absolute w-0.5 h-0.5 ${isDark ? "bg-white/10" : "bg-gray-400/20"} rounded-full`}
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,

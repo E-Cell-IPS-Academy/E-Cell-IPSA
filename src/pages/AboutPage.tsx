@@ -21,6 +21,7 @@ import {
 import { Link } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
+import { useTheme } from "../context/ThemeContext";
 
 // ---------- Floating Particles ----------
 const FloatingParticle: React.FC<{
@@ -112,13 +113,17 @@ const GlassCard: React.FC<{
   children: React.ReactNode;
   className?: string;
   hoverGlow?: boolean;
-}> = ({ children, className = "", hoverGlow = false }) => (
+  isDark?: boolean;
+}> = ({ children, className = "", hoverGlow = false, isDark = true }) => (
   <motion.div
-    className={`relative backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden ${className}`}
+    className={`relative backdrop-blur-md border ${isDark ? "border-white/10" : "border-gray-200"} rounded-2xl overflow-hidden ${className}`}
     style={{
-      background:
-        "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-      boxShadow: "0 8px 32px rgba(31, 38, 135, 0.25)",
+      background: isDark
+        ? "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))"
+        : "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))",
+      boxShadow: isDark
+        ? "0 8px 32px rgba(31, 38, 135, 0.25)"
+        : "0 8px 32px rgba(31, 38, 135, 0.08)",
     }}
     whileHover={
       hoverGlow
@@ -245,7 +250,7 @@ const defaultAboutContent = {
   whoWeAreTitle: "The Entrepreneurship Cell of ",
   whoWeAreTitleAccent: "IPS Academy",
   whoWeAreParagraphs: [
-    'E-Cell IPS Academy is a student-run, non-profit organization working in collaboration with <span class="text-purple-400 font-semibold">IIT Bombay E-Cell</span> to build and nurture the entrepreneurial ecosystem in and around Indore.',
+    'E-Cell IPS Academy is a student-run, non-profit organization working in collaboration with <span class="text-purple-400 font-light">IIT Bombay E-Cell</span> to build and nurture the entrepreneurial ecosystem in and around Indore.',
     "We are a passionate community of student leaders, innovators, and dreamers who believe that great startups can emerge from anywhere. Through workshops, mentorship, incubation, and large-scale events, we empower students to turn ideas into impactful ventures.",
     "From day one, our goal has been to bridge the gap between academic learning and real-world entrepreneurship, creating pathways for students to learn, build, and launch.",
   ],
@@ -263,6 +268,7 @@ const defaultAboutContent = {
 
 // ---------- Main Component ----------
 const AboutPage: React.FC = () => {
+  const { isDark } = useTheme();
   const [content, setContent] = useState(defaultAboutContent);
 
   useEffect(() => {
@@ -275,7 +281,6 @@ const AboutPage: React.FC = () => {
         }
       } catch (err) {
         console.error("Failed to fetch about content:", err);
-        // Defaults remain in place
       }
     };
     fetchContent();
@@ -290,7 +295,7 @@ const AboutPage: React.FC = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden">
+    <div className={`min-h-screen overflow-hidden ${isDark ? "bg-black" : "bg-white"}`}>
       {/* ===== HERO ===== */}
       <section
         ref={heroRef}
@@ -298,7 +303,7 @@ const AboutPage: React.FC = () => {
       >
         {/* Parallax background layers */}
         <motion.div className="absolute inset-0" style={{ y: heroY }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-950/40 via-black to-black" />
+          <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-b from-purple-950/40 via-black to-black" : "bg-gradient-to-b from-purple-100/40 via-white to-white"}`} />
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -349,21 +354,21 @@ const AboutPage: React.FC = () => {
             transition={{ duration: 1, ease: "easeOut" }}
           >
             <motion.p
-              className="text-purple-400 text-lg md:text-xl font-medium tracking-wider uppercase mb-6"
+              className="text-purple-400 text-sm md:text-base font-light tracking-wider uppercase mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
               {content.heroSubtitle}
             </motion.p>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-8">
-              <span className="text-white">{content.heroTitle}</span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-thin leading-tight mb-8">
+              <span className={isDark ? "text-white" : "text-gray-900"}>{content.heroTitle}</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-400 to-blue-400">
                 {content.heroTitleAccent}
               </span>
             </h1>
             <motion.p
-              className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"
+              className={`${isDark ? "text-gray-300" : "text-gray-600"} text-sm md:text-base max-w-2xl mx-auto font-light leading-relaxed`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
@@ -378,7 +383,7 @@ const AboutPage: React.FC = () => {
             animate={{ y: [0, 12, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+            <div className={`w-6 h-10 border-2 ${isDark ? "border-white/30" : "border-gray-300"} rounded-full flex justify-center`}>
               <motion.div
                 className="w-1.5 h-3 bg-purple-400 rounded-full mt-2"
                 animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
@@ -397,7 +402,7 @@ const AboutPage: React.FC = () => {
               {/* Text */}
               <div>
                 <motion.span
-                  className="inline-block text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4"
+                  className="inline-block text-purple-400 text-xs font-light tracking-widest uppercase mb-4"
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
@@ -405,13 +410,13 @@ const AboutPage: React.FC = () => {
                 >
                   Who We Are
                 </motion.span>
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+                <h2 className={`text-xl md:text-2xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-8 leading-tight`}>
                   {content.whoWeAreTitle}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                     {content.whoWeAreTitleAccent}
                   </span>
                 </h2>
-                <div className="space-y-5 text-gray-300 text-lg leading-relaxed">
+                <div className={`space-y-5 ${isDark ? "text-gray-300" : "text-gray-600"} text-sm font-light leading-relaxed`}>
                   {content.whoWeAreParagraphs.map((para, idx) => (
                     <p
                       key={idx}
@@ -435,7 +440,7 @@ const AboutPage: React.FC = () => {
                     alt="E-Cell IPS Academy team"
                     className="w-full h-[420px] object-cover rounded-2xl"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-black/60 via-transparent to-transparent" : "bg-gradient-to-t from-white/40 via-transparent to-transparent"}`} />
                 </div>
                 {/* Decorative border */}
                 <div className="absolute -inset-3 border-2 border-purple-500/20 rounded-3xl -z-10" />
@@ -456,27 +461,27 @@ const AboutPage: React.FC = () => {
 
       {/* ===== OUR MISSION ===== */}
       <section className="relative py-24 md:py-32 px-6">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/20 to-transparent pointer-events-none" />
+        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-b from-transparent via-purple-950/20 to-transparent" : "bg-gradient-to-b from-transparent via-purple-50/50 to-transparent"} pointer-events-none`} />
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <SectionReveal>
             <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-8"
+              className={`inline-flex items-center gap-2 px-4 py-2 ${isDark ? "bg-purple-500/10 border-purple-500/20" : "bg-purple-50 border-purple-200"} border rounded-full mb-8`}
               whileHover={{ scale: 1.05 }}
             >
               <Target className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-400 text-sm font-medium">
+              <span className="text-purple-400 text-xs font-light tracking-wider">
                 Our Mission
               </span>
             </motion.div>
 
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+            <h2 className={`text-xl md:text-2xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-8 leading-tight`}>
               {content.missionTitle}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                 {content.missionTitleAccent}
               </span>
             </h2>
-            <p className="text-gray-300 text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto mb-16">
+            <p className={`${isDark ? "text-gray-300" : "text-gray-600"} text-sm md:text-base font-light leading-relaxed max-w-3xl mx-auto mb-16`}>
               {content.missionText}
             </p>
           </SectionReveal>
@@ -490,10 +495,10 @@ const AboutPage: React.FC = () => {
                   whileHover={{ scale: 1.15, y: -5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${isDark ? "from-purple-500/20 to-blue-500/20 border-purple-500/30" : "from-purple-100 to-blue-100 border-purple-200"} border rounded-2xl flex items-center justify-center backdrop-blur-sm`}>
                     <item.icon className="w-7 h-7 text-purple-400" />
                   </div>
-                  <span className="text-gray-400 text-sm font-medium">
+                  <span className={`${isDark ? "text-gray-400" : "text-gray-500"} text-xs font-light tracking-wider`}>
                     {item.label}
                   </span>
                 </motion.div>
@@ -522,7 +527,7 @@ const AboutPage: React.FC = () => {
                     alt="E-Cell vision"
                     className="w-full h-[420px] object-cover rounded-2xl"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-black/60 via-transparent to-transparent" : "bg-gradient-to-t from-white/40 via-transparent to-transparent"}`} />
                 </div>
                 <div className="absolute -inset-3 border-2 border-blue-500/20 rounded-3xl -z-10" />
                 <motion.div
@@ -535,25 +540,25 @@ const AboutPage: React.FC = () => {
               {/* Text */}
               <div className="order-1 lg:order-2">
                 <motion.div
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6"
+                  className={`inline-flex items-center gap-2 px-4 py-2 ${isDark ? "bg-blue-500/10 border-blue-500/20" : "bg-blue-50 border-blue-200"} border rounded-full mb-6`}
                   whileHover={{ scale: 1.05 }}
                 >
                   <Eye className="w-4 h-4 text-blue-400" />
-                  <span className="text-blue-400 text-sm font-medium">
+                  <span className="text-blue-400 text-xs font-light tracking-wider">
                     Our Vision
                   </span>
                 </motion.div>
 
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+                <h2 className={`text-xl md:text-2xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-8 leading-tight`}>
                   {content.visionTitle}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
                     {content.visionTitleAccent}
                   </span>
                 </h2>
-                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                <p className={`${isDark ? "text-gray-300" : "text-gray-600"} text-sm font-light leading-relaxed mb-6`}>
                   {content.visionText}
                 </p>
-                <p className="text-gray-400 text-lg leading-relaxed">
+                <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light leading-relaxed`}>
                   {content.visionText2}
                 </p>
               </div>
@@ -564,21 +569,21 @@ const AboutPage: React.FC = () => {
 
       {/* ===== WHAT WE DO ===== */}
       <section className="relative py-24 md:py-32 px-6">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/15 to-transparent pointer-events-none" />
+        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-b from-transparent via-purple-950/15 to-transparent" : "bg-gradient-to-b from-transparent via-purple-50/30 to-transparent"} pointer-events-none`} />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <SectionReveal>
             <div className="text-center mb-16">
-              <span className="inline-block text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4">
+              <span className="inline-block text-purple-400 text-xs font-light tracking-widest uppercase mb-4">
                 What We Do
               </span>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              <h2 className={`text-xl md:text-2xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-6`}>
                 Empowering Through{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                   Action
                 </span>
               </h2>
-              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light max-w-2xl mx-auto`}>
                 From ideation to execution, we provide everything a student
                 entrepreneur needs to succeed.
               </p>
@@ -588,17 +593,17 @@ const AboutPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {whatWeDoCards.map((card, index) => (
               <SectionReveal key={card.title} delay={index * 0.1}>
-                <GlassCard className="p-8 h-full group" hoverGlow>
+                <GlassCard className="p-8 h-full group" hoverGlow isDark={isDark}>
                   <div
                     className={`w-14 h-14 bg-gradient-to-br ${card.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
                   >
                     <card.icon className="w-7 h-7 text-white" />
                   </div>
 
-                  <h3 className="text-xl font-bold text-white mb-3">
+                  <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"} mb-3`}>
                     {card.title}
                   </h3>
-                  <p className="text-gray-400 leading-relaxed">
+                  <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light leading-relaxed`}>
                     {card.description}
                   </p>
 
@@ -618,10 +623,10 @@ const AboutPage: React.FC = () => {
         <div className="max-w-5xl mx-auto">
           <SectionReveal>
             <div className="text-center mb-20">
-              <span className="inline-block text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4">
+              <span className="inline-block text-purple-400 text-xs font-light tracking-widest uppercase mb-4">
                 Our Journey
               </span>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              <h2 className={`text-xl md:text-2xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-6`}>
                 Milestones That{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                   Define Us
@@ -650,20 +655,20 @@ const AboutPage: React.FC = () => {
                         isLeft ? "md:pr-16 md:text-right" : "md:pl-16"
                       }`}
                     >
-                      <GlassCard className="p-6 group" hoverGlow>
+                      <GlassCard className="p-6 group" hoverGlow isDark={isDark}>
                         <div
                           className={`flex items-center gap-3 mb-3 ${
                             isLeft ? "md:justify-end" : ""
                           }`}
                         >
-                          <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                          <span className="text-lg font-light text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                             {milestone.year}
                           </span>
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-2">
+                        <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}>
                           {milestone.title}
                         </h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">
+                        <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-xs font-light leading-relaxed`}>
                           {milestone.description}
                         </p>
                       </GlassCard>
@@ -671,7 +676,7 @@ const AboutPage: React.FC = () => {
 
                     {/* Center dot */}
                     <motion.div
-                      className="absolute left-8 md:left-1/2 -translate-x-1/2 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center z-10 border-4 border-black"
+                      className={`absolute left-8 md:left-1/2 -translate-x-1/2 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center z-10 border-4 ${isDark ? "border-black" : "border-white"}`}
                       whileHover={{ scale: 1.3 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
@@ -690,7 +695,7 @@ const AboutPage: React.FC = () => {
 
       {/* ===== CTA ===== */}
       <section className="relative py-24 md:py-32 px-6">
-        <div className="absolute inset-0 bg-gradient-to-t from-purple-950/30 via-transparent to-transparent pointer-events-none" />
+        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-purple-950/30 via-transparent to-transparent" : "bg-gradient-to-t from-purple-50/50 via-transparent to-transparent"} pointer-events-none`} />
 
         <SectionReveal>
           <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -700,7 +705,7 @@ const AboutPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <GlassCard className="p-12 md:p-16">
+              <GlassCard className="p-12 md:p-16" isDark={isDark}>
                 {/* Decorative blobs */}
                 <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
                 <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl" />
@@ -713,13 +718,13 @@ const AboutPage: React.FC = () => {
                   <Users className="w-10 h-10 text-white" />
                 </motion.div>
 
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                <h2 className={`text-xl md:text-2xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-6`}>
                   Join Our{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                     Community
                   </span>
                 </h2>
-                <p className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+                <p className={`${isDark ? "text-gray-300" : "text-gray-600"} text-sm font-light max-w-2xl mx-auto mb-10 leading-relaxed`}>
                   Be part of a vibrant community of innovators, builders, and
                   dreamers. Whether you have an idea or just the passion to
                   learn, there's a place for you at E-Cell.
@@ -728,7 +733,7 @@ const AboutPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/contact">
                     <motion.button
-                      className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-semibold text-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-lg shadow-purple-500/25"
+                      className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-light text-sm hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-lg shadow-purple-500/25"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -738,7 +743,7 @@ const AboutPage: React.FC = () => {
                   </Link>
                   <Link to="/past-events">
                     <motion.button
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/20 text-white rounded-xl font-semibold text-lg hover:bg-white/10 transition-all duration-300"
+                      className={`inline-flex items-center gap-3 px-8 py-4 ${isDark ? "bg-white/5 border-white/20 text-white" : "bg-black/5 border-gray-200 text-gray-900"} border rounded-xl font-light text-sm hover:${isDark ? "bg-white/10" : "bg-black/10"} transition-all duration-300`}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >

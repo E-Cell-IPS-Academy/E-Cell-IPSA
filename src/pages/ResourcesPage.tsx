@@ -18,6 +18,7 @@ import {
   Filter,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
 // Firebase imports
 import { collection, getDocs } from "firebase/firestore";
@@ -182,13 +183,17 @@ const categoryDescriptions: Record<string, string> = {
 const GlassCard: React.FC<{
   children: React.ReactNode;
   className?: string;
-}> = ({ children, className = "" }) => (
+  isDark?: boolean;
+}> = ({ children, className = "", isDark = true }) => (
   <div
-    className={`backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl ${className}`}
+    className={`backdrop-blur-md border rounded-2xl ${isDark ? "bg-white/5 border-white/10" : "bg-white border-gray-200"} ${className}`}
     style={{
-      background:
-        "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
-      boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+      background: isDark
+        ? "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))"
+        : "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))",
+      boxShadow: isDark
+        ? "0 8px 32px 0 rgba(31, 38, 135, 0.37)"
+        : "0 8px 32px 0 rgba(0, 0, 0, 0.08)",
     }}
   >
     {children}
@@ -196,6 +201,7 @@ const GlassCard: React.FC<{
 );
 
 const ResourcesPage: React.FC = () => {
+  const { isDark } = useTheme();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -274,14 +280,14 @@ const ResourcesPage: React.FC = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className={`min-h-screen ${isDark ? "bg-black" : "bg-gray-50"}`}>
       {/* Hero Section */}
       <section
         ref={heroRef}
         className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
       >
         {/* Animated background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-950/50 to-black" />
+        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-black via-purple-950/50 to-black" : "bg-gradient-to-br from-white via-purple-50 to-white"}`} />
 
         {/* Floating particles */}
         {particles.map((p) => (
@@ -370,7 +376,7 @@ const ResourcesPage: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8"
+            className={`flex items-center justify-center gap-2 text-xs ${isDark ? "text-gray-400" : "text-gray-500"} mb-8`}
           >
             <Link to="/" className="hover:text-purple-400 transition-colors">
               Home
@@ -395,7 +401,7 @@ const ResourcesPage: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
+            className={`text-3xl md:text-4xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-6 tracking-tight`}
           >
             <span className="block">Resources</span>
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-400 to-blue-400">
@@ -407,7 +413,7 @@ const ResourcesPage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
+            className={`text-sm font-light ${isDark ? "text-gray-300" : "text-gray-600"} max-w-2xl mx-auto mb-10`}
           >
             Everything you need to kickstart your entrepreneurial journey.
             E-Books, templates, tools, and courses curated by E-Cell IPSA.
@@ -426,7 +432,7 @@ const ResourcesPage: React.FC = () => {
               placeholder="Search resources, templates, guides..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 backdrop-blur-md transition-all duration-300 text-lg"
+              className={`w-full pl-14 pr-6 py-4 ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-black/5 border-gray-200 text-gray-900"} border rounded-2xl placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 backdrop-blur-md transition-all duration-300 text-sm font-light`}
             />
           </motion.div>
         </div>
@@ -441,10 +447,10 @@ const ResourcesPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>
               Browse by Category
             </h2>
-            <p className="text-gray-400 max-w-lg mx-auto">
+            <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light max-w-lg mx-auto`}>
               Explore curated resources across different formats and topics
             </p>
           </motion.div>
@@ -461,7 +467,7 @@ const ResourcesPage: React.FC = () => {
               className={`relative group p-6 rounded-2xl border transition-all duration-300 ${
                 activeCategory === "All"
                   ? "border-purple-500/50 bg-purple-500/10"
-                  : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                  : isDark ? "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10" : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
               }`}
             >
               <div
@@ -469,8 +475,8 @@ const ResourcesPage: React.FC = () => {
               >
                 <Filter className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-white font-semibold text-sm mb-1">All</h3>
-              <p className="text-gray-500 text-xs">{resources.length} items</p>
+              <h3 className={`${isDark ? "text-white" : "text-gray-900"} font-light text-xs mb-1`}>All</h3>
+              <p className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs`}>{resources.length} items</p>
             </motion.button>
 
             {categories.map((cat, index) => (
@@ -485,7 +491,7 @@ const ResourcesPage: React.FC = () => {
                 className={`relative group p-6 rounded-2xl border transition-all duration-300 ${
                   activeCategory === cat.name
                     ? "border-purple-500/50 bg-purple-500/10"
-                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                    : isDark ? "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10" : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 {/* Hover glow */}
@@ -498,10 +504,10 @@ const ResourcesPage: React.FC = () => {
                 >
                   <span className="text-white">{cat.icon}</span>
                 </div>
-                <h3 className="text-white font-semibold text-sm mb-1">
+                <h3 className={`${isDark ? "text-white" : "text-gray-900"} font-light text-xs mb-1`}>
                   {cat.name}
                 </h3>
-                <p className="text-gray-500 text-xs">{cat.count} items</p>
+                <p className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs`}>{cat.count} items</p>
               </motion.button>
             ))}
           </div>
@@ -521,7 +527,7 @@ const ResourcesPage: React.FC = () => {
               <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
                 <Star className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"}`}>
                 Featured Resources
               </h2>
             </motion.div>
