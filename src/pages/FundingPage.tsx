@@ -43,7 +43,7 @@ const GlassCard: React.FC<{ children: React.ReactNode; className?: string }> = (
 );
 
 /* Animated Counter */
-const AnimatedCounter: React.FC<{ target: number; suffix?: string; prefix?: string; label: string; icon: React.ElementType }> = ({
+const AnimatedCounter: React.FC<{ target: number; suffix?: string; prefix?: string; label: string; icon: React.ComponentType<{ className?: string }> }> = ({
   target,
   suffix = "",
   prefix = "",

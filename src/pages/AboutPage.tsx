@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
   Rocket,
@@ -19,6 +19,8 @@ import {
   Award,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 
 // ---------- Floating Particles ----------
 const FloatingParticle: React.FC<{
@@ -233,8 +235,52 @@ const missionIcons = [
   { icon: Sparkles, label: "Creativity" },
 ];
 
+// ---------- Default CMS Content ----------
+const defaultAboutContent = {
+  heroSubtitle: "Discover Our Story",
+  heroTitle: "About ",
+  heroTitleAccent: "E-Cell",
+  heroDescription:
+    "Fuelling entrepreneurial ambition at IPS Academy, Indore. Building tomorrow's founders, today.",
+  whoWeAreTitle: "The Entrepreneurship Cell of ",
+  whoWeAreTitleAccent: "IPS Academy",
+  whoWeAreParagraphs: [
+    'E-Cell IPS Academy is a student-run, non-profit organization working in collaboration with <span class="text-purple-400 font-semibold">IIT Bombay E-Cell</span> to build and nurture the entrepreneurial ecosystem in and around Indore.',
+    "We are a passionate community of student leaders, innovators, and dreamers who believe that great startups can emerge from anywhere. Through workshops, mentorship, incubation, and large-scale events, we empower students to turn ideas into impactful ventures.",
+    "From day one, our goal has been to bridge the gap between academic learning and real-world entrepreneurship, creating pathways for students to learn, build, and launch.",
+  ],
+  missionTitle: "Igniting the ",
+  missionTitleAccent: "Entrepreneurial Spirit",
+  missionText:
+    "To foster innovation and entrepreneurial spirit among students through workshops, mentorship, and hands-on experiences that transform ideas into reality.",
+  visionTitle: "Building the ",
+  visionTitleAccent: "Future",
+  visionText:
+    "To create a thriving entrepreneurial ecosystem that nurtures innovation and empowers the next generation of business leaders.",
+  visionText2:
+    "We envision a world where every student with a bold idea has access to the mentorship, resources, and community they need to build something extraordinary. Our goal is to make IPS Academy a launchpad for India's most impactful startups.",
+};
+
 // ---------- Main Component ----------
 const AboutPage: React.FC = () => {
+  const [content, setContent] = useState(defaultAboutContent);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const snap = await getDoc(doc(db, "siteContent", "about"));
+        if (snap.exists()) {
+          const data = snap.data();
+          setContent((prev) => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch about content:", err);
+        // Defaults remain in place
+      }
+    };
+    fetchContent();
+  }, []);
+
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -308,12 +354,12 @@ const AboutPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Discover Our Story
+              {content.heroSubtitle}
             </motion.p>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-8">
-              <span className="text-white">About </span>
+              <span className="text-white">{content.heroTitle}</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-400 to-blue-400">
-                E-Cell
+                {content.heroTitleAccent}
               </span>
             </h1>
             <motion.p
@@ -322,8 +368,7 @@ const AboutPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              Fuelling entrepreneurial ambition at IPS Academy, Indore. Building
-              tomorrow's founders, today.
+              {content.heroDescription}
             </motion.p>
           </motion.div>
 
@@ -361,33 +406,18 @@ const AboutPage: React.FC = () => {
                   Who We Are
                 </motion.span>
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
-                  The Entrepreneurship Cell of{" "}
+                  {content.whoWeAreTitle}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-                    IPS Academy
+                    {content.whoWeAreTitleAccent}
                   </span>
                 </h2>
                 <div className="space-y-5 text-gray-300 text-lg leading-relaxed">
-                  <p>
-                    E-Cell IPS Academy is a student-run, non-profit organization
-                    working in collaboration with{" "}
-                    <span className="text-purple-400 font-semibold">
-                      IIT Bombay E-Cell
-                    </span>{" "}
-                    to build and nurture the entrepreneurial ecosystem in and
-                    around Indore.
-                  </p>
-                  <p>
-                    We are a passionate community of student leaders, innovators,
-                    and dreamers who believe that great startups can emerge from
-                    anywhere. Through workshops, mentorship, incubation, and
-                    large-scale events, we empower students to turn ideas into
-                    impactful ventures.
-                  </p>
-                  <p>
-                    From day one, our goal has been to bridge the gap between
-                    academic learning and real-world entrepreneurship, creating
-                    pathways for students to learn, build, and launch.
-                  </p>
+                  {content.whoWeAreParagraphs.map((para, idx) => (
+                    <p
+                      key={idx}
+                      dangerouslySetInnerHTML={{ __html: para }}
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -441,15 +471,13 @@ const AboutPage: React.FC = () => {
             </motion.div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
-              Igniting the{" "}
+              {content.missionTitle}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-                Entrepreneurial Spirit
+                {content.missionTitleAccent}
               </span>
             </h2>
             <p className="text-gray-300 text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto mb-16">
-              To foster innovation and entrepreneurial spirit among students
-              through workshops, mentorship, and hands-on experiences that
-              transform ideas into reality.
+              {content.missionText}
             </p>
           </SectionReveal>
 
@@ -517,21 +545,16 @@ const AboutPage: React.FC = () => {
                 </motion.div>
 
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
-                  Building the{" "}
+                  {content.visionTitle}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                    Future
+                    {content.visionTitleAccent}
                   </span>
                 </h2>
                 <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                  To create a thriving entrepreneurial ecosystem that nurtures
-                  innovation and empowers the next generation of business
-                  leaders.
+                  {content.visionText}
                 </p>
                 <p className="text-gray-400 text-lg leading-relaxed">
-                  We envision a world where every student with a bold idea has
-                  access to the mentorship, resources, and community they need
-                  to build something extraordinary. Our goal is to make IPS
-                  Academy a launchpad for India's most impactful startups.
+                  {content.visionText2}
                 </p>
               </div>
             </div>

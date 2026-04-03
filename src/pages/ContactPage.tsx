@@ -21,6 +21,8 @@ import {
   collection,
   addDoc,
   serverTimestamp,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../firebase/config"; // Adjust path as needed
 
@@ -117,8 +119,8 @@ const ContactPage: React.FC = () => {
     message: string;
   } | null>(null);
 
-  // Contact information - updated with correct coordinates from the embed
-  const contactInfo: ContactInfo = {
+  // Default contact info - used as fallback if Firestore data is unavailable
+  const defaultContactInfo: ContactInfo = {
     address: "IPS Academy Campus, Knowledge Village",
     city: "Indore",
     state: "Madhya Pradesh",
@@ -143,13 +145,50 @@ const ContactPage: React.FC = () => {
       facebook: "https://facebook.com/ecell.ips.academy",
     },
     coordinates: {
-      lat: 22.655899779432467, // Updated from your embed
-      lng: 75.82072097535772, // Updated from your embed
+      lat: 22.655899779432467,
+      lng: 75.82072097535772,
     },
   };
 
+  const [contactInfo, setContactInfo] = useState<ContactInfo>(defaultContactInfo);
+  const [mapEmbedUrl, setMapEmbedUrl] = useState<string>(
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3681.943374193864!2d75.82072097535772!3d22.655899779432467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3962fd9732905ba3%3A0xb086d4368f83ed6e!2sIPS%20Academy%20Gate%20No.%2002!5e0!3m2!1sen!2sin!4v1752119183392!5m2!1sen!2sin"
+  );
+
   useEffect(() => {
-    // Map is embedded directly, no loading needed
+    const fetchContactContent = async () => {
+      try {
+        const snap = await getDoc(doc(db, "siteContent", "contact"));
+        if (snap.exists()) {
+          const data = snap.data();
+          setContactInfo((prev) => ({
+            ...prev,
+            ...(data.address && { address: data.address }),
+            ...(data.city && { city: data.city }),
+            ...(data.state && { state: data.state }),
+            ...(data.postalCode && { postalCode: data.postalCode }),
+            ...(data.country && { country: data.country }),
+            ...(data.phone && { phone: data.phone }),
+            ...(data.email && { email: data.email }),
+            ...(data.website && { website: data.website }),
+            ...(data.hours && { hours: { ...prev.hours, ...data.hours } }),
+            ...(data.socialLinks && {
+              socialLinks: { ...prev.socialLinks, ...data.socialLinks },
+            }),
+            ...(data.coordinates && {
+              coordinates: { ...prev.coordinates, ...data.coordinates },
+            }),
+          }));
+          if (data.mapEmbedUrl) {
+            setMapEmbedUrl(data.mapEmbedUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch contact content:", err);
+        // Defaults remain in place
+      }
+    };
+    fetchContactContent();
   }, []);
 
   const handleInputChange = (
@@ -622,7 +661,7 @@ const ContactPage: React.FC = () => {
             <div className="relative h-96 rounded-xl overflow-hidden">
               {/* Google Maps Embed */}
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3681.943374193864!2d75.82072097535772!3d22.655899779432467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3962fd9732905ba3%3A0xb086d4368f83ed6e!2sIPS%20Academy%20Gate%20No.%2002!5e0!3m2!1sen!2sin!4v1752119183392!5m2!1sen!2sin"
+                src={mapEmbedUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0, borderRadius: "12px" }}

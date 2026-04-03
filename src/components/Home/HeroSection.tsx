@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Star } from "lucide-react";
 import { db } from "../../firebase/config";
 import { doc, getDoc } from "firebase/firestore";
+import { useTheme } from "../../context/ThemeContext";
+
+const HeroBackground3D = lazy(() => import("../3d/HeroBackground3D"));
 
 interface HeroContent {
   title: string;
@@ -21,6 +24,7 @@ const DEFAULT_CONTENT: HeroContent = {
 };
 
 const HeroSection = () => {
+  const { isDark } = useTheme();
   const [content, setContent] = useState<HeroContent>(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
 
@@ -115,7 +119,7 @@ const HeroSection = () => {
       href={content.ctaLink}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative inline-flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 overflow-hidden"
+      className={`group relative inline-flex items-center gap-3 ${isDark ? "bg-white text-black" : "bg-gray-900 text-white"} px-6 py-3 rounded-full font-light text-sm transition-all duration-300 overflow-hidden`}
       variants={buttonVariants}
       initial="hidden"
       animate="visible"
@@ -128,7 +132,7 @@ const HeroSection = () => {
     </motion.a>
   ) : (
     <motion.button
-      className="group relative inline-flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 overflow-hidden"
+      className={`group relative inline-flex items-center gap-3 ${isDark ? "bg-white text-black" : "bg-gray-900 text-white"} px-6 py-3 rounded-full font-light text-sm transition-all duration-300 overflow-hidden`}
       variants={buttonVariants}
       initial="hidden"
       animate="visible"
@@ -142,7 +146,7 @@ const HeroSection = () => {
   );
 
   return (
-    <section className="relative min-h-screen bg-black overflow-hidden">
+    <section className={`relative min-h-screen ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}>
       {/* Background Video */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <video
@@ -161,6 +165,11 @@ const HeroSection = () => {
         </video>
       </div>
 
+      {/* Three.js 3D Background Overlay */}
+      <Suspense fallback={null}>
+        <HeroBackground3D className="absolute inset-0 z-[1] opacity-60 pointer-events-none" />
+      </Suspense>
+
       {/* Content Container */}
       <div className="relative z-10 flex items-center min-h-screen">
         <div className="container mx-auto px-6 lg:px-8">
@@ -170,15 +179,15 @@ const HeroSection = () => {
               {/* Loading shimmer - subtle, doesn't break layout */}
               {loading && (
                 <div className="space-y-4 animate-pulse">
-                  <div className="h-10 bg-white/10 rounded-lg w-3/4" />
-                  <div className="h-6 bg-white/5 rounded-lg w-1/2" />
-                  <div className="h-4 bg-white/5 rounded-lg w-2/3" />
+                  <div className={`h-10 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-lg w-3/4`} />
+                  <div className={`h-6 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-lg w-1/2`} />
+                  <div className={`h-4 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-lg w-2/3`} />
                 </div>
               )}
 
               {/* Main Heading */}
               <motion.h1
-                className={`text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4 ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
+                className={`text-3xl md:text-4xl lg:text-5xl font-thin ${isDark ? "text-white" : "text-gray-900"} leading-tight mb-4 ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
                 initial="hidden"
                 animate="visible"
               >
@@ -200,7 +209,7 @@ const HeroSection = () => {
 
               {/* Subtitle */}
               <motion.h2
-                className={`text-lg md:text-xl font-medium text-purple-300 mb-3 ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
+                className={`text-lg md:text-xl font-light ${isDark ? "text-purple-300" : "text-purple-600"} mb-3 ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
                 variants={fadeIn}
                 initial="hidden"
                 animate="visible"
@@ -210,7 +219,7 @@ const HeroSection = () => {
 
               {/* Description */}
               <motion.p
-                className={`text-sm md:text-base text-gray-400 mb-8 max-w-lg leading-relaxed ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
+                className={`text-sm md:text-base font-light ${isDark ? "text-gray-400" : "text-gray-500"} mb-8 max-w-lg leading-relaxed ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
                 variants={fadeIn}
                 initial="hidden"
                 animate="visible"
@@ -232,7 +241,7 @@ const HeroSection = () => {
               {/* Main Glass Container */}
               <div className="relative w-80 h-96 mx-auto">
                 {/* Glassmorphism Card */}
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden">
+                <div className={`absolute inset-0 ${isDark ? "bg-white/5" : "bg-black/5"} backdrop-blur-xl rounded-3xl border ${isDark ? "border-white/10" : "border-gray-200"} overflow-hidden`}>
                   {/* Animated gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10" />
 
@@ -241,7 +250,7 @@ const HeroSection = () => {
                     {/* Top section - Innovation metrics */}
                     <div className="space-y-4">
                       <motion.div
-                        className="text-xs text-gray-400 tracking-[0.2em] uppercase"
+                        className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}
                         animate={{ opacity: [0.5, 1, 0.5] }}
                         transition={{ duration: 3, repeat: Infinity }}
                       >
@@ -251,11 +260,11 @@ const HeroSection = () => {
                       <div className="space-y-3">
                         {/* Startup Success Rate */}
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs text-gray-300">
+                          <div className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                             <span>Startup Success</span>
                             <span>85%</span>
                           </div>
-                          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                          <div className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}>
                             <motion.div
                               className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
                               initial={{ width: 0 }}
@@ -271,11 +280,11 @@ const HeroSection = () => {
 
                         {/* Innovation Index */}
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs text-gray-300">
+                          <div className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                             <span>Innovation Index</span>
                             <span>92%</span>
                           </div>
-                          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                          <div className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}>
                             <motion.div
                               className="h-full bg-gradient-to-r from-purple-400 to-blue-500"
                               initial={{ width: 0 }}
@@ -291,11 +300,11 @@ const HeroSection = () => {
 
                         {/* Market Impact */}
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs text-gray-300">
+                          <div className={`flex justify-between text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                             <span>Market Impact</span>
                             <span>78%</span>
                           </div>
-                          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                          <div className={`h-1 ${isDark ? "bg-white/10" : "bg-black/5"} rounded-full overflow-hidden`}>
                             <motion.div
                               className="h-full bg-gradient-to-r from-orange-400 to-red-500"
                               initial={{ width: 0 }}
@@ -317,7 +326,7 @@ const HeroSection = () => {
                         (word, i) => (
                           <motion.div
                             key={word}
-                            className="text-sm font-light text-white/70 tracking-[0.15em]"
+                            className={`text-sm font-light ${isDark ? "text-white/70" : "text-gray-600"} tracking-[0.15em]`}
                             animate={{
                               opacity: [0.3, 1, 0.3],
                               x: [0, 5, 0],
@@ -337,14 +346,14 @@ const HeroSection = () => {
 
                     {/* Bottom section - Network effect */}
                     <div className="space-y-2">
-                      <div className="text-xs text-gray-400 tracking-[0.2em] uppercase">
+                      <div className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"} tracking-[0.2em] uppercase`}>
                         Network Effect
                       </div>
                       <div className="flex items-center justify-between">
                         {[...Array(5)].map((_, i) => (
                           <motion.div
                             key={i}
-                            className="w-2 h-2 bg-white/20 rounded-full"
+                            className={`w-2 h-2 ${isDark ? "bg-white/20" : "bg-gray-400/40"} rounded-full`}
                             animate={{
                               scale: [1, 1.5, 1],
                               opacity: [0.2, 1, 0.2],
@@ -362,7 +371,7 @@ const HeroSection = () => {
                         {[...Array(3)].map((_, i) => (
                           <motion.div
                             key={i}
-                            className="w-1 h-1 bg-white/30 rounded-full"
+                            className={`w-1 h-1 ${isDark ? "bg-white/30" : "bg-gray-400/50"} rounded-full`}
                             animate={{
                               y: [0, -8, 0],
                               opacity: [0.3, 1, 0.3],
@@ -385,7 +394,7 @@ const HeroSection = () => {
                       {[...Array(96)].map((_, i) => (
                         <motion.div
                           key={i}
-                          className="border-r border-b border-white/5"
+                          className={`border-r border-b ${isDark ? "border-white/5" : "border-gray-200/30"}`}
                           animate={{
                             opacity: [0, 0.3, 0],
                           }}
@@ -401,10 +410,10 @@ const HeroSection = () => {
                   </div>
 
                   {/* Corner accents */}
-                  <div className="absolute top-4 left-4 w-6 h-6 border-l border-t border-white/30" />
-                  <div className="absolute top-4 right-4 w-6 h-6 border-r border-t border-white/30" />
-                  <div className="absolute bottom-4 left-4 w-6 h-6 border-l border-b border-white/30" />
-                  <div className="absolute bottom-4 right-4 w-6 h-6 border-r border-b border-white/30" />
+                  <div className={`absolute top-4 left-4 w-6 h-6 border-l border-t ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
+                  <div className={`absolute top-4 right-4 w-6 h-6 border-r border-t ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
+                  <div className={`absolute bottom-4 left-4 w-6 h-6 border-l border-b ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
+                  <div className={`absolute bottom-4 right-4 w-6 h-6 border-r border-b ${isDark ? "border-white/30" : "border-gray-400/30"}`} />
                 </div>
 
                 {/* Rotating innovation ring */}

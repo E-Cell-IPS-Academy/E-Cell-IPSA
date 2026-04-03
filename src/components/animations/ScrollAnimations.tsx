@@ -386,3 +386,132 @@ export const MagneticHover = ({
     </motion.div>
   );
 };
+
+// ─────────────────────────────────────────────
+// 7. ScrollReveal
+// ─────────────────────────────────────────────
+
+type RevealDirection = "up" | "down" | "left" | "right";
+
+interface ScrollRevealProps {
+  children: ReactNode;
+  direction?: RevealDirection;
+  delay?: number;
+  className?: string;
+}
+
+const revealOffsets: Record<RevealDirection, { x: number; y: number }> = {
+  up: { x: 0, y: 80 },
+  down: { x: 0, y: -80 },
+  left: { x: 80, y: 0 },
+  right: { x: -80, y: 0 },
+};
+
+export const ScrollReveal = ({
+  children,
+  direction = "up",
+  delay = 0,
+  className = "",
+}: ScrollRevealProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.15 });
+  const offset = revealOffsets[direction];
+
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, x: offset.x, y: offset.y, scale: 0.95 }}
+      animate={
+        isInView
+          ? { opacity: 1, x: 0, y: 0, scale: 1 }
+          : { opacity: 0, x: offset.x, y: offset.y, scale: 0.95 }
+      }
+      transition={{
+        duration: 0.8,
+        delay,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// 8. CardStack (generic reusable version)
+// ─────────────────────────────────────────────
+
+interface CardStackProps {
+  children: ReactNode;
+  className?: string;
+}
+
+const CardStackItem = ({
+  child,
+  index,
+  totalCards,
+  scrollYProgress,
+}: {
+  child: ReactNode;
+  index: number;
+  totalCards: number;
+  scrollYProgress: MotionValue<number>;
+}) => {
+  const cardStart = index / totalCards;
+  const cardEnd = (index + 1) / totalCards;
+
+  const scale = useTransform(scrollYProgress, [cardStart, cardEnd], [1, 0.9]);
+  const opacity = useTransform(
+    scrollYProgress,
+    [cardStart, cardEnd],
+    [1, 0.5]
+  );
+  const blurVal = useTransform(scrollYProgress, [cardStart, cardEnd], [0, 4]);
+  const filterStr = useTransform(blurVal, (v) => `blur(${v}px)`);
+
+  return (
+    <motion.div
+      className="sticky top-24 w-full"
+      style={{
+        scale,
+        opacity,
+        filter: filterStr,
+        zIndex: index,
+        marginTop: index === 0 ? 0 : "-1.5rem",
+      }}
+    >
+      <div style={{ transform: `translateY(${index * 16}px)` }}>{child}</div>
+    </motion.div>
+  );
+};
+
+export const CardStack = ({ children, className = "" }: CardStackProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const childArray = Children.toArray(children);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative ${className}`}
+      style={{ minHeight: `${(childArray.length + 1) * 40}vh` }}
+    >
+      <div className="sticky top-0 pt-24 pb-12 space-y-0">
+        {childArray.map((child, index) => (
+          <CardStackItem
+            key={index}
+            child={child}
+            index={index}
+            totalCards={childArray.length}
+            scrollYProgress={scrollYProgress}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};

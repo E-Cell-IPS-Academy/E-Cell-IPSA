@@ -148,12 +148,7 @@ const ConductPage: React.FC = () => {
       {/* Core Values */}
       <section className="relative z-10 py-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <motion.h2
-            className="text-3xl md:text-4xl font-black text-center text-white mb-4"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <motion.h2 className="text-3xl md:text-4xl font-black text-center text-white mb-4" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             Our Core{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Values</span>
           </motion.h2>
@@ -259,12 +254,7 @@ const ConductPage: React.FC = () => {
       {/* Reporting Process */}
       <section className="relative z-10 py-16 px-6 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
         <div className="max-w-5xl mx-auto">
-          <motion.h2
-            className="text-3xl md:text-4xl font-black text-center text-white mb-4"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <motion.h2 className="text-3xl md:text-4xl font-black text-center text-white mb-4" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             Reporting{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Process</span>
           </motion.h2>

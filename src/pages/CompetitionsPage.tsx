@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Trophy,
@@ -151,8 +151,8 @@ const CompetitionsPage: React.FC = () => {
     { team: "MedConnect", competition: "HackNova 2024", prize: "2nd Place", members: "Pooja, Karthik, Nisha", year: "2024" },
   ];
 
-  const getCategoryIcon = (cat: string) => {
-    const map: Record<string, React.ElementType> = { pitch: Target, hackathon: Code, bizplan: FileText, casestudy: BookOpen };
+  const getCategoryIcon = (cat: string): React.ComponentType<{ className?: string }> => {
+    const map: Record<string, React.ComponentType<{ className?: string }>> = { pitch: Target, hackathon: Code, bizplan: FileText, casestudy: BookOpen };
     return map[cat] || Trophy;
   };
 
@@ -359,7 +359,7 @@ const CompetitionsPage: React.FC = () => {
 /* Competition Card with Countdown */
 const CompetitionCard: React.FC<{
   competition: { title: string; deadline: string; prize: string; teamSize: string; category: string; description: string; status: string };
-  catIcon: React.ElementType;
+  catIcon: React.ComponentType<{ className?: string }>;
   catColor: string;
 }> = ({ competition: c, catIcon: CatIcon, catColor }) => {
   const { days, hours, mins, secs } = useCountdown(c.deadline);
