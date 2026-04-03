@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
 // Firebase imports
 import { collection, getDocs } from "firebase/firestore";

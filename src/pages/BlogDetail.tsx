@@ -18,6 +18,7 @@ import {
   Loader,
   AlertCircle,
 } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 
 // Firebase imports
 import {
@@ -183,6 +184,7 @@ const getBlogSlugFromURL = (): string => {
 };
 
 const BlogDetail: React.FC = () => {
+  const { isDark } = useTheme();
   const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -360,7 +362,7 @@ const BlogDetail: React.FC = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center">
+      <div className={`min-h-screen ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} flex items-center justify-center`}>
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
@@ -369,7 +371,7 @@ const BlogDetail: React.FC = () => {
           >
             <Loader className="w-8 h-8 text-purple-500 mx-auto" />
           </motion.div>
-          <p className="text-gray-400">Loading blog post...</p>
+          <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>Loading blog post...</p>
         </div>
       </div>
     );
@@ -378,18 +380,18 @@ const BlogDetail: React.FC = () => {
   // Error state
   if (error || !blogPost) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center">
+      <div className={`min-h-screen ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} flex items-center justify-center`}>
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-4">
+          <h1 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>
             {error || "Post Not Found"}
           </h1>
-          <p className="text-gray-400 mb-6">
+          <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light mb-6`}>
             The blog post you're looking for doesn't exist or has been removed.
           </p>
           <a
             href="/blog"
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-light text-sm hover:from-purple-600 hover:to-blue-600 transition-colors"
           >
             Back to Blog
           </a>
@@ -399,7 +401,7 @@ const BlogDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 pt-24 pb-12">
+    <div className={`min-h-screen ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} pt-24 pb-12`}>
       <div className="container mx-auto px-6 lg:px-8 max-w-4xl">
         {/* Back Button */}
         <motion.div
@@ -409,7 +411,7 @@ const BlogDetail: React.FC = () => {
         >
           <a
             href="/blog"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200"
+            className={`inline-flex items-center gap-2 ${isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} transition-colors duration-200 text-sm font-light`}
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Blog
@@ -424,43 +426,43 @@ const BlogDetail: React.FC = () => {
         >
           {/* Category Badge */}
           <div className="mb-4">
-            <span className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium">
+            <span className={`px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border ${isDark ? "border-purple-500/30 text-purple-300" : "border-purple-300/50 text-purple-600"} rounded-full text-sm font-light`}>
               {blogPost.category}
             </span>
             {blogPost.isFeature && (
-              <span className="ml-3 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full text-yellow-300 text-sm font-medium">
+              <span className={`ml-3 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border ${isDark ? "border-yellow-500/30 text-yellow-300" : "border-yellow-400/50 text-yellow-600"} rounded-full text-sm font-light`}>
                 Featured
               </span>
             )}
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
+          <h1 className={`text-2xl md:text-3xl lg:text-4xl font-light ${isDark ? "text-white" : "text-gray-900"} leading-tight mb-6`}>
             {blogPost.title}
           </h1>
 
           {/* Meta Information */}
-          <div className="flex flex-wrap items-center gap-6 text-gray-400 mb-6">
+          <div className={`flex flex-wrap items-center gap-6 ${isDark ? "text-gray-400" : "text-gray-500"} mb-6`}>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              <span className="text-sm">
+              <span className="text-sm font-light">
                 {formatDate(blogPost.publishedDate, blogPost.createdAt)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              <span className="text-sm">{blogPost.readTime || 5} min read</span>
+              <span className="text-sm font-light">{blogPost.readTime || 5} min read</span>
             </div>
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4" />
-              <span className="text-sm">
+              <span className="text-sm font-light">
                 {blogPost.viewCount.toLocaleString()} views
               </span>
             </div>
           </div>
 
           {/* Author Info */}
-          <div className="flex items-center justify-between border-t border-b border-white/10 py-6">
+          <div className={`flex items-center justify-between border-t border-b ${isDark ? "border-white/10" : "border-gray-200"} py-6`}>
             <div className="flex items-center gap-4">
               {blogPost.author.avatar ? (
                 <img
@@ -474,10 +476,10 @@ const BlogDetail: React.FC = () => {
                 </div>
               )}
               <div>
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"}`}>
                   {blogPost.author.name}
                 </h3>
-                <p className="text-gray-400 text-sm">
+                <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>
                   {blogPost.author.bio || "Contributing Author"}
                 </p>
               </div>
@@ -490,11 +492,11 @@ const BlogDetail: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
                   isLiked
                     ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                    : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20"
+                    : isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"
                 }`}
               >
                 <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
-                <span className="text-sm">
+                <span className="text-sm font-light">
                   {Math.floor(blogPost.viewCount * 0.1) + (isLiked ? 1 : 0)}
                 </span>
               </button>
@@ -504,7 +506,7 @@ const BlogDetail: React.FC = () => {
                 className={`p-2 rounded-full transition-all duration-300 ${
                   isBookmarked
                     ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                    : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20"
+                    : isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"
                 }`}
                 title={isBookmarked ? "Remove bookmark" : "Bookmark this post"}
               >
@@ -515,7 +517,7 @@ const BlogDetail: React.FC = () => {
 
               <button
                 onClick={() => setShowShareModal(true)}
-                className="p-2 bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20 rounded-full transition-all duration-300"
+                className={`p-2 ${isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"} rounded-full transition-all duration-300`}
                 title="Share this post"
               >
                 <Share2 className="w-4 h-4" />
@@ -552,10 +554,10 @@ const BlogDetail: React.FC = () => {
           className="mb-12"
         >
           <div
-            className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed"
+            className={`prose ${isDark ? "prose-invert" : "prose-gray"} prose-base max-w-none ${isDark ? "text-gray-300" : "text-gray-700"} leading-relaxed font-light`}
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
             style={{
-              fontSize: "1.125rem",
+              fontSize: "1.05rem",
               lineHeight: "1.75",
             }}
           />
@@ -569,12 +571,12 @@ const BlogDetail: React.FC = () => {
             transition={{ delay: 0.7 }}
             className="mb-12"
           >
-            <h3 className="text-lg font-semibold text-white mb-4">Tags</h3>
+            <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>Tags</h3>
             <div className="flex flex-wrap gap-3">
               {blogPost.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-4 py-2 bg-white/10 hover:bg-purple-500/20 hover:text-purple-300 border border-white/20 text-gray-300 rounded-full text-sm cursor-pointer transition-colors duration-300"
+                  className={`px-4 py-2 ${isDark ? "bg-white/10 border-white/20 text-gray-300" : "bg-purple-50 border-gray-200 text-gray-600"} hover:bg-purple-500/20 hover:text-purple-400 border rounded-full text-sm font-light cursor-pointer transition-colors duration-300`}
                   onClick={() => {
                     // Navigate to blog listing with tag filter
                     window.location.href = `/blog?tag=${encodeURIComponent(
@@ -594,28 +596,28 @@ const BlogDetail: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="flex items-center justify-center gap-6 py-8 border-t border-b border-white/10 mb-12"
+          className={`flex items-center justify-center gap-6 py-8 border-t border-b ${isDark ? "border-white/10" : "border-gray-200"} mb-12`}
         >
           <button
             onClick={handleLike}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-300 ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-300 text-sm font-light ${
               isLiked
                 ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20"
+                : isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"
             }`}
           >
             <ThumbsUp className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
             {isLiked ? "Liked!" : "Like this post"}
           </button>
 
-          <button className="flex items-center gap-2 px-6 py-3 bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20 rounded-full transition-all duration-300">
+          <button className={`flex items-center gap-2 px-6 py-3 ${isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"} rounded-full transition-all duration-300 text-sm font-light`}>
             <MessageCircle className="w-5 h-5" />
             Comment
           </button>
 
           <button
             onClick={() => setShowShareModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20 rounded-full transition-all duration-300"
+            className={`flex items-center gap-2 px-6 py-3 ${isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"} rounded-full transition-all duration-300 text-sm font-light`}
           >
             <Share2 className="w-5 h-5" />
             Share
@@ -629,7 +631,7 @@ const BlogDetail: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.0 }}
           >
-            <h2 className="text-2xl font-bold text-white mb-8">
+            <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-8`}>
               Related Posts
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -639,7 +641,7 @@ const BlogDetail: React.FC = () => {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.1 + index * 0.1 }}
-                  className="group bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                  className={`group ${isDark ? "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20" : "bg-white/80 border-gray-200 hover:bg-white hover:border-gray-300"} backdrop-blur-sm rounded-xl border overflow-hidden transition-all duration-300`}
                 >
                   <a href={`/blog/${post.slug}`} className="block">
                     {/* Image */}
@@ -654,27 +656,27 @@ const BlogDetail: React.FC = () => {
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
                           <div className="text-center p-4">
-                            <h3 className="text-white font-medium line-clamp-3">
+                            <h3 className={`${isDark ? "text-white" : "text-gray-700"} font-light text-sm line-clamp-3`}>
                               {post.title}
                             </h3>
                           </div>
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
-                      <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white">
+                      <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white font-light">
                         {post.category}
                       </div>
                     </div>
 
                     {/* Content */}
                     <div className="p-6">
-                      <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-purple-300 transition-colors line-clamp-2">
+                      <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"} mb-2 group-hover:text-purple-400 transition-colors line-clamp-2`}>
                         {post.title}
                       </h3>
-                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                      <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light mb-4 line-clamp-2`}>
                         {post.excerpt}
                       </p>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className={`flex items-center gap-4 text-xs font-light ${isDark ? "text-gray-500" : "text-gray-400"}`}>
                         <span>
                           {formatShortDate(post.publishedDate, post.createdAt)}
                         </span>
@@ -703,37 +705,37 @@ const BlogDetail: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-gray-900 border border-white/20 rounded-2xl p-6 max-w-md w-full"
+            className={`${isDark ? "bg-gray-900 border-white/20" : "bg-white border-gray-200"} border rounded-2xl p-6 max-w-md w-full`}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold text-white mb-4">
+            <h3 className={`text-lg font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>
               Share this post
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => handleShare("twitter")}
-                className="flex items-center gap-3 p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 transition-colors"
+                className="flex items-center gap-3 p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 transition-colors text-sm font-light"
               >
                 <Twitter className="w-5 h-5" />
                 Twitter
               </button>
               <button
                 onClick={() => handleShare("facebook")}
-                className="flex items-center gap-3 p-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-600/30 rounded-lg text-blue-300 transition-colors"
+                className="flex items-center gap-3 p-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-600/30 rounded-lg text-blue-300 transition-colors text-sm font-light"
               >
                 <Facebook className="w-5 h-5" />
                 Facebook
               </button>
               <button
                 onClick={() => handleShare("linkedin")}
-                className="flex items-center gap-3 p-3 bg-blue-700/20 hover:bg-blue-700/30 border border-blue-700/30 rounded-lg text-blue-300 transition-colors"
+                className="flex items-center gap-3 p-3 bg-blue-700/20 hover:bg-blue-700/30 border border-blue-700/30 rounded-lg text-blue-300 transition-colors text-sm font-light"
               >
                 <Linkedin className="w-5 h-5" />
                 LinkedIn
               </button>
               <button
                 onClick={() => handleShare("copy")}
-                className="flex items-center gap-3 p-3 bg-gray-500/20 hover:bg-gray-500/30 border border-gray-500/30 rounded-lg text-gray-300 transition-colors"
+                className={`flex items-center gap-3 p-3 ${isDark ? "bg-gray-500/20 hover:bg-gray-500/30 border-gray-500/30 text-gray-300" : "bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-600"} border rounded-lg transition-colors text-sm font-light`}
               >
                 <LinkIcon className="w-5 h-5" />
                 Copy Link

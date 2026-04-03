@@ -325,7 +325,7 @@ const VisionSection = () => {
   ];
 
   return (
-    <section ref={sectionRef} className="relative py-20 bg-black overflow-hidden">
+    <section ref={sectionRef} className={`relative py-20 ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}>
       <div className="container mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left - Illustration with Parallax */}
@@ -353,7 +353,7 @@ const VisionSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.2 }}
-              className="text-sm text-green-400 tracking-[0.3em] uppercase font-light"
+              className={`text-xs tracking-[0.3em] uppercase font-light ${isDark ? "text-green-400" : "text-green-600"}`}
             >
               OUR VISION
             </motion.div>
@@ -362,7 +362,7 @@ const VisionSection = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-thin text-white leading-tight"
+              className={`text-3xl md:text-4xl lg:text-5xl font-thin ${isDark ? "text-white" : "text-gray-900"} leading-tight`}
             >
               Empowering
               <br />
@@ -375,7 +375,7 @@ const VisionSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.5 }}
-              className="text-lg text-gray-300 leading-relaxed"
+              className={`text-sm font-light ${isDark ? "text-gray-300" : "text-gray-600"} leading-relaxed`}
             >
               The Entrepreneurship Cell strives to build a vibrant platform that
               nurtures innovation, fosters an entrepreneurial mindset, and
@@ -395,7 +395,7 @@ const VisionSection = () => {
                   initial={{ opacity: 0, x: 30 }}
                   animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
                   transition={{ delay: 0.9 + index * 0.1 }}
-                  className="flex items-start gap-4 p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
+                  className={`flex items-start gap-4 p-4 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-xl border ${isDark ? "border-white/10" : "border-gray-200"} ${isDark ? "hover:bg-white/10" : "hover:bg-black/10"} transition-all duration-300`}
                   whileHover={{ x: 8, scale: 1.02 }}
                 >
                   <div
@@ -410,8 +410,8 @@ const VisionSection = () => {
                     <point.icon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">{point.title}</h3>
-                    <p className="text-gray-400">{point.description}</p>
+                    <h3 className={`text-lg font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}>{point.title}</h3>
+                    <p className={`text-sm font-light ${isDark ? "text-gray-400" : "text-gray-500"}`}>{point.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -424,12 +424,15 @@ const VisionSection = () => {
 };
 
 // Main Component
-const ECellSections = () => (
-  <div className="min-h-screen bg-black">
-    <AboutSection />
-    <MissionSection />
-    <VisionSection />
-  </div>
-);
+const ECellSections = () => {
+  const { isDark } = useTheme();
+  return (
+    <div className={`min-h-screen ${isDark ? "bg-black" : "bg-white"}`}>
+      <AboutSection />
+      <MissionSection />
+      <VisionSection />
+    </div>
+  );
+};
 
 export default ECellSections;

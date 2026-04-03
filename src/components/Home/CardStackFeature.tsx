@@ -14,6 +14,7 @@ import {
   Globe,
 } from "lucide-react";
 import { FadeInOnScroll, TextReveal } from "../animations/ScrollAnimations";
+import { useTheme } from "../../context/ThemeContext";
 
 // ─────────────────────────────────────────────
 
@@ -89,6 +90,7 @@ const StickyCard = ({
   totalCards: number;
   scrollYProgress: MotionValue<number>;
 }) => {
+  const { isDark } = useTheme();
   const segment = 1 / totalCards;
   const start = index * segment;
   const end = Math.min(start + segment, 1);

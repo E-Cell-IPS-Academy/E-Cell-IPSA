@@ -542,7 +542,7 @@ const ResourcesPage: React.FC = () => {
                   whileHover={{ y: -8, scale: 1.02 }}
                   className="group"
                 >
-                  <GlassCard className="p-6 h-full relative overflow-hidden">
+                  <GlassCard isDark={isDark} className="p-6 h-full relative overflow-hidden">
                     {/* Gradient accent */}
                     <div
                       className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
@@ -570,13 +570,13 @@ const ResourcesPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <span className="text-xs text-gray-500 uppercase tracking-wider">
+                    <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} uppercase tracking-wider`}>
                       {resource.category}
                     </span>
-                    <h3 className="text-lg font-bold text-white mt-1 mb-2 group-hover:text-purple-300 transition-colors line-clamp-2">
+                    <h3 className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} mt-1 mb-2 group-hover:text-purple-300 transition-colors line-clamp-2`}>
                       {resource.title}
                     </h3>
-                    <p className="text-sm text-gray-400 mb-4 line-clamp-3">
+                    <p className={`text-xs font-light ${isDark ? "text-gray-400" : "text-gray-500"} mb-4 line-clamp-3`}>
                       {resource.description}
                     </p>
 
@@ -584,7 +584,7 @@ const ResourcesPage: React.FC = () => {
                       {resource.tags.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 bg-white/5 rounded-full text-xs text-gray-500"
+                          className={`px-2 py-0.5 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-full text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}
                         >
                           #{tag}
                         </span>
@@ -621,11 +621,11 @@ const ResourcesPage: React.FC = () => {
       <section className="relative py-16 px-6 pb-32">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl font-bold text-white">
+            <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"}`}>
               {activeCategory === "All"
                 ? "All Resources"
                 : activeCategory}{" "}
-              <span className="text-gray-500 text-xl font-normal">
+              <span className={`${isDark ? "text-gray-500" : "text-gray-400"} text-sm font-light`}>
                 ({filteredResources.length})
               </span>
             </h2>
@@ -640,7 +640,7 @@ const ResourcesPage: React.FC = () => {
               >
                 <Loader className="w-8 h-8 text-purple-500" />
               </motion.div>
-              <p className="text-gray-400">Loading resources...</p>
+              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>Loading resources...</p>
             </div>
           ) : filteredResources.length > 0 ? (
             <AnimatePresence mode="wait">
@@ -661,7 +661,7 @@ const ResourcesPage: React.FC = () => {
                     whileHover={{ y: -5 }}
                     className="group"
                   >
-                    <GlassCard className="p-6 h-full hover:border-white/20 transition-all duration-300">
+                    <GlassCard isDark={isDark} className={`p-6 h-full ${isDark ? "hover:border-white/20" : "hover:border-gray-300"} transition-all duration-300`}>
                       <div className="flex items-start gap-4 mb-4">
                         <div
                           className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center bg-gradient-to-br ${
@@ -676,16 +676,16 @@ const ResourcesPage: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="text-xs text-gray-500 uppercase tracking-wider">
+                          <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} uppercase tracking-wider`}>
                             {resource.category}
                           </span>
-                          <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors line-clamp-2">
+                          <h3 className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} group-hover:text-purple-300 transition-colors line-clamp-2`}>
                             {resource.title}
                           </h3>
                         </div>
                       </div>
 
-                      <p className="text-sm text-gray-400 mb-4 line-clamp-3">
+                      <p className={`text-xs font-light ${isDark ? "text-gray-400" : "text-gray-500"} mb-4 line-clamp-3`}>
                         {resource.description}
                       </p>
 
@@ -693,7 +693,7 @@ const ResourcesPage: React.FC = () => {
                         {resource.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="px-2 py-0.5 bg-white/5 rounded-full text-xs text-gray-500"
+                            className={`px-2 py-0.5 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-full text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}
                           >
                             #{tag}
                           </span>
@@ -701,7 +701,7 @@ const ResourcesPage: React.FC = () => {
                       </div>
 
                       {resource.author && (
-                        <p className="text-xs text-gray-600 mb-3">
+                        <p className={`text-xs ${isDark ? "text-gray-600" : "text-gray-400"} mb-3`}>
                           By {resource.author}
                           {resource.date &&
                             ` | ${new Date(resource.date).toLocaleDateString(
@@ -748,10 +748,10 @@ const ResourcesPage: React.FC = () => {
               className="text-center py-20"
             >
               <BookOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}>
                 No resources found
               </h3>
-              <p className="text-gray-400 mb-6">
+              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-xs font-light mb-6`}>
                 Try adjusting your search or category filter.
               </p>
               <button

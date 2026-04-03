@@ -17,6 +17,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
+import { useTheme } from "../context/ThemeContext";
 
 // ---------- Types ----------
 interface TeamMember {
@@ -98,7 +99,8 @@ const SectionReveal: React.FC<{
 const TeamMemberCard: React.FC<{
   member: TeamMember;
   index: number;
-}> = ({ member, index }) => {
+  isDark: boolean;
+}> = ({ member, index, isDark }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
@@ -116,11 +118,14 @@ const TeamMemberCard: React.FC<{
         y: -10,
         boxShadow: "0 25px 60px rgba(139, 92, 246, 0.25)",
       }}
-      className="group relative backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden cursor-default"
+      className={`group relative backdrop-blur-md border ${isDark ? "border-white/10" : "border-gray-200"} rounded-2xl overflow-hidden cursor-default`}
       style={{
-        background:
-          "linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))",
-        boxShadow: "0 8px 32px rgba(31, 38, 135, 0.2)",
+        background: isDark
+          ? "linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))"
+          : "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))",
+        boxShadow: isDark
+          ? "0 8px 32px rgba(31, 38, 135, 0.2)"
+          : "0 8px 32px rgba(31, 38, 135, 0.08)",
       }}
     >
       {/* Hover glow overlay */}
@@ -135,7 +140,7 @@ const TeamMemberCard: React.FC<{
           transition={{ delay: index * 0.08 + 0.3, type: "spring" }}
         >
           <Crown className="w-3 h-3 text-white" />
-          <span className="text-white text-xs font-bold">Lead</span>
+          <span className="text-white text-xs font-light">Lead</span>
         </motion.div>
       )}
 
@@ -145,7 +150,7 @@ const TeamMemberCard: React.FC<{
           {/* Gradient ring */}
           <div className="absolute -inset-1 bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300 blur-[1px]" />
 
-          <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-black">
+          <div className={`relative w-28 h-28 rounded-full overflow-hidden border-2 ${isDark ? "border-black" : "border-white"}`}>
             {member.image ? (
               <img
                 src={member.image}
@@ -164,30 +169,30 @@ const TeamMemberCard: React.FC<{
 
       {/* Info */}
       <div className="p-6 pt-5 text-center">
-        <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-300 transition-colors">
+        <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"} mb-1 group-hover:text-purple-300 transition-colors`}>
           {member.name}
         </h3>
-        <p className="text-purple-400 text-sm font-medium mb-1">
+        <p className="text-purple-400 text-xs font-light mb-1">
           {member.role}
         </p>
-        <p className="text-gray-500 text-xs uppercase tracking-wider mb-4">
+        <p className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs uppercase tracking-wider mb-4`}>
           {member.category}
         </p>
 
         {member.bio && (
-          <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2">
+          <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-xs font-light leading-relaxed mb-4 line-clamp-2`}>
             {member.bio}
           </p>
         )}
 
         {/* Social links */}
-        <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/5">
+        <div className={`flex items-center justify-center gap-3 pt-2 border-t ${isDark ? "border-white/5" : "border-gray-100"}`}>
           {member.linkedin && (
             <motion.a
               href={member.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 bg-white/5 hover:bg-blue-500/20 rounded-lg text-gray-400 hover:text-blue-400 transition-all duration-300"
+              className={`p-2 ${isDark ? "bg-white/5 hover:bg-blue-500/20 text-gray-400" : "bg-black/5 hover:bg-blue-500/10 text-gray-500"} rounded-lg hover:text-blue-400 transition-all duration-300`}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -199,7 +204,7 @@ const TeamMemberCard: React.FC<{
               href={member.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 bg-white/5 hover:bg-pink-500/20 rounded-lg text-gray-400 hover:text-pink-400 transition-all duration-300"
+              className={`p-2 ${isDark ? "bg-white/5 hover:bg-pink-500/20 text-gray-400" : "bg-black/5 hover:bg-pink-500/10 text-gray-500"} rounded-lg hover:text-pink-400 transition-all duration-300`}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -209,7 +214,7 @@ const TeamMemberCard: React.FC<{
           {member.email && (
             <motion.a
               href={`mailto:${member.email}`}
-              className="p-2 bg-white/5 hover:bg-purple-500/20 rounded-lg text-gray-400 hover:text-purple-400 transition-all duration-300"
+              className={`p-2 ${isDark ? "bg-white/5 hover:bg-purple-500/20 text-gray-400" : "bg-black/5 hover:bg-purple-500/10 text-gray-500"} rounded-lg hover:text-purple-400 transition-all duration-300`}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -223,32 +228,34 @@ const TeamMemberCard: React.FC<{
 };
 
 // ---------- Placeholder Card ----------
-const PlaceholderCard: React.FC<{ index: number }> = ({ index }) => (
+const PlaceholderCard: React.FC<{ index: number; isDark: boolean }> = ({ index, isDark }) => (
   <motion.div
     initial={{ opacity: 0, y: 30 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: index * 0.1 }}
-    className="backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden"
+    className={`backdrop-blur-md border ${isDark ? "border-white/10" : "border-gray-200"} rounded-2xl overflow-hidden`}
     style={{
-      background:
-        "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+      background: isDark
+        ? "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))"
+        : "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))",
     }}
   >
     <div className="pt-8 px-8 flex justify-center">
-      <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center">
-        <UserCircle className="w-14 h-14 text-white/20" />
+      <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${isDark ? "from-purple-500/20 to-blue-500/20 border-white/10" : "from-purple-100 to-blue-100 border-gray-200"} border flex items-center justify-center`}>
+        <UserCircle className={`w-14 h-14 ${isDark ? "text-white/20" : "text-gray-300"}`} />
       </div>
     </div>
     <div className="p-6 pt-5 text-center">
-      <div className="h-5 w-32 bg-white/10 rounded mx-auto mb-2" />
-      <div className="h-4 w-24 bg-purple-500/10 rounded mx-auto mb-4" />
-      <p className="text-gray-500 text-sm">Team data coming soon</p>
+      <div className={`h-5 w-32 ${isDark ? "bg-white/10" : "bg-gray-200"} rounded mx-auto mb-2`} />
+      <div className={`h-4 w-24 ${isDark ? "bg-purple-500/10" : "bg-purple-100"} rounded mx-auto mb-4`} />
+      <p className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs font-light`}>Team data coming soon</p>
     </div>
   </motion.div>
 );
 
 // ---------- Main Component ----------
 const TeamPage: React.FC = () => {
+  const { isDark } = useTheme();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
@@ -270,7 +277,6 @@ const TeamPage: React.FC = () => {
         setMembers(data);
       } catch (error) {
         console.error("Error fetching team members:", error);
-        // Fallback: try without orderBy in case the index doesn't exist
         try {
           const fallbackSnapshot = await getDocs(
             collection(db, "teamMembers")
@@ -306,10 +312,8 @@ const TeamPage: React.FC = () => {
         : members.filter((m) => m.category === activeCategory);
 
     return filtered.sort((a, b) => {
-      // Leads first
       if (a.isLead && !b.isLead) return -1;
       if (!a.isLead && b.isLead) return 1;
-      // Then by order
       return (a.order ?? 999) - (b.order ?? 999);
     });
   }, [members, activeCategory]);
@@ -324,7 +328,6 @@ const TeamPage: React.FC = () => {
       groups[m.category].push(m);
     });
 
-    // Sort each group: leads first, then by order
     Object.keys(groups).forEach((key) => {
       groups[key].sort((a, b) => {
         if (a.isLead && !b.isLead) return -1;
@@ -333,7 +336,6 @@ const TeamPage: React.FC = () => {
       });
     });
 
-    // Return categories in a predictable order
     const orderedKeys = CATEGORIES.slice(1).filter((c) => groups[c]);
     const extraKeys = Object.keys(groups).filter(
       (k) => !CATEGORIES.includes(k)
@@ -366,11 +368,11 @@ const TeamPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-black overflow-hidden">
+    <div className={`min-h-screen overflow-hidden ${isDark ? "bg-black" : "bg-white"}`}>
       {/* ===== HERO ===== */}
       <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 px-6 overflow-hidden">
         {/* Animated BG */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-950/30 via-black to-black" />
+        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-b from-purple-950/30 via-black to-black" : "bg-gradient-to-b from-purple-100/30 via-white to-white"}`} />
         <div
           className="absolute inset-0 opacity-15"
           style={{
@@ -406,25 +408,25 @@ const TeamPage: React.FC = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-8"
+              className={`inline-flex items-center gap-2 px-4 py-2 ${isDark ? "bg-purple-500/10 border-purple-500/20" : "bg-purple-50 border-purple-200"} border rounded-full mb-8`}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
               <Users className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-400 text-sm font-medium">
+              <span className="text-purple-400 text-xs font-light tracking-wider">
                 Meet the Team
               </span>
             </motion.div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6">
-              <span className="text-white">Our </span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-thin leading-tight mb-6">
+              <span className={isDark ? "text-white" : "text-gray-900"}>Our </span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-400 to-blue-400">
                 Team
               </span>
             </h1>
             <motion.p
-              className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"
+              className={`${isDark ? "text-gray-300" : "text-gray-600"} text-sm font-light max-w-2xl mx-auto leading-relaxed`}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -437,7 +439,7 @@ const TeamPage: React.FC = () => {
       </section>
 
       {/* ===== CATEGORY FILTER ===== */}
-      <section className="sticky top-16 z-30 py-4 px-6 bg-black/80 backdrop-blur-xl border-b border-white/5">
+      <section className={`sticky top-16 z-30 py-4 px-6 ${isDark ? "bg-black/80 border-white/5" : "bg-white/80 border-gray-200"} backdrop-blur-xl border-b`}>
         <div
           ref={filterRef}
           className="max-w-5xl mx-auto flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
@@ -447,10 +449,12 @@ const TeamPage: React.FC = () => {
             <motion.button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`flex-shrink-0 px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ${
+              className={`flex-shrink-0 px-6 py-2.5 rounded-full font-light text-xs transition-all duration-300 ${
                 activeCategory === category
                   ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10"
+                  : isDark
+                  ? "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10"
+                  : "bg-black/5 text-gray-500 hover:bg-black/10 hover:text-gray-900 border border-gray-200"
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -465,7 +469,6 @@ const TeamPage: React.FC = () => {
       <section className="relative py-16 md:py-24 px-6">
         <div className="max-w-7xl mx-auto">
           {loading ? (
-            /* Loading state */
             <div className="flex flex-col items-center justify-center py-24">
               <motion.div
                 animate={{ rotate: 360 }}
@@ -478,26 +481,25 @@ const TeamPage: React.FC = () => {
               >
                 <Loader className="w-8 h-8 text-purple-500" />
               </motion.div>
-              <p className="text-gray-400">Loading team members...</p>
+              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>Loading team members...</p>
             </div>
           ) : members.length === 0 ? (
-            /* Fallback: empty state with placeholders */
             <div>
               <div className="text-center mb-12">
                 <motion.div
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-6"
+                  className={`inline-flex items-center gap-2 px-4 py-2 ${isDark ? "bg-purple-500/10 border-purple-500/20" : "bg-purple-50 border-purple-200"} border rounded-full mb-6`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
                   <Sparkles className="w-4 h-4 text-purple-400" />
-                  <span className="text-purple-400 text-sm font-medium">
+                  <span className="text-purple-400 text-xs font-light tracking-wider">
                     Coming Soon
                   </span>
                 </motion.div>
-                <h2 className="text-3xl font-bold text-white mb-4">
+                <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>
                   Team Data Coming Soon
                 </h2>
-                <p className="text-gray-400 text-lg max-w-xl mx-auto">
+                <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light max-w-xl mx-auto`}>
                   We're putting the finishing touches on our team profiles.
                   Check back shortly to meet the amazing people behind E-Cell.
                 </p>
@@ -505,12 +507,11 @@ const TeamPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <PlaceholderCard key={i} index={i} />
+                  <PlaceholderCard key={i} index={i} isDark={isDark} />
                 ))}
               </div>
             </div>
           ) : activeCategory !== "All" ? (
-            /* Filtered view: flat grid */
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeCategory}
@@ -522,7 +523,7 @@ const TeamPage: React.FC = () => {
                 <SectionReveal>
                   <div className="flex items-center gap-3 mb-10">
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-                    <h2 className="text-2xl md:text-3xl font-bold text-white">
+                    <h2 className={`text-xl md:text-2xl font-light ${isDark ? "text-white" : "text-gray-900"}`}>
                       {activeCategory}
                     </h2>
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
@@ -535,14 +536,15 @@ const TeamPage: React.FC = () => {
                       key={member.id}
                       member={member}
                       index={index}
+                      isDark={isDark}
                     />
                   ))}
                 </div>
 
                 {filteredMembers.length === 0 && (
                   <div className="text-center py-16">
-                    <UserCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-400 text-lg">
+                    <UserCircle className={`w-16 h-16 ${isDark ? "text-gray-600" : "text-gray-300"} mx-auto mb-4`} />
+                    <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>
                       No members found in this category.
                     </p>
                   </div>
@@ -550,7 +552,6 @@ const TeamPage: React.FC = () => {
               </motion.div>
             </AnimatePresence>
           ) : (
-            /* "All" view: grouped by category */
             <div className="space-y-20">
               {groupedMembers &&
                 groupedMembers.map((group, groupIndex) => (
@@ -560,10 +561,10 @@ const TeamPage: React.FC = () => {
                   >
                     <div className="flex items-center gap-3 mb-10">
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-                      <h2 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                      <h2 className="text-xl md:text-2xl font-light text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
                         {group.category}
                       </h2>
-                      <span className="text-gray-500 text-sm">
+                      <span className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs`}>
                         ({group.members.length})
                       </span>
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
@@ -575,6 +576,7 @@ const TeamPage: React.FC = () => {
                           key={member.id}
                           member={member}
                           index={index}
+                          isDark={isDark}
                         />
                       ))}
                     </div>
