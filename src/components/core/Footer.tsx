@@ -10,8 +10,12 @@ import {
   Youtube,
   ArrowUp,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useTheme } from "../../context/ThemeContext";
 
 const Footer = () => {
+  const { isDark } = useTheme();
+
   const footerLinks = {
     quickLinks: [
       { name: "About E-Cell", href: "/about" },
@@ -73,7 +77,6 @@ const Footer = () => {
       color: "hover:text-red-500",
     },
   ];
-  
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -81,7 +84,11 @@ const Footer = () => {
 
   return (
     <motion.footer
-      className="bg-gradient-to-br from-gray-900 via-black to-purple-900 border-t border-white/10 relative overflow-hidden"
+      className={`border-t relative overflow-hidden ${
+        isDark
+          ? "bg-gradient-to-br from-gray-900 via-black to-purple-900 border-white/10"
+          : "bg-gradient-to-br from-gray-50 via-white to-purple-50 border-purple-100/30"
+      }`}
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
@@ -105,20 +112,20 @@ const Footer = () => {
             >
               <div className="flex items-center space-x-3 mb-4">
                 <img
-                   src="/EcellLogo.png"
+                  src="/EcellLogo.png"
                   alt="E-Cell IPSA"
                   className="h-12 w-auto"
                 />
                 <div>
-                  <div className="text-2xl font-bold text-white tracking-tight">
+                  <div className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
                     E-Cell IPSA
                   </div>
-                  <div className="text-sm text-purple-300">
+                  <div className="text-sm text-purple-400">
                     Entrepreneurship Cell
                   </div>
                 </div>
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed">
+              <p className={`text-sm leading-relaxed ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                 Fostering innovation and entrepreneurship at IPS Academy. Join
                 us in building the next generation of successful entrepreneurs.
               </p>
@@ -136,7 +143,7 @@ const Footer = () => {
                 <Mail className="w-4 h-4 text-purple-400" />
                 <a
                   href="mailto:ecell@ipsacademy.org"
-                  className="text-gray-300 hover:text-white transition-colors duration-300 text-sm"
+                  className={`transition-colors duration-300 text-sm ${isDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
                 >
                   ecell@ipsacademy.org
                 </a>
@@ -145,14 +152,14 @@ const Footer = () => {
                 <Phone className="w-4 h-4 text-purple-400" />
                 <a
                   href="tel:+917312570631"
-                  className="text-gray-300 hover:text-white transition-colors duration-300 text-sm"
+                  className={`transition-colors duration-300 text-sm ${isDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
                 >
                   +91 731 2570631
                 </a>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="w-4 h-4 text-purple-400 mt-0.5" />
-                <div className="text-gray-300 text-sm">
+                <div className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                   IPS Academy Campus
                   <br />
                   Knowledge Village, Indore, MP
@@ -174,7 +181,11 @@ const Footer = () => {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/20 transition-all duration-300 ${color}`}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${color} ${
+                    isDark
+                      ? "bg-white/10 text-gray-400 hover:text-white hover:bg-white/20"
+                      : "bg-purple-50 text-gray-500 hover:text-gray-900 hover:bg-purple-100"
+                  }`}
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   aria-label={label}
@@ -188,7 +199,7 @@ const Footer = () => {
           {/* Quick Links */}
           <div className="space-y-6">
             <motion.h3
-              className="text-lg font-semibold text-white"
+              className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -205,12 +216,14 @@ const Footer = () => {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <a
-                    href={link.href}
-                    className="text-gray-400 hover:text-purple-300 transition-colors duration-300 block text-sm"
+                  <Link
+                    to={link.href}
+                    className={`transition-colors duration-300 block text-sm ${
+                      isDark ? "text-gray-400 hover:text-purple-300" : "text-gray-500 hover:text-purple-600"
+                    }`}
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -219,7 +232,7 @@ const Footer = () => {
           {/* Programs */}
           <div className="space-y-6">
             <motion.h3
-              className="text-lg font-semibold text-white"
+              className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -236,12 +249,14 @@ const Footer = () => {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <a
-                    href={link.href}
-                    className="text-gray-400 hover:text-purple-300 transition-colors duration-300 block text-sm"
+                  <Link
+                    to={link.href}
+                    className={`transition-colors duration-300 block text-sm ${
+                      isDark ? "text-gray-400 hover:text-purple-300" : "text-gray-500 hover:text-purple-600"
+                    }`}
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -250,7 +265,7 @@ const Footer = () => {
           {/* Resources */}
           <div className="space-y-6">
             <motion.h3
-              className="text-lg font-semibold text-white"
+              className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -267,23 +282,23 @@ const Footer = () => {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <a
-                    href={link.href}
-                    className="text-gray-400 hover:text-purple-300 transition-colors duration-300 block text-sm"
+                  <Link
+                    to={link.href}
+                    className={`transition-colors duration-300 block text-sm ${
+                      isDark ? "text-gray-400 hover:text-purple-300" : "text-gray-500 hover:text-purple-600"
+                    }`}
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </motion.div>
               ))}
             </div>
           </div>
         </div>
-      
 
         {/* Bottom Section */}
-        <div className="pt-8 border-t border-white/10">
+        <div className={`pt-8 border-t ${isDark ? "border-white/10" : "border-purple-100/30"}`}>
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-            {/* Left - Copyright */}
             <motion.div
               className="text-center lg:text-left"
               initial={{ opacity: 0, y: 20 }}
@@ -291,15 +306,14 @@ const Footer = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="text-sm text-gray-400">
-                © 2025 E-Cell IPS Academy. All rights reserved.
+              <div className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                &copy; 2025 E-Cell IPS Academy. All rights reserved.
               </div>
-              <div className="text-xs text-gray-500 mt-1">
-                Fostering Innovation • Building Entrepreneurs • Creating Impact
+              <div className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                Fostering Innovation &bull; Building Entrepreneurs &bull; Creating Impact
               </div>
             </motion.div>
 
-            {/* Center - Legal Links */}
             <motion.div
               className="flex space-x-6"
               initial={{ opacity: 0, y: 20 }}
@@ -308,20 +322,25 @@ const Footer = () => {
               viewport={{ once: true }}
             >
               {footerLinks.legal.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.href}
-                  className="text-xs text-gray-400 hover:text-white transition-colors duration-300"
+                  to={link.href}
+                  className={`text-xs transition-colors duration-300 ${
+                    isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"
+                  }`}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
             </motion.div>
 
-            {/* Right - Back to Top */}
             <motion.button
               onClick={scrollToTop}
-              className="flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-gray-400 hover:text-white transition-all duration-300"
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                isDark
+                  ? "bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white"
+                  : "bg-purple-50 hover:bg-purple-100 text-gray-500 hover:text-gray-900"
+              }`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}

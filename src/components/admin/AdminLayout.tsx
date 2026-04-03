@@ -14,6 +14,12 @@ import {
   X,
   User,
   ChevronDown,
+  Image,
+  UsersRound,
+  Layout,
+  Info,
+  Phone,
+  Wrench,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
@@ -74,9 +80,44 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     {
       id: "gallery",
       label: "Gallery",
-      icon: FileText,
+      icon: Image,
       href: "/admin/dashboard/gallery",
       permission: "manage_content",
+    },
+    {
+      id: "team",
+      label: "Team",
+      icon: UsersRound,
+      href: "/admin/dashboard/team",
+      permission: "manage_content",
+    },
+    {
+      id: "hero",
+      label: "Hero Section",
+      icon: Layout,
+      href: "/admin/dashboard/hero",
+      permission: "manage_content",
+    },
+    {
+      id: "about",
+      label: "About Page",
+      icon: Info,
+      href: "/admin/dashboard/about",
+      permission: "manage_content",
+    },
+    {
+      id: "contact",
+      label: "Contact",
+      icon: Phone,
+      href: "/admin/dashboard/contact",
+      permission: "manage_content",
+    },
+    {
+      id: "settings",
+      label: "Site Settings",
+      icon: Wrench,
+      href: "/admin/dashboard/settings",
+      permission: "manage_settings",
     },
   ];
 
