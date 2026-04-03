@@ -1,12 +1,54 @@
+import { useState, useEffect } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Star } from "lucide-react";
+import { db } from "../../firebase/config";
+import { doc, getDoc } from "firebase/firestore";
+
+interface HeroContent {
+  title: string;
+  subtitle: string;
+  description: string;
+  ctaText: string;
+  ctaLink: string;
+}
+
+const DEFAULT_CONTENT: HeroContent = {
+  title: "E-CELL | IPS ACADEMY",
+  subtitle: "E-cell x IIT Bombay",
+  description: "Where E-cell's passion meets IIT Bombay innovation",
+  ctaText: "Get in touch",
+  ctaLink: "",
+};
 
 const HeroSection = () => {
-  const heroText = "E-CELL | IPS ACADEMY";
-  const subText = "E-cell x IIT Bombay";
-  const description = "Where E-cell's passion meets IIT Bombay innovation";
+  const [content, setContent] = useState<HeroContent>(DEFAULT_CONTENT);
+  const [loading, setLoading] = useState(true);
 
-  const letters = heroText.split("");
+  useEffect(() => {
+    const fetchHeroContent = async () => {
+      try {
+        const heroDoc = await getDoc(doc(db, "siteContent", "hero"));
+        if (heroDoc.exists()) {
+          const data = heroDoc.data();
+          setContent({
+            title: data.title || DEFAULT_CONTENT.title,
+            subtitle: data.subtitle || DEFAULT_CONTENT.subtitle,
+            description: data.description || DEFAULT_CONTENT.description,
+            ctaText: data.ctaText || DEFAULT_CONTENT.ctaText,
+            ctaLink: data.ctaLink || DEFAULT_CONTENT.ctaLink,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching hero content:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHeroContent();
+  }, []);
+
+  const letters = content.title.split("");
 
   // Fixed animation variants with proper typing
   const letterVariants: Variants = {
@@ -68,6 +110,37 @@ const HeroSection = () => {
     },
   };
 
+  const ctaButton = content.ctaLink ? (
+    <motion.a
+      href={content.ctaLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative inline-flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 overflow-hidden"
+      variants={buttonVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      whileTap={{ scale: 0.98 }}
+    >
+      <Star className="w-4 h-4" />
+      <span>{content.ctaText}</span>
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+    </motion.a>
+  ) : (
+    <motion.button
+      className="group relative inline-flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 overflow-hidden"
+      variants={buttonVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      whileTap={{ scale: 0.98 }}
+    >
+      <Star className="w-4 h-4" />
+      <span>{content.ctaText}</span>
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+    </motion.button>
+  );
+
   return (
     <section className="relative min-h-screen bg-black overflow-hidden">
       {/* Background Video */}
@@ -94,9 +167,18 @@ const HeroSection = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div className="max-w-2xl">
+              {/* Loading shimmer - subtle, doesn't break layout */}
+              {loading && (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-10 bg-white/10 rounded-lg w-3/4" />
+                  <div className="h-6 bg-white/5 rounded-lg w-1/2" />
+                  <div className="h-4 bg-white/5 rounded-lg w-2/3" />
+                </div>
+              )}
+
               {/* Main Heading */}
               <motion.h1
-                className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4"
+                className={`text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4 ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
                 initial="hidden"
                 animate="visible"
               >
@@ -118,37 +200,26 @@ const HeroSection = () => {
 
               {/* Subtitle */}
               <motion.h2
-                className="text-lg md:text-xl font-medium text-purple-300 mb-3"
+                className={`text-lg md:text-xl font-medium text-purple-300 mb-3 ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
                 variants={fadeIn}
                 initial="hidden"
                 animate="visible"
               >
-                {subText}
+                {content.subtitle}
               </motion.h2>
 
               {/* Description */}
               <motion.p
-                className="text-sm md:text-base text-gray-400 mb-8 max-w-lg leading-relaxed"
+                className={`text-sm md:text-base text-gray-400 mb-8 max-w-lg leading-relaxed ${loading ? "opacity-0 h-0 overflow-hidden" : ""}`}
                 variants={fadeIn}
                 initial="hidden"
                 animate="visible"
               >
-                {description}
+                {content.description}
               </motion.p>
 
               {/* CTA Button */}
-              <motion.button
-                className="group relative inline-flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 overflow-hidden"
-                variants={buttonVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-                whileTap={{ scale: 0.98 }}
-              >
-                <Star className="w-4 h-4" />
-                <span>Get in touch</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
-              </motion.button>
+              {!loading && ctaButton}
             </div>
 
             {/* Right Content - Entrepreneurship Glassmorphism */}

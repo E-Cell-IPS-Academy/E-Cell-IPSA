@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Facebook,
@@ -12,9 +13,77 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
+import { db } from "../../firebase/config";
+import { doc, getDoc } from "firebase/firestore";
+
+interface SocialLinkData {
+  facebook: string;
+  instagram: string;
+  linkedin: string;
+  twitter: string;
+  youtube: string;
+}
+
+interface ContactData {
+  email: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+}
+
+const DEFAULT_SOCIAL_LINKS: SocialLinkData = {
+  facebook: "https://facebook.com/ecell.ips.academy",
+  instagram: "https://instagram.com/ecell_ips",
+  linkedin: "https://linkedin.com/company/ecell-ips-academy",
+  twitter: "https://twitter.com/ecell_ips",
+  youtube: "https://youtube.com/@ecellips",
+};
+
+const DEFAULT_CONTACT: ContactData = {
+  email: "ecell@ipsacademy.org",
+  phone: "+91 731 2570631",
+  addressLine1: "IPS Academy Campus",
+  addressLine2: "Knowledge Village, Indore, MP",
+};
 
 const Footer = () => {
   const { isDark } = useTheme();
+  const [socialLinksData, setSocialLinksData] = useState<SocialLinkData>(DEFAULT_SOCIAL_LINKS);
+  const [contactData, setContactData] = useState<ContactData>(DEFAULT_CONTACT);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "siteContent", "settings"));
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data();
+
+          if (data.socialLinks) {
+            setSocialLinksData({
+              facebook: data.socialLinks.facebook || DEFAULT_SOCIAL_LINKS.facebook,
+              instagram: data.socialLinks.instagram || DEFAULT_SOCIAL_LINKS.instagram,
+              linkedin: data.socialLinks.linkedin || DEFAULT_SOCIAL_LINKS.linkedin,
+              twitter: data.socialLinks.twitter || DEFAULT_SOCIAL_LINKS.twitter,
+              youtube: data.socialLinks.youtube || DEFAULT_SOCIAL_LINKS.youtube,
+            });
+          }
+
+          if (data.contact) {
+            setContactData({
+              email: data.contact.email || DEFAULT_CONTACT.email,
+              phone: data.contact.phone || DEFAULT_CONTACT.phone,
+              addressLine1: data.contact.addressLine1 || DEFAULT_CONTACT.addressLine1,
+              addressLine2: data.contact.addressLine2 || DEFAULT_CONTACT.addressLine2,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching footer settings:", error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   const footerLinks = {
     quickLinks: [
@@ -48,31 +117,31 @@ const Footer = () => {
   const socialLinks = [
     {
       icon: Facebook,
-      href: "https://facebook.com/ecell.ips.academy",
+      href: socialLinksData.facebook,
       label: "Facebook",
       color: "hover:text-blue-500",
     },
     {
       icon: Instagram,
-      href: "https://instagram.com/ecell_ips",
+      href: socialLinksData.instagram,
       label: "Instagram",
       color: "hover:text-pink-500",
     },
     {
       icon: Linkedin,
-      href: "https://linkedin.com/company/ecell-ips-academy",
+      href: socialLinksData.linkedin,
       label: "LinkedIn",
       color: "hover:text-blue-400",
     },
     {
       icon: Twitter,
-      href: "https://twitter.com/ecell_ips",
+      href: socialLinksData.twitter,
       label: "Twitter",
       color: "hover:text-blue-400",
     },
     {
       icon: Youtube,
-      href: "https://youtube.com/@ecellips",
+      href: socialLinksData.youtube,
       label: "YouTube",
       color: "hover:text-red-500",
     },
@@ -142,27 +211,27 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-purple-400" />
                 <a
-                  href="mailto:ecell@ipsacademy.org"
+                  href={`mailto:${contactData.email}`}
                   className={`transition-colors duration-300 text-sm ${isDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
                 >
-                  ecell@ipsacademy.org
+                  {contactData.email}
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-purple-400" />
                 <a
-                  href="tel:+917312570631"
+                  href={`tel:${contactData.phone.replace(/\s/g, "")}`}
                   className={`transition-colors duration-300 text-sm ${isDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
                 >
-                  +91 731 2570631
+                  {contactData.phone}
                 </a>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="w-4 h-4 text-purple-400 mt-0.5" />
                 <div className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                  IPS Academy Campus
+                  {contactData.addressLine1}
                   <br />
-                  Knowledge Village, Indore, MP
+                  {contactData.addressLine2}
                 </div>
               </div>
             </motion.div>
