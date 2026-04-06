@@ -19,8 +19,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
-
-// Firebase imports
 import {
   collection,
   getDocs,
@@ -32,16 +30,32 @@ import {
   Timestamp,
   limit,
 } from "firebase/firestore";
-import { db } from "../firebase/config"; // Adjust path as needed
+import { db } from "../firebase/config";
 
-// Types
+function useFonts() {
+  useEffect(() => {
+    if (document.getElementById("blogdetail-fonts")) return;
+    const link = document.createElement("link");
+    link.id = "blogdetail-fonts";
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&family=Outfit:wght@300;400&display=swap";
+    document.head.appendChild(link);
+  }, []);
+}
+
+const F = {
+  display: "'Instrument Serif', Georgia, serif",
+  mono: "'DM Mono', monospace",
+  body: "'Outfit', sans-serif",
+};
+
 interface Author {
   name: string;
   email: string;
   bio?: string;
   avatar?: string;
 }
-
 interface BlogPost {
   id?: string;
   title: string;
@@ -64,157 +78,110 @@ interface BlogPost {
   updatedAt?: Timestamp;
 }
 
-// Blog detail service
 class BlogDetailService {
   private collection = "blogs";
-
   async getBlogBySlug(slug: string): Promise<BlogPost | null> {
     try {
-      const q = query(
-        collection(db, this.collection),
-        where("slug", "==", slug),
-        where("status", "==", "published"),
-        limit(1)
+      const snap = await getDocs(
+        query(
+          collection(db, this.collection),
+          where("slug", "==", slug),
+          where("status", "==", "published"),
+          limit(1),
+        ),
       );
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        return null;
-      }
-
-      const doc = querySnapshot.docs[0];
-      return {
-        id: doc.id,
-        ...doc.data(),
-      } as BlogPost;
-    } catch (error) {
-      console.error("Error fetching blog by slug:", error);
+      if (snap.empty) return null;
+      const d = snap.docs[0];
+      return { id: d.id, ...d.data() } as BlogPost;
+    } catch {
       throw new Error("Failed to fetch blog post");
     }
   }
-
   async getRelatedPosts(
     currentPostId: string,
     category: string,
-    tags: string[]
+    tags: string[],
   ): Promise<BlogPost[]> {
     try {
-      // First try to get posts from the same category
-      const categoryQuery = query(
-        collection(db, this.collection),
-        where("status", "==", "published"),
-        where("category", "==", category),
-        limit(6)
-      );
-
-      const categorySnapshot = await getDocs(categoryQuery);
-      let relatedPosts = categorySnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() } as BlogPost))
-        .filter((post) => post.id !== currentPostId);
-
-      // If we don't have enough related posts, get any published posts
-      if (relatedPosts.length < 2) {
-        const generalQuery = query(
+      const snap = await getDocs(
+        query(
           collection(db, this.collection),
           where("status", "==", "published"),
-          limit(6)
+          where("category", "==", category),
+          limit(6),
+        ),
+      );
+      let related = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }) as BlogPost)
+        .filter((p) => p.id !== currentPostId);
+      if (related.length < 2) {
+        const gSnap = await getDocs(
+          query(
+            collection(db, this.collection),
+            where("status", "==", "published"),
+            limit(6),
+          ),
         );
-
-        const generalSnapshot = await getDocs(generalQuery);
-        const allPosts = generalSnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() } as BlogPost))
-          .filter((post) => post.id !== currentPostId);
-
-        // Combine and deduplicate
-        const combinedPosts = [...relatedPosts, ...allPosts];
-        const uniquePosts = Array.from(
-          new Map(combinedPosts.map((post) => [post.id, post])).values()
+        const all = gSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }) as BlogPost)
+          .filter((p) => p.id !== currentPostId);
+        related = Array.from(
+          new Map([...related, ...all].map((p) => [p.id, p])).values(),
         );
-
-        relatedPosts = uniquePosts;
       }
-
-      // Sort by relevance (same tags, then by view count)
-      return relatedPosts
+      return related
         .sort((a, b) => {
-          const aTagMatches = a.tags.filter((tag) => tags.includes(tag)).length;
-          const bTagMatches = b.tags.filter((tag) => tags.includes(tag)).length;
-
-          if (aTagMatches !== bTagMatches) {
-            return bTagMatches - aTagMatches;
-          }
-
-          return b.viewCount - a.viewCount;
+          const at = a.tags.filter((t) => tags.includes(t)).length,
+            bt = b.tags.filter((t) => tags.includes(t)).length;
+          return at !== bt ? bt - at : b.viewCount - a.viewCount;
         })
         .slice(0, 2);
-    } catch (error) {
-      console.error("Error fetching related posts:", error);
+    } catch {
       return [];
     }
   }
-
   async incrementViewCount(blogId: string): Promise<void> {
     try {
       await updateDoc(doc(db, this.collection, blogId), {
         viewCount: increment(1),
       });
-    } catch (error) {
-      console.error("Error incrementing view count:", error);
-    }
-  }
-
-  async incrementLikes(blogId: string): Promise<void> {
-    try {
-      // Note: You might want to add a likes field to your blog schema
-      // For now, we'll track this separately or use view count as a proxy
-      console.log("Like incremented for blog:", blogId);
-    } catch (error) {
-      console.error("Error incrementing likes:", error);
-    }
+    } catch {}
   }
 }
 
 const blogDetailService = new BlogDetailService();
-
-// Get slug from URL - you'll need to implement this based on your routing
 const getBlogSlugFromURL = (): string => {
-  // This is a simple implementation - adjust based on your routing solution
-  const pathSegments = window.location.pathname.split("/");
-  return pathSegments[pathSegments.length - 1] || "";
+  const s = window.location.pathname.split("/");
+  return s[s.length - 1] || "";
 };
 
 const BlogDetail: React.FC = () => {
+  useFonts();
   const { isDark } = useTheme();
   const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
-  const [showShareModal, setShowShareModal] = useState<boolean>(false);
-  const [viewCountIncremented, setViewCountIncremented] =
-    useState<boolean>(false);
-
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [viewCountIncremented, setViewCountIncremented] = useState(false);
   const slug = getBlogSlugFromURL();
 
   useEffect(() => {
-    if (slug) {
-      loadBlogPost(slug);
-    } else {
+    if (slug) loadBlogPost(slug);
+    else {
       setError("No blog slug provided");
       setLoading(false);
     }
   }, [slug]);
-
   useEffect(() => {
-    // Increment view count after a short delay (to avoid bots)
     if (blogPost && !viewCountIncremented) {
-      const timer = setTimeout(() => {
+      const t = setTimeout(() => {
         blogDetailService.incrementViewCount(blogPost.id!);
         setViewCountIncremented(true);
       }, 3000);
-
-      return () => clearTimeout(timer);
+      return () => clearTimeout(t);
     }
   }, [blogPost, viewCountIncremented]);
 
@@ -222,188 +189,156 @@ const BlogDetail: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-
       const post = await blogDetailService.getBlogBySlug(postSlug);
-
       if (!post) {
         setError("Blog post not found");
         return;
       }
-
       setBlogPost(post);
-
-      // Load related posts
       const related = await blogDetailService.getRelatedPosts(
         post.id!,
         post.category,
-        post.tags
+        post.tags,
       );
       setRelatedPosts(related);
-
-      // Update page title and meta description
       document.title = post.seoTitle || post.title;
-
-      // Update meta description
-      const metaDescription = document.querySelector(
-        'meta[name="description"]'
-      );
-      if (metaDescription) {
-        metaDescription.setAttribute(
-          "content",
-          post.seoDescription || post.excerpt
-        );
-      }
-    } catch (err) {
+      document
+        .querySelector('meta[name="description"]')
+        ?.setAttribute("content", post.seoDescription || post.excerpt);
+    } catch {
       setError("Failed to load blog post. Please try again later.");
-      console.error("Error loading blog post:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLike = async () => {
-    if (!blogPost) return;
-
+  const handleLike = () => {
     setIsLiked(!isLiked);
-
-    if (!isLiked) {
-      await blogDetailService.incrementLikes(blogPost.id!);
-    }
   };
-
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
-
-    // You can implement bookmark functionality here
-    // For example, save to localStorage or user's account
-    if (!isBookmarked) {
-      localStorage.setItem(`bookmark_${blogPost?.id}`, "true");
-    } else {
-      localStorage.removeItem(`bookmark_${blogPost?.id}`);
-    }
+    if (!isBookmarked) localStorage.setItem(`bookmark_${blogPost?.id}`, "true");
+    else localStorage.removeItem(`bookmark_${blogPost?.id}`);
   };
-
   const handleShare = (platform: string) => {
     if (!blogPost) return;
-
     const url = window.location.href;
-    const title = blogPost.title;
-    const text = blogPost.excerpt;
-
-    switch (platform) {
-      case "twitter":
-        window.open(
-          `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-            title
-          )}&url=${encodeURIComponent(url)}`,
-          "_blank"
-        );
-        break;
-      case "facebook":
-        window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-            url
-          )}`,
-          "_blank"
-        );
-        break;
-      case "linkedin":
-        window.open(
-          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-            url
-          )}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(
-            text
-          )}`,
-          "_blank"
-        );
-        break;
-      case "copy":
-        navigator.clipboard
-          .writeText(url)
-          .then(() => {
-            alert("Link copied to clipboard!");
-          })
-          .catch(() => {
-            alert("Failed to copy link");
-          });
-        break;
-    }
+    if (platform === "twitter")
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(blogPost.title)}&url=${encodeURIComponent(url)}`,
+        "_blank",
+      );
+    else if (platform === "facebook")
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+        "_blank",
+      );
+    else if (platform === "linkedin")
+      window.open(
+        `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(blogPost.title)}`,
+        "_blank",
+      );
+    else if (platform === "copy")
+      navigator.clipboard
+        .writeText(url)
+        .then(() => alert("Link copied!"))
+        .catch(() => alert("Failed to copy link"));
     setShowShareModal(false);
   };
 
   const formatDate = (dateString?: string, timestamp?: Timestamp) => {
-    if (dateString) {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } else if (timestamp) {
-      return timestamp.toDate().toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    }
-    return "Unknown date";
+    const d = dateString ? new Date(dateString) : timestamp?.toDate();
+    return d
+      ? d.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "Unknown date";
   };
-
   const formatShortDate = (dateString?: string, timestamp?: Timestamp) => {
-    if (dateString) {
-      return new Date(dateString).toLocaleDateString();
-    } else if (timestamp) {
-      return timestamp.toDate().toLocaleDateString();
-    }
-    return "Unknown date";
+    const d = dateString ? new Date(dateString) : timestamp?.toDate();
+    return d ? d.toLocaleDateString() : "Unknown date";
   };
 
-  // Loading state
-  if (loading) {
+  const actionBtnCls = `transition-all duration-300 ${isDark ? "bg-white/6 text-white/45 hover:bg-white/10 hover:text-white/70 border border-white/8" : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"}`;
+
+  if (loading)
     return (
-      <div className={`min-h-screen ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} flex items-center justify-center`}>
+      <div
+        className={`min-h-screen ${isDark ? "bg-black" : "bg-gray-50"} flex items-center justify-center`}
+      >
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             className="mb-4"
           >
-            <Loader className="w-8 h-8 text-purple-500 mx-auto" />
+            <Loader
+              className={`w-7 h-7 ${isDark ? "text-white/30" : "text-gray-400"} mx-auto`}
+            />
           </motion.div>
-          <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>Loading blog post...</p>
+          <p
+            style={{
+              fontFamily: F.body,
+              fontWeight: 300,
+              fontSize: "0.78rem",
+              color: isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.38)",
+            }}
+          >
+            Loading blog post…
+          </p>
         </div>
       </div>
     );
-  }
 
-  // Error state
-  if (error || !blogPost) {
+  if (error || !blogPost)
     return (
-      <div className={`min-h-screen ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} flex items-center justify-center`}>
+      <div
+        className={`min-h-screen ${isDark ? "bg-black" : "bg-gray-50"} flex items-center justify-center`}
+      >
         <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>
+          <AlertCircle className="w-10 h-10 text-red-500/60 mx-auto mb-4" />
+          <h1
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: "1.2rem",
+              color: isDark ? "rgba(255,255,255,0.78)" : "rgba(0,0,0,0.72)",
+              marginBottom: "0.5rem",
+            }}
+          >
             {error || "Post Not Found"}
           </h1>
-          <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light mb-6`}>
+          <p
+            style={{
+              fontFamily: F.body,
+              fontWeight: 300,
+              fontSize: "0.78rem",
+              color: isDark ? "rgba(255,255,255,0.32)" : "rgba(0,0,0,0.38)",
+              marginBottom: "1.5rem",
+            }}
+          >
             The blog post you're looking for doesn't exist or has been removed.
           </p>
           <a
             href="/blog"
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-light text-sm hover:from-purple-600 hover:to-blue-600 transition-colors"
+            style={{ fontFamily: F.body, fontWeight: 300, fontSize: "0.82rem" }}
+            className={`px-6 py-3 ${isDark ? "bg-white text-black" : "bg-black text-white"} rounded-full hover:opacity-85 transition-opacity`}
           >
             Back to Blog
           </a>
         </div>
       </div>
     );
-  }
 
   return (
-    <div className={`min-h-screen ${isDark ? "bg-gradient-to-br from-gray-900 via-black to-purple-900" : "bg-gradient-to-br from-gray-50 via-white to-purple-50"} pt-24 pb-12`}>
+    <div
+      className={`min-h-screen ${isDark ? "bg-black" : "bg-gray-50"} pt-24 pb-12`}
+    >
       <div className="container mx-auto px-6 lg:px-8 max-w-4xl">
-        {/* Back Button */}
+        {/* Back */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -411,116 +346,168 @@ const BlogDetail: React.FC = () => {
         >
           <a
             href="/blog"
-            className={`inline-flex items-center gap-2 ${isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} transition-colors duration-200 text-sm font-light`}
+            style={{
+              fontFamily: F.body,
+              fontWeight: 300,
+              fontSize: "0.82rem",
+              color: isDark ? "rgba(255,255,255,0.38)" : "rgba(0,0,0,0.42)",
+            }}
+            className="inline-flex items-center gap-2 hover:opacity-70 transition-opacity"
           >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Blog
+            <ArrowLeft className="w-4 h-4" /> Back to Blog
           </a>
         </motion.div>
 
-        {/* Article Header */}
+        {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          {/* Category Badge */}
-          <div className="mb-4">
-            <span className={`px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border ${isDark ? "border-purple-500/30 text-purple-300" : "border-purple-300/50 text-purple-600"} rounded-full text-sm font-light`}>
+          {/* Category badges — DM Mono */}
+          <div className="mb-4 flex gap-2 flex-wrap">
+            <span
+              style={{
+                fontFamily: F.mono,
+                fontSize: "8px",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+              }}
+              className={`px-4 py-2 ${isDark ? "bg-white/6 border-white/10 text-white/45" : "bg-black/5 border-gray-200 text-gray-500"} border rounded-full`}
+            >
               {blogPost.category}
             </span>
             {blogPost.isFeature && (
-              <span className={`ml-3 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border ${isDark ? "border-yellow-500/30 text-yellow-300" : "border-yellow-400/50 text-yellow-600"} rounded-full text-sm font-light`}>
+              <span
+                style={{
+                  fontFamily: F.mono,
+                  fontSize: "8px",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                }}
+                className="px-4 py-2 bg-amber-500/15 border border-amber-500/25 text-amber-400/70 rounded-full"
+              >
                 Featured
               </span>
             )}
           </div>
 
-          {/* Title */}
-          <h1 className={`text-2xl md:text-3xl lg:text-4xl font-light ${isDark ? "text-white" : "text-gray-900"} leading-tight mb-6`}>
+          {/* Title — Instrument Serif */}
+          <h1
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: "clamp(1.6rem,4vw,2.5rem)",
+              letterSpacing: "-0.025em",
+              lineHeight: 1.2,
+              color: isDark ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.85)",
+              marginBottom: "1.5rem",
+            }}
+          >
             {blogPost.title}
           </h1>
 
-          {/* Meta Information */}
-          <div className={`flex flex-wrap items-center gap-6 ${isDark ? "text-gray-400" : "text-gray-500"} mb-6`}>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm font-light">
-                {formatDate(blogPost.publishedDate, blogPost.createdAt)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm font-light">{blogPost.readTime || 5} min read</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4" />
-              <span className="text-sm font-light">
-                {blogPost.viewCount.toLocaleString()} views
-              </span>
-            </div>
+          {/* Meta — DM Mono */}
+          <div
+            className="flex flex-wrap items-center gap-5 mb-6"
+            style={{
+              fontFamily: F.mono,
+              fontSize: "9px",
+              letterSpacing: "0.1em",
+              color: isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.32)",
+            }}
+          >
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatDate(blogPost.publishedDate, blogPost.createdAt)}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {blogPost.readTime || 5} min read
+            </span>
+            <span className="flex items-center gap-1">
+              <Eye className="w-3 h-3" />
+              {blogPost.viewCount.toLocaleString()} views
+            </span>
           </div>
 
-          {/* Author Info */}
-          <div className={`flex items-center justify-between border-t border-b ${isDark ? "border-white/10" : "border-gray-200"} py-6`}>
+          {/* Author + actions */}
+          <div
+            className={`flex items-center justify-between border-t border-b ${isDark ? "border-white/6" : "border-gray-200"} py-5`}
+          >
             <div className="flex items-center gap-4">
               {blogPost.author.avatar ? (
                 <img
                   src={blogPost.author.avatar}
                   alt={blogPost.author.name}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-10 h-10 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div
+                  className={`w-10 h-10 ${isDark ? "bg-white/8" : "bg-gray-200"} rounded-full flex items-center justify-center`}
+                >
+                  <User
+                    className={`w-5 h-5 ${isDark ? "text-white/35" : "text-gray-400"}`}
+                  />
                 </div>
               )}
               <div>
-                <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"}`}>
+                <h3
+                  style={{
+                    fontFamily: F.body,
+                    fontWeight: 400,
+                    fontSize: "0.85rem",
+                    color: isDark
+                      ? "rgba(255,255,255,0.75)"
+                      : "rgba(0,0,0,0.72)",
+                  }}
+                >
                   {blogPost.author.name}
                 </h3>
-                <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>
+                <p
+                  style={{
+                    fontFamily: F.mono,
+                    fontSize: "8px",
+                    letterSpacing: "0.06em",
+                    color: isDark
+                      ? "rgba(255,255,255,0.28)"
+                      : "rgba(0,0,0,0.30)",
+                  }}
+                >
                   {blogPost.author.bio || "Contributing Author"}
                 </p>
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-                  isLiked
-                    ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                    : isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"
-                }`}
+                style={{
+                  fontFamily: F.body,
+                  fontWeight: 300,
+                  fontSize: "0.78rem",
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${isLiked ? "bg-red-500/15 text-red-400 border border-red-500/25" : actionBtnCls}`}
               >
-                <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
-                <span className="text-sm font-light">
-                  {Math.floor(blogPost.viewCount * 0.1) + (isLiked ? 1 : 0)}
-                </span>
+                <Heart
+                  className={`w-3.5 h-3.5 ${isLiked ? "fill-current" : ""}`}
+                />
+                {Math.floor(blogPost.viewCount * 0.1) + (isLiked ? 1 : 0)}
               </button>
-
               <button
                 onClick={handleBookmark}
-                className={`p-2 rounded-full transition-all duration-300 ${
-                  isBookmarked
-                    ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                    : isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"
-                }`}
-                title={isBookmarked ? "Remove bookmark" : "Bookmark this post"}
+                className={`p-2 rounded-full ${isBookmarked ? "bg-amber-500/15 text-amber-400 border border-amber-500/25" : actionBtnCls}`}
+                title={isBookmarked ? "Remove bookmark" : "Bookmark"}
               >
                 <Bookmark
-                  className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`}
+                  className={`w-3.5 h-3.5 ${isBookmarked ? "fill-current" : ""}`}
                 />
               </button>
-
               <button
                 onClick={() => setShowShareModal(true)}
-                className={`p-2 ${isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"} rounded-full transition-all duration-300`}
-                title="Share this post"
+                className={`p-2 rounded-full ${actionBtnCls}`}
+                title="Share"
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -546,7 +533,7 @@ const BlogDetail: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Article Content */}
+        {/* Article content — Outfit 300 applied via CSS class */}
         <motion.article
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -554,34 +541,50 @@ const BlogDetail: React.FC = () => {
           className="mb-12"
         >
           <div
-            className={`prose ${isDark ? "prose-invert" : "prose-gray"} prose-base max-w-none ${isDark ? "text-gray-300" : "text-gray-700"} leading-relaxed font-light`}
+            className={`prose ${isDark ? "prose-invert" : "prose-gray"} prose-base max-w-none leading-relaxed`}
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
             style={{
-              fontSize: "1.05rem",
-              lineHeight: "1.75",
+              fontFamily: F.body,
+              fontWeight: 300,
+              fontSize: "1rem",
+              lineHeight: "1.85",
+              color: isDark ? "rgba(255,255,255,0.60)" : "rgba(0,0,0,0.65)",
             }}
           />
         </motion.article>
 
-        {/* Tags */}
-        {blogPost.tags && blogPost.tags.length > 0 && (
+        {/* Tags — DM Mono */}
+        {blogPost.tags?.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
             className="mb-12"
           >
-            <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>Tags</h3>
+            <h3
+              style={{
+                fontFamily: F.mono,
+                fontSize: "9px",
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                color: isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.32)",
+                marginBottom: "0.75rem",
+              }}
+            >
+              Tags
+            </h3>
             <div className="flex flex-wrap gap-3">
               {blogPost.tags.map((tag) => (
                 <span
                   key={tag}
-                  className={`px-4 py-2 ${isDark ? "bg-white/10 border-white/20 text-gray-300" : "bg-purple-50 border-gray-200 text-gray-600"} hover:bg-purple-500/20 hover:text-purple-400 border rounded-full text-sm font-light cursor-pointer transition-colors duration-300`}
+                  style={{
+                    fontFamily: F.mono,
+                    fontSize: "8px",
+                    letterSpacing: "0.1em",
+                  }}
+                  className={`px-4 py-2 ${isDark ? "bg-white/6 border-white/8 text-white/40 hover:bg-white/12" : "bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200"} border rounded-full cursor-pointer transition-colors duration-300`}
                   onClick={() => {
-                    // Navigate to blog listing with tag filter
-                    window.location.href = `/blog?tag=${encodeURIComponent(
-                      tag
-                    )}`;
+                    window.location.href = `/blog?tag=${encodeURIComponent(tag)}`;
                   }}
                 >
                   #{tag}
@@ -591,61 +594,82 @@ const BlogDetail: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Social Actions */}
+        {/* Social actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className={`flex items-center justify-center gap-6 py-8 border-t border-b ${isDark ? "border-white/10" : "border-gray-200"} mb-12`}
+          className={`flex items-center justify-center gap-4 py-7 border-t border-b ${isDark ? "border-white/6" : "border-gray-200"} mb-12`}
         >
-          <button
-            onClick={handleLike}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-300 text-sm font-light ${
-              isLiked
-                ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                : isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"
-            }`}
-          >
-            <ThumbsUp className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
-            {isLiked ? "Liked!" : "Like this post"}
-          </button>
-
-          <button className={`flex items-center gap-2 px-6 py-3 ${isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"} rounded-full transition-all duration-300 text-sm font-light`}>
-            <MessageCircle className="w-5 h-5" />
-            Comment
-          </button>
-
-          <button
-            onClick={() => setShowShareModal(true)}
-            className={`flex items-center gap-2 px-6 py-3 ${isDark ? "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white border border-white/20" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-200"} rounded-full transition-all duration-300 text-sm font-light`}
-          >
-            <Share2 className="w-5 h-5" />
-            Share
-          </button>
+          {[
+            {
+              onClick: handleLike,
+              icon: ThumbsUp,
+              label: isLiked ? "Liked!" : "Like this post",
+              active: isLiked,
+              activeCls: "bg-red-500/15 text-red-400 border-red-500/25",
+            },
+            {
+              onClick: () => {},
+              icon: MessageCircle,
+              label: "Comment",
+              active: false,
+              activeCls: "",
+            },
+            {
+              onClick: () => setShowShareModal(true),
+              icon: Share2,
+              label: "Share",
+              active: false,
+              activeCls: "",
+            },
+          ].map(({ onClick, icon: Icon, label, active, activeCls }) => (
+            <button
+              key={label}
+              onClick={onClick}
+              style={{
+                fontFamily: F.body,
+                fontWeight: 300,
+                fontSize: "0.78rem",
+              }}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 ${active ? `${activeCls} border` : `${actionBtnCls}`}`}
+            >
+              <Icon className={`w-4 h-4 ${active ? "fill-current" : ""}`} />
+              {label}
+            </button>
+          ))}
         </motion.div>
 
-        {/* Related Posts */}
+        {/* Related posts */}
         {relatedPosts.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.0 }}
           >
-            <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-8`}>
+            <h2
+              style={{
+                fontFamily: F.display,
+                fontWeight: 400,
+                fontSize: "1.1rem",
+                letterSpacing: "-0.01em",
+                color: isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.65)",
+                marginBottom: "2rem",
+              }}
+            >
               Related Posts
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {relatedPosts.map((post, index) => (
+              {relatedPosts.map((post, i) => (
                 <motion.article
                   key={post.id}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.1 + index * 0.1 }}
-                  className={`group ${isDark ? "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20" : "bg-white/80 border-gray-200 hover:bg-white hover:border-gray-300"} backdrop-blur-sm rounded-xl border overflow-hidden transition-all duration-300`}
+                  transition={{ delay: 1.1 + i * 0.1 }}
+                  className={`group ${isDark ? "bg-white/4 border-white/8 hover:bg-white/7 hover:border-white/14" : "bg-white/80 border-gray-200 hover:bg-white hover:border-gray-300"} backdrop-blur-sm rounded-xl border overflow-hidden transition-all duration-300`}
                 >
                   <a href={`/blog/${post.slug}`} className="block">
-                    {/* Image */}
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-44 overflow-hidden">
                       {post.featuredImage ? (
                         <img
                           src={post.featuredImage}
@@ -654,33 +678,84 @@ const BlogDetail: React.FC = () => {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                          <div className="text-center p-4">
-                            <h3 className={`${isDark ? "text-white" : "text-gray-700"} font-light text-sm line-clamp-3`}>
-                              {post.title}
-                            </h3>
-                          </div>
+                        <div
+                          className={`absolute inset-0 ${isDark ? "bg-white/3" : "bg-gray-100"} flex items-center justify-center`}
+                        >
+                          <h3
+                            style={{
+                              fontFamily: F.display,
+                              fontWeight: 400,
+                              fontSize: "0.85rem",
+                              color: isDark
+                                ? "rgba(255,255,255,0.50)"
+                                : "rgba(0,0,0,0.45)",
+                            }}
+                            className="text-center p-4 line-clamp-3"
+                          >
+                            {post.title}
+                          </h3>
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
-                      <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-xs text-white font-light">
+                      <div
+                        className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full"
+                        style={{
+                          fontFamily: F.mono,
+                          fontSize: "8px",
+                          letterSpacing: "0.1em",
+                          color: "rgba(255,255,255,0.75)",
+                        }}
+                      >
                         {post.category}
                       </div>
                     </div>
-
-                    {/* Content */}
-                    <div className="p-6">
-                      <h3 className={`text-base font-light ${isDark ? "text-white" : "text-gray-900"} mb-2 group-hover:text-purple-400 transition-colors line-clamp-2`}>
+                    <div className="p-5">
+                      <h3
+                        style={{
+                          fontFamily: F.display,
+                          fontWeight: 400,
+                          fontSize: "0.92rem",
+                          letterSpacing: "-0.01em",
+                          lineHeight: 1.3,
+                          color: isDark
+                            ? "rgba(255,255,255,0.80)"
+                            : "rgba(0,0,0,0.78)",
+                          marginBottom: "0.4rem",
+                        }}
+                        className="line-clamp-2 group-hover:opacity-70 transition-opacity"
+                      >
                         {post.title}
                       </h3>
-                      <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light mb-4 line-clamp-2`}>
+                      <p
+                        style={{
+                          fontFamily: F.body,
+                          fontWeight: 300,
+                          fontSize: "0.75rem",
+                          lineHeight: 1.65,
+                          color: isDark
+                            ? "rgba(255,255,255,0.32)"
+                            : "rgba(0,0,0,0.40)",
+                          marginBottom: "0.75rem",
+                        }}
+                        className="line-clamp-2"
+                      >
                         {post.excerpt}
                       </p>
-                      <div className={`flex items-center gap-4 text-xs font-light ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                      <div
+                        className="flex items-center gap-3"
+                        style={{
+                          fontFamily: F.mono,
+                          fontSize: "8px",
+                          letterSpacing: "0.08em",
+                          color: isDark
+                            ? "rgba(255,255,255,0.22)"
+                            : "rgba(0,0,0,0.28)",
+                        }}
+                      >
                         <span>
                           {formatShortDate(post.publishedDate, post.createdAt)}
                         </span>
-                        <span>{post.readTime || 5} min read</span>
+                        <span>{post.readTime || 5} min</span>
                         <span>{post.viewCount} views</span>
                       </div>
                     </div>
@@ -705,41 +780,61 @@ const BlogDetail: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className={`${isDark ? "bg-gray-900 border-white/20" : "bg-white border-gray-200"} border rounded-2xl p-6 max-w-md w-full`}
+            className={`${isDark ? "bg-black/90 border-white/10" : "bg-white border-gray-200"} border rounded-2xl p-6 max-w-md w-full`}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className={`text-lg font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>
+            <h3
+              style={{
+                fontFamily: F.display,
+                fontWeight: 400,
+                fontSize: "1rem",
+                color: isDark ? "rgba(255,255,255,0.80)" : "rgba(0,0,0,0.75)",
+                marginBottom: "1rem",
+              }}
+            >
               Share this post
             </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleShare("twitter")}
-                className="flex items-center gap-3 p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 transition-colors text-sm font-light"
-              >
-                <Twitter className="w-5 h-5" />
-                Twitter
-              </button>
-              <button
-                onClick={() => handleShare("facebook")}
-                className="flex items-center gap-3 p-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-600/30 rounded-lg text-blue-300 transition-colors text-sm font-light"
-              >
-                <Facebook className="w-5 h-5" />
-                Facebook
-              </button>
-              <button
-                onClick={() => handleShare("linkedin")}
-                className="flex items-center gap-3 p-3 bg-blue-700/20 hover:bg-blue-700/30 border border-blue-700/30 rounded-lg text-blue-300 transition-colors text-sm font-light"
-              >
-                <Linkedin className="w-5 h-5" />
-                LinkedIn
-              </button>
-              <button
-                onClick={() => handleShare("copy")}
-                className={`flex items-center gap-3 p-3 ${isDark ? "bg-gray-500/20 hover:bg-gray-500/30 border-gray-500/30 text-gray-300" : "bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-600"} border rounded-lg transition-colors text-sm font-light`}
-              >
-                <LinkIcon className="w-5 h-5" />
-                Copy Link
-              </button>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {
+                  platform: "twitter",
+                  icon: Twitter,
+                  label: "Twitter",
+                  cls: "bg-blue-500/10 border-blue-500/20 text-blue-400/80 hover:bg-blue-500/20",
+                },
+                {
+                  platform: "facebook",
+                  icon: Facebook,
+                  label: "Facebook",
+                  cls: "bg-blue-600/10 border-blue-600/20 text-blue-400/80 hover:bg-blue-600/20",
+                },
+                {
+                  platform: "linkedin",
+                  icon: Linkedin,
+                  label: "LinkedIn",
+                  cls: "bg-blue-700/10 border-blue-700/20 text-blue-400/80 hover:bg-blue-700/20",
+                },
+                {
+                  platform: "copy",
+                  icon: LinkIcon,
+                  label: "Copy Link",
+                  cls: `${isDark ? "bg-white/6 border-white/10 text-white/45 hover:bg-white/12" : "bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200"}`,
+                },
+              ].map(({ platform, icon: Icon, label, cls }) => (
+                <button
+                  key={platform}
+                  onClick={() => handleShare(platform)}
+                  style={{
+                    fontFamily: F.body,
+                    fontWeight: 300,
+                    fontSize: "0.78rem",
+                  }}
+                  className={`flex items-center gap-2.5 p-3 border rounded-xl transition-colors ${cls}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
             </div>
           </motion.div>
         </motion.div>

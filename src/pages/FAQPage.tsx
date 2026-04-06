@@ -12,12 +12,32 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
-
-// Firebase imports
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-// Types
+// ─── Google Fonts ─────────────────────────────────────────────
+// DISPLAY → "Instrument Serif"  — h1 "Frequently Asked Questions", CTA heading
+// LABEL   → "DM Mono"           — category filter buttons, "Q" marker, category badge, breadcrumb
+// BODY    → "Outfit" 300        — FAQ question text, answer text, descriptions, buttons
+function useFonts() {
+  useEffect(() => {
+    if (document.getElementById("faq-fonts")) return;
+    const link = document.createElement("link");
+    link.id = "faq-fonts";
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&family=Outfit:wght@300;400&display=swap";
+    document.head.appendChild(link);
+  }, []);
+}
+
+const F = {
+  display: "'Instrument Serif', Georgia, serif",
+  mono: "'DM Mono', monospace",
+  body: "'Outfit', sans-serif",
+};
+
+// Types & static data — unchanged
 interface FAQItem {
   id: string;
   question: string;
@@ -25,9 +45,7 @@ interface FAQItem {
   category: string;
 }
 
-// Static fallback FAQs
 const staticFAQs: FAQItem[] = [
-  // General
   {
     id: "g1",
     question: "What is E-Cell IPS Academy?",
@@ -49,7 +67,6 @@ const staticFAQs: FAQItem[] = [
       "Follow us on our social media channels (Instagram, LinkedIn, Twitter), subscribe to our newsletter through the website, and join our official WhatsApp community. We also post regular updates on our blog and through campus notices.",
     category: "General",
   },
-  // Events
   {
     id: "e1",
     question: "What types of events does E-Cell organize?",
@@ -71,7 +88,6 @@ const staticFAQs: FAQItem[] = [
       "Yes, many of our events are open to students from other colleges as well. Flagship events like VypaarX typically welcome participants from across India. Check individual event pages for specific eligibility criteria and registration details.",
     category: "Events",
   },
-  // Membership
   {
     id: "m1",
     question: "How do I become a member of E-Cell?",
@@ -93,7 +109,6 @@ const staticFAQs: FAQItem[] = [
       "Members gain hands-on experience in event management, marketing, technical skills, and leadership. You get access to exclusive workshops, networking opportunities with industry professionals and alumni, certificates, and the chance to be part of a vibrant community of like-minded individuals.",
     category: "Membership",
   },
-  // Startups
   {
     id: "s1",
     question: "I have a startup idea. How can E-Cell help?",
@@ -115,7 +130,6 @@ const staticFAQs: FAQItem[] = [
       "Absolutely! We have a network of mentors including successful entrepreneurs, industry professionals, and experienced faculty members. Mentorship sessions are arranged regularly and can be requested through our contact page. We also invite guest mentors during special events.",
     category: "Startups",
   },
-  // Technical
   {
     id: "t1",
     question: "Does E-Cell organize technical workshops?",
@@ -146,15 +160,8 @@ const staticFAQs: FAQItem[] = [
   },
 ];
 
-const categoryColors: Record<string, string> = {
-  General: "from-purple-500 to-violet-600",
-  Events: "from-blue-500 to-cyan-500",
-  Membership: "from-emerald-500 to-teal-500",
-  Startups: "from-orange-500 to-amber-500",
-  Technical: "from-red-500 to-pink-500",
-};
-
 const FAQPage: React.FC = () => {
+  useFonts();
   const { isDark } = useTheme();
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,22 +176,16 @@ const FAQPage: React.FC = () => {
   useEffect(() => {
     loadFAQs();
   }, []);
-
   const loadFAQs = async () => {
     try {
       setLoading(true);
-      const querySnapshot = await getDocs(collection(db, "faqs"));
-      if (querySnapshot.empty) {
-        setFaqs(staticFAQs);
-      } else {
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as FAQItem[];
-        setFaqs(data.length > 0 ? data : staticFAQs);
-      }
-    } catch (error) {
-      console.error("Error fetching FAQs:", error);
+      const snap = await getDocs(collection(db, "faqs"));
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      })) as FAQItem[];
+      setFaqs(data.length > 0 ? data : staticFAQs);
+    } catch {
       setFaqs(staticFAQs);
     } finally {
       setLoading(false);
@@ -195,32 +196,28 @@ const FAQPage: React.FC = () => {
     "All",
     ...Array.from(new Set(faqs.map((f) => f.category))),
   ];
-
   const filteredFAQs = faqs.filter((faq) => {
-    const matchesCategory =
-      activeCategory === "All" || faq.category === activeCategory;
-    const matchesSearch =
+    const mc = activeCategory === "All" || faq.category === activeCategory;
+    const ms =
       searchQuery === "" ||
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return mc && ms;
   });
 
-  const toggleItem = (id: string) => {
+  const toggleItem = (id: string) =>
     setOpenItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
     });
-  };
 
-  // Floating question marks for hero
+  // Floating ? marks — very faint, no purple
   const questionMarks = Array.from({ length: 12 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: Math.random() * 30 + 20,
+    size: Math.random() * 28 + 18,
     rotation: Math.random() * 360,
     duration: Math.random() * 8 + 8,
     delay: Math.random() * 4,
@@ -228,28 +225,25 @@ const FAQPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${isDark ? "bg-black" : "bg-gray-50"}`}>
-      {/* Hero Section */}
+      {/* ===== HERO ===== */}
       <section
         ref={heroRef}
         className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
       >
-        {/* Animated background */}
-        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-black via-purple-950/40 to-black" : "bg-gradient-to-br from-white via-purple-50 to-white"}`} />
+        <div
+          className={`absolute inset-0 ${isDark ? "bg-black" : "bg-white"}`}
+        />
 
-        {/* Floating question marks */}
+        {/* Floating ? marks — neutral opacity only */}
         {questionMarks.map((qm) => (
           <motion.div
             key={qm.id}
-            className="absolute text-purple-500/10 font-bold select-none pointer-events-none"
-            style={{
-              left: `${qm.x}%`,
-              top: `${qm.y}%`,
-              fontSize: qm.size,
-            }}
+            className={`absolute font-light select-none pointer-events-none ${isDark ? "text-white/[0.04]" : "text-black/[0.04]"}`}
+            style={{ left: `${qm.x}%`, top: `${qm.y}%`, fontSize: qm.size }}
             animate={{
               y: [0, -40, 0],
-              rotate: [qm.rotation, qm.rotation + 20, qm.rotation],
-              opacity: [0.05, 0.2, 0.05],
+              rotate: [qm.rotation, qm.rotation + 15, qm.rotation],
+              opacity: [0.03, 0.1, 0.03],
             }}
             transition={{
               duration: qm.duration,
@@ -262,123 +256,166 @@ const FAQPage: React.FC = () => {
           </motion.div>
         ))}
 
-        {/* 3D floating shapes */}
+        {/* Subtle geometric rings — no color */}
         <motion.div
-          className="absolute top-1/4 left-[15%] w-24 h-24 border border-purple-500/20 rounded-full"
-          animate={{
-            rotateZ: [0, 360],
-            scale: [0.8, 1.1, 0.8],
-          }}
+          className={`absolute top-1/4 left-[15%] w-24 h-24 border ${isDark ? "border-white/6" : "border-black/6"} rounded-full`}
+          animate={{ rotateZ: [0, 360], scale: [0.8, 1.1, 0.8] }}
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-[15%] w-16 h-16 border border-blue-500/20 rounded-lg"
-          style={{ transformStyle: "preserve-3d" }}
-          animate={{
-            rotateY: [0, 360],
-            rotateX: [0, 180, 0],
-          }}
+          className={`absolute bottom-1/4 right-[15%] w-16 h-16 border ${isDark ? "border-white/4" : "border-black/4"} rounded-lg`}
+          animate={{ rotateY: [0, 360], rotateX: [0, 180, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
         />
 
-        {/* Radial glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-500/8 rounded-full blur-[100px]" />
-
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          {/* Breadcrumb */}
+          {/* Breadcrumb — DM Mono */}
           <motion.nav
             initial={{ opacity: 0, y: -20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8"
+            className="flex items-center justify-center gap-2 mb-8"
+            style={{
+              fontFamily: F.mono,
+              fontSize: "8px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.32)",
+            }}
           >
-            <Link to="/" className="hover:text-purple-400 transition-colors">
+            <Link to="/" className="hover:opacity-70 transition-opacity">
               Home
             </Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-purple-400">FAQs</span>
+            <ChevronRight className="w-3 h-3" />
+            <span>FAQs</span>
           </motion.nav>
 
+          {/* "Got Questions?" pill — DM Mono, neutral */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={heroInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.8, type: "spring" }}
-            className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full"
+            className={`mb-6 inline-flex items-center gap-2 px-4 py-2 ${isDark ? "bg-white/5 border-white/8" : "bg-black/5 border-gray-200"} border rounded-full`}
           >
-            <HelpCircle className="w-4 h-4 text-purple-400" />
-            <span className="text-purple-300 text-sm font-medium">
+            <HelpCircle
+              className={`w-3.5 h-3.5 ${isDark ? "text-white/40" : "text-gray-400"}`}
+            />
+            <span
+              style={{
+                fontFamily: F.mono,
+                fontSize: "9px",
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                color: isDark ? "rgba(255,255,255,0.38)" : "rgba(0,0,0,0.42)",
+              }}
+            >
               Got Questions?
             </span>
           </motion.div>
 
+          {/* H1 — Instrument Serif, no gradient — plain white/black */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
+            style={{
+              fontFamily: F.display,
+              fontWeight: 400,
+              fontSize: "clamp(2rem, 7vw, 4rem)",
+              letterSpacing: "-0.03em",
+              lineHeight: 1.1,
+              color: isDark ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.85)",
+              marginBottom: "1rem",
+            }}
           >
-            <span className="block">Frequently</span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-400 to-blue-400">
+            <span style={{ display: "block" }}>Frequently</span>
+            <span style={{ display: "block", fontStyle: "italic" }}>
               Asked Questions
             </span>
           </motion.h1>
 
+          {/* Sub — Outfit 300 */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
+            style={{
+              fontFamily: F.body,
+              fontWeight: 300,
+              fontSize: "clamp(0.78rem,1.3vw,0.9rem)",
+              color: isDark ? "rgba(255,255,255,0.38)" : "rgba(0,0,0,0.42)",
+              lineHeight: 1.75,
+              maxWidth: "46ch",
+              margin: "0 auto 2.5rem",
+            }}
           >
             Find answers to common questions about E-Cell IPS Academy, our
             events, membership, and everything in between.
           </motion.p>
 
-          {/* Search bar */}
+          {/* Search — Outfit 300 */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.6 }}
             className="relative max-w-xl mx-auto"
           >
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search
+              className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? "text-white/30" : "text-gray-400"}`}
+            />
             <input
               type="text"
-              placeholder="Search your question..."
+              placeholder="Search your question…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 backdrop-blur-md transition-all duration-300 text-lg"
+              style={{
+                fontFamily: F.body,
+                fontWeight: 300,
+                fontSize: "0.85rem",
+              }}
+              className={`w-full pl-13 pr-6 py-4 ${isDark ? "bg-white/5 border-white/8 text-white placeholder-white/25" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400"} border rounded-2xl focus:outline-none focus:border-white/20 backdrop-blur-md transition-all duration-300`}
             />
           </motion.div>
         </div>
       </section>
 
-      {/* FAQ Content */}
+      {/* ===== FAQ CONTENT ===== */}
       <section ref={contentRef} className="relative py-20 px-6 pb-32">
         <div className="max-w-4xl mx-auto">
-          {/* Category Tabs */}
+          {/* Category Tabs — DM Mono */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={contentInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
             className="flex flex-wrap gap-3 justify-center mb-12"
           >
-            {categories.map((cat, index) => (
+            {categories.map((cat, i) => (
               <motion.button
                 key={cat}
                 initial={{ opacity: 0, y: 10 }}
                 animate={contentInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                style={{
+                  fontFamily: F.mono,
+                  fontSize: "8px",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                }}
+                className={`px-5 py-2.5 rounded-xl transition-all duration-300 ${
                   activeCategory === cat
-                    ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25"
-                    : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-white"
+                    ? isDark
+                      ? "bg-white text-black"
+                      : "bg-black text-white" // plain invert, no purple
+                    : isDark
+                      ? "bg-white/5 text-white/38 border border-white/8 hover:bg-white/10 hover:text-white/65"
+                      : "bg-white text-gray-400 border border-gray-200 hover:bg-gray-50 hover:text-gray-700"
                 }`}
               >
                 {cat}
-                <span className="ml-2 text-xs opacity-70">
+                <span className="ml-1.5 opacity-50">
                   (
                   {cat === "All"
                     ? faqs.length
@@ -397,9 +434,20 @@ const FAQPage: React.FC = () => {
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 className="mb-4"
               >
-                <Loader className="w-8 h-8 text-purple-500" />
+                <Loader
+                  className={`w-7 h-7 ${isDark ? "text-white/30" : "text-gray-400"}`}
+                />
               </motion.div>
-              <p className="text-gray-400">Loading FAQs...</p>
+              <p
+                style={{
+                  fontFamily: F.body,
+                  fontWeight: 300,
+                  fontSize: "0.78rem",
+                  color: isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.35)",
+                }}
+              >
+                Loading FAQs…
+              </p>
             </div>
           ) : filteredFAQs.length > 0 ? (
             <AnimatePresence mode="wait">
@@ -409,7 +457,7 @@ const FAQPage: React.FC = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-4"
+                className="space-y-3"
               >
                 {filteredFAQs.map((faq, index) => {
                   const isOpen = openItems.has(faq.id);
@@ -421,53 +469,74 @@ const FAQPage: React.FC = () => {
                       transition={{ duration: 0.5, delay: index * 0.06 }}
                     >
                       <div
-                        className={`backdrop-blur-md border rounded-2xl overflow-hidden transition-all duration-300 ${
+                        className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
                           isOpen
-                            ? "bg-white/8 border-purple-500/30 shadow-lg shadow-purple-500/10"
-                            : "bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20"
+                            ? isDark
+                              ? "bg-white/6 border-white/15"
+                              : "bg-black/3 border-gray-300"
+                            : isDark
+                              ? "bg-white/3 border-white/8 hover:bg-white/5 hover:border-white/12"
+                              : "bg-white border-gray-200 hover:border-gray-300"
                         }`}
-                        style={{
-                          background: isOpen
-                            ? "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(59,130,246,0.04))"
-                            : "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
-                        }}
                       >
                         <button
                           onClick={() => toggleItem(faq.id)}
-                          className="w-full flex items-start gap-4 p-6 text-left"
+                          className="w-full flex items-start gap-4 p-5 text-left"
                         >
+                          {/* Q marker — DM Mono, inverted pill */}
                           <div
-                            className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5 transition-all duration-300 ${
-                              isOpen
-                                ? "bg-gradient-to-br from-purple-500 to-blue-500"
-                                : "bg-white/10"
-                            }`}
+                            className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center mt-0.5 transition-all duration-300 ${isOpen ? (isDark ? "bg-white" : "bg-black") : isDark ? "bg-white/8" : "bg-black/6"}`}
                           >
                             <span
-                              className={`text-sm font-bold ${
-                                isOpen ? "text-white" : "text-gray-400"
-                              }`}
+                              style={{
+                                fontFamily: F.mono,
+                                fontSize: "9px",
+                                letterSpacing: "0.05em",
+                                color: isOpen
+                                  ? isDark
+                                    ? "black"
+                                    : "white"
+                                  : isDark
+                                    ? "rgba(255,255,255,0.38)"
+                                    : "rgba(0,0,0,0.40)",
+                              }}
                             >
                               Q
                             </span>
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span
-                                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                  categoryColors[faq.category]
-                                    ? "bg-purple-500/10 text-purple-400"
-                                    : "bg-white/10 text-gray-400"
-                                }`}
-                              >
-                                {faq.category}
-                              </span>
-                            </div>
+                            {/* Category — DM Mono */}
+                            <span
+                              style={{
+                                fontFamily: F.mono,
+                                fontSize: "7px",
+                                letterSpacing: "0.18em",
+                                textTransform: "uppercase",
+                                color: isDark
+                                  ? "rgba(255,255,255,0.25)"
+                                  : "rgba(0,0,0,0.30)",
+                              }}
+                              className="block mb-1.5"
+                            >
+                              {faq.category}
+                            </span>
+
+                            {/* Question — Outfit 400 */}
                             <h3
-                              className={`text-lg font-semibold transition-colors ${
-                                isOpen ? "text-white" : "text-gray-200"
-                              }`}
+                              style={{
+                                fontFamily: F.body,
+                                fontWeight: 400,
+                                fontSize: "clamp(0.85rem,1.3vw,0.95rem)",
+                                lineHeight: 1.4,
+                                color: isOpen
+                                  ? isDark
+                                    ? "rgba(255,255,255,0.90)"
+                                    : "rgba(0,0,0,0.88)"
+                                  : isDark
+                                    ? "rgba(255,255,255,0.65)"
+                                    : "rgba(0,0,0,0.62)",
+                              }}
                             >
                               {faq.question}
                             </h3>
@@ -479,9 +548,7 @@ const FAQPage: React.FC = () => {
                             className="flex-shrink-0 mt-1"
                           >
                             <ChevronDown
-                              className={`w-5 h-5 transition-colors ${
-                                isOpen ? "text-purple-400" : "text-gray-500"
-                              }`}
+                              className={`w-4 h-4 ${isOpen ? (isDark ? "text-white/60" : "text-black/60") : isDark ? "text-white/25" : "text-gray-400"}`}
                             />
                           </motion.div>
                         </button>
@@ -495,9 +562,22 @@ const FAQPage: React.FC = () => {
                               transition={{ duration: 0.3, ease: "easeInOut" }}
                               className="overflow-hidden"
                             >
-                              <div className="px-6 pb-6 pl-18">
-                                <div className="ml-12 pl-0 border-l-2 border-purple-500/30 pl-4">
-                                  <p className="text-gray-300 leading-relaxed">
+                              <div className="px-5 pb-5">
+                                <div
+                                  className={`ml-11 pl-4 border-l ${isDark ? "border-white/10" : "border-gray-200"}`}
+                                >
+                                  {/* Answer — Outfit 300 */}
+                                  <p
+                                    style={{
+                                      fontFamily: F.body,
+                                      fontWeight: 300,
+                                      fontSize: "clamp(0.78rem,1.2vw,0.875rem)",
+                                      lineHeight: 1.8,
+                                      color: isDark
+                                        ? "rgba(255,255,255,0.45)"
+                                        : "rgba(0,0,0,0.50)",
+                                    }}
+                                  >
                                     {faq.answer}
                                   </p>
                                 </div>
@@ -517,11 +597,29 @@ const FAQPage: React.FC = () => {
               animate={{ opacity: 1 }}
               className="text-center py-20"
             >
-              <HelpCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">
+              <HelpCircle
+                className={`w-14 h-14 ${isDark ? "text-white/15" : "text-gray-300"} mx-auto mb-4`}
+              />
+              <h3
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 400,
+                  fontSize: "1.1rem",
+                  color: isDark ? "rgba(255,255,255,0.80)" : "rgba(0,0,0,0.75)",
+                  marginBottom: "0.4rem",
+                }}
+              >
                 No matching questions found
               </h3>
-              <p className="text-gray-400 mb-6">
+              <p
+                style={{
+                  fontFamily: F.body,
+                  fontWeight: 300,
+                  fontSize: "0.78rem",
+                  color: isDark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.38)",
+                  marginBottom: "1.5rem",
+                }}
+              >
                 Try different keywords or browse all categories.
               </p>
               <button
@@ -529,7 +627,12 @@ const FAQPage: React.FC = () => {
                   setActiveCategory("All");
                   setSearchQuery("");
                 }}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
+                style={{
+                  fontFamily: F.body,
+                  fontWeight: 300,
+                  fontSize: "0.82rem",
+                }}
+                className={`px-6 py-3 ${isDark ? "bg-white text-black" : "bg-black text-white"} rounded-xl transition-opacity hover:opacity-80`}
               >
                 Show All FAQs
               </button>
@@ -544,42 +647,76 @@ const FAQPage: React.FC = () => {
             className="mt-20"
           >
             <div
-              className="relative p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden text-center"
+              className={`relative p-8 md:p-12 rounded-3xl border ${isDark ? "border-white/8" : "border-gray-200"} overflow-hidden text-center`}
               style={{
-                background:
-                  "linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.05))",
+                background: isDark
+                  ? "linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))"
+                  : "linear-gradient(135deg,rgba(0,0,0,0.02),rgba(0,0,0,0.01))",
               }}
             >
-              {/* Background accent */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2" />
-
               <div className="relative z-10">
                 <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
+                  animate={{ rotate: [0, 8, -8, 0] }}
                   transition={{ duration: 4, repeat: Infinity }}
                   className="inline-block mb-4"
                 >
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto">
-                    <MessageCircle className="w-8 h-8 text-white" />
+                  <div
+                    className={`w-14 h-14 ${isDark ? "bg-white/8" : "bg-black/6"} rounded-2xl flex items-center justify-center mx-auto`}
+                  >
+                    <MessageCircle
+                      className={`w-7 h-7 ${isDark ? "text-white/50" : "text-gray-500"}`}
+                    />
                   </div>
                 </motion.div>
 
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                {/* CTA heading — Instrument Serif */}
+                <h3
+                  style={{
+                    fontFamily: F.display,
+                    fontWeight: 400,
+                    fontSize: "clamp(1.2rem,2.5vw,1.6rem)",
+                    letterSpacing: "-0.015em",
+                    color: isDark
+                      ? "rgba(255,255,255,0.85)"
+                      : "rgba(0,0,0,0.80)",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   Still have questions?
                 </h3>
-                <p className="text-gray-300 max-w-md mx-auto mb-8">
-                  Cannot find what you are looking for? Our team is happy to help
+
+                {/* CTA body — Outfit 300 */}
+                <p
+                  style={{
+                    fontFamily: F.body,
+                    fontWeight: 300,
+                    fontSize: "clamp(0.75rem,1.2vw,0.875rem)",
+                    color: isDark
+                      ? "rgba(255,255,255,0.35)"
+                      : "rgba(0,0,0,0.40)",
+                    lineHeight: 1.75,
+                    maxWidth: "40ch",
+                    margin: "0 auto 2rem",
+                  }}
+                >
+                  Can't find what you're looking for? Our team is happy to help
                   you with any questions or concerns.
                 </p>
 
+                {/* CTA button — plain invert, no purple */}
                 <Link
                   to="/contact"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-2xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+                  style={{
+                    fontFamily: F.body,
+                    fontWeight: 300,
+                    fontSize: "0.82rem",
+                    letterSpacing: "0.02em",
+                  }}
+                  className={`inline-flex items-center gap-2 px-7 py-3.5 ${isDark ? "bg-white text-black hover:bg-white/90" : "bg-black text-white hover:bg-black/85"} rounded-xl transition-all duration-300`}
                 >
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-4 h-4" />
                   Contact Us
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>

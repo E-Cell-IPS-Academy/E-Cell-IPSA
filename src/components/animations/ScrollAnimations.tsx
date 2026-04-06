@@ -13,8 +13,30 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ─── Google Fonts ─────────────────────────────────────────────
+// DISPLAY → "Instrument Serif"  — TextReveal heading text
+// LABEL   → "DM Mono"           — StackedCard index / accent labels
+// BODY    → "Outfit" 300        — StackedCard description
+function useFonts() {
+  useEffect(() => {
+    if (document.getElementById("anim-fonts")) return;
+    const link = document.createElement("link");
+    link.id = "anim-fonts";
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&family=Outfit:wght@300;400&display=swap";
+    document.head.appendChild(link);
+  }, []);
+}
+
+const F = {
+  display: "'Instrument Serif', Georgia, serif",
+  mono: "'DM Mono', monospace",
+  body: "'Outfit', sans-serif",
+};
+
 // ─────────────────────────────────────────────
-// 1. ParallaxSection
+// 1. ParallaxSection  — no text, unchanged
 // ─────────────────────────────────────────────
 
 interface ParallaxSectionProps {
@@ -34,7 +56,6 @@ export const ParallaxSection = ({
     offset: ["start end", "end start"],
   });
 
-  // speed > 0 moves slower (background), speed < 0 moves faster (foreground)
   const yRange = 100 * speed;
   const y = useTransform(scrollYProgress, [0, 1], [yRange, -yRange]);
 
@@ -46,7 +67,7 @@ export const ParallaxSection = ({
 };
 
 // ─────────────────────────────────────────────
-// 2. FadeInOnScroll
+// 2. FadeInOnScroll  — wrapper only, unchanged
 // ─────────────────────────────────────────────
 
 type FadeDirection = "up" | "down" | "left" | "right";
@@ -81,11 +102,7 @@ export const FadeInOnScroll = ({
       initial={{ opacity: 0, x: offset.x, y: offset.y }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
-      transition={{
-        duration,
-        delay,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      }}
+      transition={{ duration, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       {children}
     </motion.div>
@@ -93,7 +110,7 @@ export const FadeInOnScroll = ({
 };
 
 // ─────────────────────────────────────────────
-// 3. StaggerContainer + StaggerItem
+// 3. StaggerContainer + StaggerItem  — wrappers, unchanged
 // ─────────────────────────────────────────────
 
 interface StaggerContainerProps {
@@ -111,10 +128,7 @@ const staggerContainerVariants = {
   hidden: { opacity: 0 },
   visible: (staggerDelay: number) => ({
     opacity: 1,
-    transition: {
-      staggerChildren: staggerDelay,
-      delayChildren: 0.1,
-    },
+    transition: { staggerChildren: staggerDelay, delayChildren: 0.1 },
   }),
 };
 
@@ -135,31 +149,27 @@ export const StaggerContainer = ({
   children,
   className = "",
   staggerDelay = 0.1,
-}: StaggerContainerProps) => {
-  return (
-    <motion.div
-      className={className}
-      variants={staggerContainerVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      custom={staggerDelay}
-    >
-      {children}
-    </motion.div>
-  );
-};
+}: StaggerContainerProps) => (
+  <motion.div
+    className={className}
+    variants={staggerContainerVariants}
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true, amount: 0.1 }}
+    custom={staggerDelay}
+  >
+    {children}
+  </motion.div>
+);
 
-export const StaggerItem = ({ children, className = "" }: StaggerItemProps) => {
-  return (
-    <motion.div className={className} variants={staggerItemVariants}>
-      {children}
-    </motion.div>
-  );
-};
+export const StaggerItem = ({ children, className = "" }: StaggerItemProps) => (
+  <motion.div className={className} variants={staggerItemVariants}>
+    {children}
+  </motion.div>
+);
 
 // ─────────────────────────────────────────────
-// 4. CardStackSection
+// 4. CardStackSection  — fonts applied to title & description
 // ─────────────────────────────────────────────
 
 interface StackCard {
@@ -188,16 +198,8 @@ const StackedCard = ({
   const cardStart = index / totalCards;
   const cardEnd = (index + 1) / totalCards;
 
-  const scale = useTransform(
-    scrollYProgress,
-    [cardStart, cardEnd],
-    [1, 0.92]
-  );
-  const opacity = useTransform(
-    scrollYProgress,
-    [cardStart, cardEnd],
-    [1, 0.6]
-  );
+  const scale = useTransform(scrollYProgress, [cardStart, cardEnd], [1, 0.92]);
+  const opacity = useTransform(scrollYProgress, [cardStart, cardEnd], [1, 0.6]);
 
   return (
     <motion.div
@@ -222,12 +224,29 @@ const StackedCard = ({
             {card.icon}
           </div>
 
-          {/* Content */}
+          {/* Text — Instrument Serif title, Outfit 300 body */}
           <div className="space-y-3">
-            <h3 className="text-2xl md:text-3xl font-bold text-white">
+            <h3
+              style={{
+                fontFamily: F.display,
+                fontWeight: 400,
+                fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)",
+                letterSpacing: "-0.01em",
+                color: "rgba(255,255,255,0.90)",
+              }}
+            >
               {card.title}
             </h3>
-            <p className="text-gray-300 text-lg leading-relaxed max-w-2xl">
+            <p
+              style={{
+                fontFamily: F.body,
+                fontWeight: 300,
+                fontSize: "clamp(0.78rem, 1.3vw, 0.9rem)",
+                lineHeight: 1.75,
+                color: "rgba(255,255,255,0.45)",
+                maxWidth: "56ch",
+              }}
+            >
               {card.description}
             </p>
           </div>
@@ -273,7 +292,7 @@ export const CardStackSection = ({
 };
 
 // ─────────────────────────────────────────────
-// 5. TextReveal - GSAP ScrollTrigger powered
+// 5. TextReveal — Instrument Serif, GSAP powered
 // ─────────────────────────────────────────────
 
 interface TextRevealProps {
@@ -282,6 +301,8 @@ interface TextRevealProps {
 }
 
 export const TextReveal = ({ text, className = "" }: TextRevealProps) => {
+  useFonts();
+
   const containerRef = useRef<HTMLDivElement>(null);
   const wordsRef = useRef<(HTMLSpanElement | null)[]>([]);
   const words = text.split(" ");
@@ -290,10 +311,9 @@ export const TextReveal = ({ text, className = "" }: TextRevealProps) => {
     const ctx = gsap.context(() => {
       wordsRef.current.forEach((word) => {
         if (!word) return;
-
         gsap.fromTo(
           word,
-          { opacity: 0.15, y: 8 },
+          { opacity: 0.12, y: 8 },
           {
             opacity: 1,
             y: 0,
@@ -305,7 +325,7 @@ export const TextReveal = ({ text, className = "" }: TextRevealProps) => {
               end: "top 50%",
               scrub: 1,
             },
-          }
+          },
         );
       });
     }, containerRef);
@@ -314,14 +334,19 @@ export const TextReveal = ({ text, className = "" }: TextRevealProps) => {
   }, [text]);
 
   return (
-    <div ref={containerRef} className={`flex flex-wrap gap-x-3 gap-y-2 ${className}`}>
+    <div
+      ref={containerRef}
+      className={`flex flex-wrap gap-x-3 gap-y-2 ${className}`}
+      // Instrument Serif italic for the reveal heading
+      style={{ fontFamily: F.display, fontStyle: "italic", fontWeight: 400 }}
+    >
       {words.map((word, i) => (
         <span
           key={i}
           ref={(el) => {
             wordsRef.current[i] = el;
           }}
-          className="inline-block text-white opacity-15 transition-colors"
+          className="inline-block text-white opacity-[0.12] transition-colors"
         >
           {word}
         </span>
@@ -331,7 +356,7 @@ export const TextReveal = ({ text, className = "" }: TextRevealProps) => {
 };
 
 // ─────────────────────────────────────────────
-// 6. MagneticHover
+// 6. MagneticHover  — no text, unchanged
 // ─────────────────────────────────────────────
 
 interface MagneticHoverProps {
@@ -359,10 +384,8 @@ export const MagneticHover = ({
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const deltaX = (e.clientX - centerX) * strength;
-    const deltaY = (e.clientY - centerY) * strength;
-    x.set(deltaX);
-    y.set(deltaY);
+    x.set((e.clientX - centerX) * strength);
+    y.set((e.clientY - centerY) * strength);
   };
 
   const handleMouseLeave = () => {
@@ -388,7 +411,7 @@ export const MagneticHover = ({
 };
 
 // ─────────────────────────────────────────────
-// 7. ScrollReveal
+// 7. ScrollReveal  — wrapper only, unchanged
 // ─────────────────────────────────────────────
 
 type RevealDirection = "up" | "down" | "left" | "right";
@@ -427,11 +450,7 @@ export const ScrollReveal = ({
           ? { opacity: 1, x: 0, y: 0, scale: 1 }
           : { opacity: 0, x: offset.x, y: offset.y, scale: 0.95 }
       }
-      transition={{
-        duration: 0.8,
-        delay,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      }}
+      transition={{ duration: 0.8, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       {children}
     </motion.div>
@@ -439,7 +458,7 @@ export const ScrollReveal = ({
 };
 
 // ─────────────────────────────────────────────
-// 8. CardStack (generic reusable version)
+// 8. CardStack (generic)  — fonts on inner card text if any
 // ─────────────────────────────────────────────
 
 interface CardStackProps {
@@ -462,11 +481,7 @@ const CardStackItem = ({
   const cardEnd = (index + 1) / totalCards;
 
   const scale = useTransform(scrollYProgress, [cardStart, cardEnd], [1, 0.9]);
-  const opacity = useTransform(
-    scrollYProgress,
-    [cardStart, cardEnd],
-    [1, 0.5]
-  );
+  const opacity = useTransform(scrollYProgress, [cardStart, cardEnd], [1, 0.5]);
   const blurVal = useTransform(scrollYProgress, [cardStart, cardEnd], [0, 4]);
   const filterStr = useTransform(blurVal, (v) => `blur(${v}px)`);
 

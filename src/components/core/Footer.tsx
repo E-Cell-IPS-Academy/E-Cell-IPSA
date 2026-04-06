@@ -110,16 +110,12 @@ const Footer = () => {
     programs: [
       { name: "Startup Incubation", href: "/incubation" },
       { name: "Mentorship", href: "/mentorship" },
-      { name: "Workshops", href: "/workshops" },
       { name: "Competitions", href: "/competitions" },
-      { name: "Funding Support", href: "/funding" },
     ],
     resources: [
       { name: "Blog", href: "/blog" },
       { name: "Startup Stories", href: "/startup" },
-      { name: "Resources", href: "/resources" },
       { name: "FAQs", href: "/faq" },
-      { name: "Alumni Network", href: "/alumni" },
     ],
     legal: [
       { name: "Privacy Policy", href: "/privacy" },
