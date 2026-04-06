@@ -40,6 +40,7 @@ export const RocketLaunchIllustration = ({
         </linearGradient>
       </defs>
 
+      {/* Stars */}
       {stars.map((s, i) => (
         <motion.circle
           key={i}
@@ -48,11 +49,21 @@ export const RocketLaunchIllustration = ({
           r={s.r}
           fill="#E9D5FF"
           animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
-          transition={{ duration: 2 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
+          transition={{
+            duration: 2 + i * 0.3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: i * 0.2,
+          }}
         />
       ))}
 
-      <motion.g animate={{ y: [0, -12, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+      {/* Rocket floating group */}
+      <motion.g
+        animate={{ y: [0, -12, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      >
+        {/* Flame */}
         <motion.path
           d="M190 280 Q195 310 200 340 Q205 310 210 280 Z"
           fill="url(#rktFire)"
@@ -60,17 +71,36 @@ export const RocketLaunchIllustration = ({
           transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
           style={{ transformOrigin: "200px 280px" }}
         />
+        {/* Fins */}
         <path d="M175 250 L160 285 L185 270 Z" fill="#7C3AED" />
         <path d="M225 250 L240 285 L215 270 Z" fill="#7C3AED" />
-        <path d="M185 280 L185 200 Q185 160 200 130 Q215 160 215 200 L215 280 Z" fill="url(#rktBody)" />
+        {/* Body */}
+        <path
+          d="M185 280 L185 200 Q185 160 200 130 Q215 160 215 200 L215 280 Z"
+          fill="url(#rktBody)"
+        />
+        {/* Nose cone shading */}
         <path d="M185 200 Q185 160 200 130 Q215 160 215 200" fill="#A78BFA" />
+        {/* Window */}
         <circle cx="200" cy="210" r="12" fill="url(#rktWin)" />
-        <circle cx="200" cy="210" r="12" fill="none" stroke="#C4B5FD" strokeWidth="2" />
+        <circle
+          cx="200"
+          cy="210"
+          r="12"
+          fill="none"
+          stroke="#C4B5FD"
+          strokeWidth="2"
+        />
         <motion.circle
-          cx="196" cy="206" r="4" fill="white" opacity={0.4}
+          cx="196"
+          cy="206"
+          r="4"
+          fill="white"
+          opacity={0.4}
           animate={{ opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 2, repeat: Infinity }}
         />
+        {/* Stripes */}
         <rect x="185" y="245" width="30" height="4" rx="2" fill="#6D28D9" />
         <rect x="185" y="255" width="30" height="4" rx="2" fill="#6D28D9" />
       </motion.g>
@@ -105,7 +135,10 @@ export const IdeaBulbIllustration = ({
 
       {/* Glow pulse */}
       <motion.circle
-        cx="200" cy="170" r="100" fill="url(#bulbGlow)"
+        cx="200"
+        cy="170"
+        r="100"
+        fill="url(#bulbGlow)"
         animate={{ r: [90, 110, 90], opacity: [0.4, 0.7, 0.4] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       />
@@ -113,41 +146,73 @@ export const IdeaBulbIllustration = ({
       {/* Bulb shape */}
       <path
         d="M160 200 Q160 130 200 110 Q240 130 240 200 Q240 230 230 240 L170 240 Q160 230 160 200 Z"
-        fill="url(#bulbGrad)" opacity="0.9"
+        fill="url(#bulbGrad)"
+        opacity="0.9"
       />
 
-      {/* Base */}
+      {/* Screw base */}
       <rect x="175" y="240" width="50" height="8" rx="3" fill="#6D28D9" />
       <rect x="178" y="252" width="44" height="6" rx="3" fill="#5B21B6" />
       <rect x="181" y="262" width="38" height="6" rx="3" fill="#4C1D95" />
-      <path d="M185 268 Q200 280 215 268" stroke="#4C1D95" strokeWidth="3" fill="none" />
+      <path
+        d="M185 268 Q200 280 215 268"
+        stroke="#4C1D95"
+        strokeWidth="3"
+        fill="none"
+      />
 
-      {/* Gear 1 - rotating */}
+      {/* Gear 1 — clockwise */}
       <motion.g
         style={{ transformOrigin: "190px 175px" }}
         animate={{ rotate: 360 }}
         transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
       >
-        <circle cx="190" cy="175" r="14" fill="none" stroke="url(#gearGrad)" strokeWidth="3" />
+        <circle
+          cx="190"
+          cy="175"
+          r="14"
+          fill="none"
+          stroke="url(#gearGrad)"
+          strokeWidth="3"
+        />
         {[0, 60, 120, 180, 240, 300].map((a, i) => (
           <rect
-            key={i} x="187" y="158" width="6" height="8" rx="1" fill="#3B82F6"
+            key={i}
+            x="187"
+            y="158"
+            width="6"
+            height="8"
+            rx="1"
+            fill="#3B82F6"
             transform={`rotate(${a} 190 175)`}
           />
         ))}
         <circle cx="190" cy="175" r="5" fill="#3B82F6" />
       </motion.g>
 
-      {/* Gear 2 - rotating opposite */}
+      {/* Gear 2 — counter-clockwise */}
       <motion.g
         style={{ transformOrigin: "215px 185px" }}
         animate={{ rotate: -360 }}
         transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
       >
-        <circle cx="215" cy="185" r="10" fill="none" stroke="url(#gearGrad)" strokeWidth="2.5" />
+        <circle
+          cx="215"
+          cy="185"
+          r="10"
+          fill="none"
+          stroke="url(#gearGrad)"
+          strokeWidth="2.5"
+        />
         {[0, 72, 144, 216, 288].map((a, i) => (
           <rect
-            key={i} x="213" y="173" width="4" height="6" rx="1" fill="#8B5CF6"
+            key={i}
+            x="213"
+            y="173"
+            width="4"
+            height="6"
+            rx="1"
+            fill="#8B5CF6"
             transform={`rotate(${a} 215 185)`}
           />
         ))}
@@ -164,8 +229,14 @@ export const IdeaBulbIllustration = ({
         const y2 = 160 + Math.sin(rad) * 90;
         return (
           <motion.line
-            key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-            stroke="#C4B5FD" strokeWidth="2" strokeLinecap="round"
+            key={i}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke="#C4B5FD"
+            strokeWidth="2"
+            strokeLinecap="round"
             animate={{ opacity: [0.2, 0.8, 0.2] }}
             transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
           />
@@ -209,14 +280,34 @@ export const GrowthChartIllustration = ({
       {/* Grid lines */}
       {[0, 1, 2, 3, 4].map((i) => (
         <line
-          key={i} x1="60" y1={120 + i * 50} x2="360" y2={120 + i * 50}
-          stroke="#6D28D9" strokeWidth="0.5" opacity="0.3"
+          key={i}
+          x1="60"
+          y1={120 + i * 50}
+          x2="360"
+          y2={120 + i * 50}
+          stroke="#6D28D9"
+          strokeWidth="0.5"
+          opacity="0.3"
         />
       ))}
 
-      {/* Axis */}
-      <line x1="60" y1="100" x2="60" y2="330" stroke="#8B5CF6" strokeWidth="2" />
-      <line x1="60" y1="330" x2="360" y2="330" stroke="#8B5CF6" strokeWidth="2" />
+      {/* Axes */}
+      <line
+        x1="60"
+        y1="100"
+        x2="60"
+        y2="330"
+        stroke="#8B5CF6"
+        strokeWidth="2"
+      />
+      <line
+        x1="60"
+        y1="330"
+        x2="360"
+        y2="330"
+        stroke="#8B5CF6"
+        strokeWidth="2"
+      />
 
       {/* Bars */}
       {bars.map((bar, i) => (
@@ -235,14 +326,17 @@ export const GrowthChartIllustration = ({
       {/* Trend line */}
       <motion.path
         d="M94 270 L134 230 L174 250 L214 190 L254 210 L294 150 L334 110"
-        stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        stroke="#F59E0B"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         fill="none"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
         transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }}
       />
 
-      {/* Arrow at end */}
+      {/* Arrow at trend end */}
       <motion.polygon
         points="334,104 340,114 328,114"
         fill="#F59E0B"
@@ -286,7 +380,15 @@ export const TeamWorkIllustration = ({
   ];
 
   const connections = [
-    [0, 1], [0, 2], [1, 2], [1, 3], [1, 4], [2, 4], [2, 5], [3, 4], [4, 5],
+    [0, 1],
+    [0, 2],
+    [1, 2],
+    [1, 3],
+    [1, 4],
+    [2, 4],
+    [2, 5],
+    [3, 4],
+    [4, 5],
   ];
 
   return (
@@ -306,11 +408,20 @@ export const TeamWorkIllustration = ({
       {connections.map(([a, b], i) => (
         <motion.line
           key={`conn-${i}`}
-          x1={nodes[a].cx} y1={nodes[a].cy}
-          x2={nodes[b].cx} y2={nodes[b].cy}
-          stroke="#7C3AED" strokeWidth="2" opacity="0.4"
+          x1={nodes[a].cx}
+          y1={nodes[a].cy}
+          x2={nodes[b].cx}
+          y2={nodes[b].cy}
+          stroke="#7C3AED"
+          strokeWidth="2"
+          opacity="0.4"
           animate={{ opacity: [0.2, 0.6, 0.2] }}
-          transition={{ duration: 3, repeat: Infinity, delay: i * 0.25, ease: "easeInOut" }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            delay: i * 0.25,
+            ease: "easeInOut",
+          }}
         />
       ))}
 
@@ -319,36 +430,59 @@ export const TeamWorkIllustration = ({
         <g key={`node-${i}`}>
           {/* Pulse ring */}
           <motion.circle
-            cx={n.cx} cy={n.cy} r={n.r + 8}
+            cx={n.cx}
+            cy={n.cy}
+            r={n.r + 8}
             fill="url(#nodePulse)"
-            animate={{ r: [n.r + 4, n.r + 14, n.r + 4], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4, ease: "easeInOut" }}
+            animate={{
+              r: [n.r + 4, n.r + 14, n.r + 4],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              delay: i * 0.4,
+              ease: "easeInOut",
+            }}
           />
-          {/* Node circle */}
+          {/* Node */}
           <circle cx={n.cx} cy={n.cy} r={n.r} fill="url(#nodeGrad)" />
-          {/* Person icon - head */}
-          <circle cx={n.cx} cy={n.cy - 4} r={n.r * 0.28} fill="white" opacity="0.9" />
-          {/* Person icon - body */}
+          {/* Person head */}
+          <circle
+            cx={n.cx}
+            cy={n.cy - 4}
+            r={n.r * 0.28}
+            fill="white"
+            opacity="0.9"
+          />
+          {/* Person body */}
           <path
             d={`M${n.cx - n.r * 0.3} ${n.cy + n.r * 0.15} Q${n.cx} ${n.cy - 2} ${n.cx + n.r * 0.3} ${n.cy + n.r * 0.15} Q${n.cx} ${n.cy + n.r * 0.45} ${n.cx - n.r * 0.3} ${n.cy + n.r * 0.15}`}
-            fill="white" opacity="0.9"
+            fill="white"
+            opacity="0.9"
           />
         </g>
       ))}
 
-      {/* Data packets traveling along connections */}
+      {/* Travelling data packets */}
       {[0, 2, 5].map((ci) => {
         const [a, b] = connections[ci];
         return (
           <motion.circle
             key={`pkt-${ci}`}
-            r="3" fill="#E9D5FF"
+            r="3"
+            fill="#E9D5FF"
             animate={{
               cx: [nodes[a].cx, nodes[b].cx],
               cy: [nodes[a].cy, nodes[b].cy],
               opacity: [0, 1, 0],
             }}
-            transition={{ duration: 2, repeat: Infinity, delay: ci * 0.5, ease: "easeInOut" }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: ci * 0.5,
+              ease: "easeInOut",
+            }}
           />
         );
       })}
@@ -357,7 +491,7 @@ export const TeamWorkIllustration = ({
 };
 
 // ─────────────────────────────────────────────
-// 5. InnovationIllustration
+// 5. InnovationIllustration  (also exported as NetworkIllustration)
 // ─────────────────────────────────────────────
 export const InnovationIllustration = ({
   className = "",
@@ -379,10 +513,18 @@ export const InnovationIllustration = ({
   ];
 
   const paths = [
-    "M200 200 L120 140", "M200 200 L280 140", "M200 200 L100 260",
-    "M200 200 L300 260", "M120 140 L160 100", "M280 140 L240 100",
-    "M120 140 L70 200", "M280 140 L330 200", "M100 260 L160 320",
-    "M300 260 L240 320", "M100 260 L70 200", "M300 260 L330 200",
+    "M200 200 L120 140",
+    "M200 200 L280 140",
+    "M200 200 L100 260",
+    "M200 200 L300 260",
+    "M120 140 L160 100",
+    "M280 140 L240 100",
+    "M120 140 L70 200",
+    "M280 140 L330 200",
+    "M100 260 L160 320",
+    "M300 260 L240 320",
+    "M100 260 L70 200",
+    "M300 260 L330 200",
   ];
 
   return (
@@ -403,10 +545,17 @@ export const InnovationIllustration = ({
         <motion.path
           key={`path-${i}`}
           d={d}
-          stroke="url(#circuitLine)" strokeWidth="2" strokeLinecap="round"
+          stroke="url(#circuitLine)"
+          strokeWidth="2"
+          strokeLinecap="round"
           initial={{ pathLength: 0, opacity: 0.3 }}
           animate={{ pathLength: 1, opacity: [0.3, 0.8, 0.3] }}
-          transition={{ duration: 2, delay: i * 0.15, repeat: Infinity, ease: "easeInOut" }}
+          transition={{
+            duration: 2,
+            delay: i * 0.15,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
         />
       ))}
 
@@ -414,20 +563,32 @@ export const InnovationIllustration = ({
       {circuitNodes.map((n, i) => (
         <g key={`cn-${i}`}>
           <motion.circle
-            cx={n.cx} cy={n.cy} r={n.r + 6}
-            fill="url(#circuitGlow)" opacity="0.2"
-            animate={{ r: [n.r + 3, n.r + 10, n.r + 3], opacity: [0.1, 0.35, 0.1] }}
+            cx={n.cx}
+            cy={n.cy}
+            r={n.r + 6}
+            fill="url(#circuitGlow)"
+            opacity="0.2"
+            animate={{
+              r: [n.r + 3, n.r + 10, n.r + 3],
+              opacity: [0.1, 0.35, 0.1],
+            }}
             transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.2 }}
           />
           <motion.circle
-            cx={n.cx} cy={n.cy} r={n.r}
-            fill="url(#circuitGlow)" stroke="#C4B5FD" strokeWidth="1.5"
+            cx={n.cx}
+            cy={n.cy}
+            r={n.r}
+            fill="url(#circuitGlow)"
+            stroke="#C4B5FD"
+            strokeWidth="1.5"
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
           />
           {i === 0 && (
             <motion.circle
-              cx={n.cx} cy={n.cy} r={3}
+              cx={n.cx}
+              cy={n.cy}
+              r={3}
               fill="#E9D5FF"
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity }}
@@ -436,17 +597,23 @@ export const InnovationIllustration = ({
         </g>
       ))}
 
-      {/* Traveling pulses */}
+      {/* Travelling pulses */}
       {[0, 1, 2, 3].map((i) => (
         <motion.circle
           key={`pulse-${i}`}
-          r="3" fill="#E9D5FF"
+          r="3"
+          fill="#E9D5FF"
           animate={{
             cx: [circuitNodes[0].cx, circuitNodes[i + 1].cx],
             cy: [circuitNodes[0].cy, circuitNodes[i + 1].cy],
             opacity: [0, 1, 0],
           }}
-          transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.6, ease: "easeInOut" }}
+          transition={{
+            duration: 1.8,
+            repeat: Infinity,
+            delay: i * 0.6,
+            ease: "easeInOut",
+          }}
         />
       ))}
     </svg>
@@ -461,6 +628,21 @@ export const CodeIllustration = ({
 }: {
   className?: string;
 }) => {
+  const codeLines = [
+    { x: 85, y: 110, w: 40, color: "#8B5CF6" },
+    { x: 130, y: 110, w: 80, color: "#3B82F6" },
+    { x: 100, y: 130, w: 60, color: "#A78BFA" },
+    { x: 165, y: 130, w: 50, color: "#60A5FA" },
+    { x: 100, y: 150, w: 90, color: "#C4B5FD" },
+    { x: 115, y: 170, w: 70, color: "#8B5CF6" },
+    { x: 190, y: 170, w: 40, color: "#3B82F6" },
+    { x: 115, y: 190, w: 55, color: "#A78BFA" },
+    { x: 100, y: 210, w: 80, color: "#60A5FA" },
+    { x: 85, y: 230, w: 45, color: "#8B5CF6" },
+    { x: 135, y: 230, w: 60, color: "#C4B5FD" },
+    { x: 85, y: 250, w: 30, color: "#A78BFA" },
+  ];
+
   return (
     <svg viewBox="0 0 400 400" className={className} fill="none">
       <defs>
@@ -475,70 +657,99 @@ export const CodeIllustration = ({
       </defs>
 
       {/* Monitor frame */}
-      <rect x="60" y="60" width="280" height="220" rx="12" fill="url(#screenBg)" stroke="url(#screenFrame)" strokeWidth="3" />
+      <rect
+        x="60"
+        y="60"
+        width="280"
+        height="220"
+        rx="12"
+        fill="url(#screenBg)"
+        stroke="url(#screenFrame)"
+        strokeWidth="3"
+      />
 
       {/* Title bar */}
       <rect x="60" y="60" width="280" height="28" rx="12" fill="#4C1D95" />
       <rect x="60" y="76" width="280" height="12" fill="#4C1D95" />
+
+      {/* Traffic lights */}
       <circle cx="82" cy="74" r="5" fill="#EF4444" opacity="0.8" />
       <circle cx="98" cy="74" r="5" fill="#F59E0B" opacity="0.8" />
       <circle cx="114" cy="74" r="5" fill="#22C55E" opacity="0.8" />
 
-      {/* Monitor stand */}
+      {/* Stand */}
       <rect x="180" y="280" width="40" height="30" rx="2" fill="#6D28D9" />
       <rect x="150" y="308" width="100" height="8" rx="4" fill="#5B21B6" />
 
       {/* Code lines */}
-      {[
-        { x: 85, y: 110, w: 40, color: "#8B5CF6" },
-        { x: 130, y: 110, w: 80, color: "#3B82F6" },
-        { x: 100, y: 130, w: 60, color: "#A78BFA" },
-        { x: 165, y: 130, w: 50, color: "#60A5FA" },
-        { x: 100, y: 150, w: 90, color: "#C4B5FD" },
-        { x: 115, y: 170, w: 70, color: "#8B5CF6" },
-        { x: 190, y: 170, w: 40, color: "#3B82F6" },
-        { x: 115, y: 190, w: 55, color: "#A78BFA" },
-        { x: 100, y: 210, w: 80, color: "#60A5FA" },
-        { x: 85, y: 230, w: 45, color: "#8B5CF6" },
-        { x: 135, y: 230, w: 60, color: "#C4B5FD" },
-        { x: 85, y: 250, w: 30, color: "#A78BFA" },
-      ].map((line, i) => (
+      {codeLines.map((line, i) => (
         <motion.rect
           key={i}
-          x={line.x} y={line.y} width={line.w} height="6" rx="3"
-          fill={line.color} opacity="0.7"
+          x={line.x}
+          y={line.y}
+          width={line.w}
+          height="6"
+          rx="3"
+          fill={line.color}
+          opacity="0.7"
           animate={{ opacity: [0.5, 0.9, 0.5] }}
-          transition={{ duration: 3, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            delay: i * 0.15,
+            ease: "easeInOut",
+          }}
         />
       ))}
 
-      {/* Left bracket < */}
+      {/* Left bracket */}
       <motion.path
         d="M90 155 L75 170 L90 185"
-        stroke="#8B5CF6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+        stroke="#8B5CF6"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         animate={{ x: [0, -4, 0] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Right bracket > */}
+      {/* Right bracket */}
       <motion.path
         d="M290 155 L305 170 L290 185"
-        stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+        stroke="#3B82F6"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         animate={{ x: [0, 4, 0] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* Blinking cursor */}
       <motion.rect
-        x="120" y="248" width="2" height="12" rx="1" fill="#E9D5FF"
+        x="120"
+        y="248"
+        width="2"
+        height="12"
+        rx="1"
+        fill="#E9D5FF"
         animate={{ opacity: [1, 0, 1] }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear", repeatType: "reverse" }}
+        transition={{
+          duration: 1,
+          repeat: Infinity,
+          ease: "linear",
+          repeatType: "reverse",
+        }}
       />
 
-      {/* Slash / between brackets */}
+      {/* Slash between brackets */}
       <motion.line
-        x1="185" y1="185" x2="195" y2="155"
-        stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round"
+        x1="185"
+        y1="185"
+        x2="195"
+        y2="155"
+        stroke="#F59E0B"
+        strokeWidth="2.5"
+        strokeLinecap="round"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 2, repeat: Infinity }}
       />
@@ -547,6 +758,6 @@ export const CodeIllustration = ({
 };
 
 // ─────────────────────────────────────────────
-// Aliases for backward compatibility
+// Aliases
 // ─────────────────────────────────────────────
 export const NetworkIllustration = InnovationIllustration;

@@ -1,7 +1,21 @@
-import { useEffect, useState, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
 
-/* ─── DecryptedText (kept, made faster) ─── */
+// ─── Google Fonts ─────────────────────────────────────────────
+// DISPLAY → "Instrument Serif"  — "E-CELL IPS" main title
+// LABEL   → "DM Mono"           — "ACADEMY", "ENTREPRENEURSHIP CELL", "IPS ACADEMY × IIT BOMBAY"
+// (DecryptedText keeps font-mono from its own className; we override per element below)
+function useFonts() {
+  useEffect(() => {
+    if (document.getElementById("loader-fonts")) return;
+    const link = document.createElement("link");
+    link.id = "loader-fonts";
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400&display=swap";
+    document.head.appendChild(link);
+  }, []);
+}
 
 interface DecryptedTextProps {
   text: string;
@@ -20,12 +34,12 @@ interface DecryptedTextProps {
 
 const DecryptedText = ({
   text,
-  speed = 30,
-  maxIterations = 10,
+  speed = 80,
+  maxIterations = 15,
   sequential = true,
   revealDirection = "start",
   useOriginalCharsOnly = false,
-  characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()",
+  characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;:,.<>?",
   className = "",
   parentClassName = "",
   encryptedClassName = "",
@@ -76,7 +90,7 @@ const DecryptedText = ({
 
     const shuffleText = (
       originalText: string,
-      currentRevealed: Set<number>
+      currentRevealed: Set<number>,
     ): string => {
       return originalText
         .split("")
@@ -134,7 +148,10 @@ const DecryptedText = ({
 
   useEffect(() => {
     if (animateOn === "auto") {
-      setIsAnimating(true);
+      const timer = setTimeout(() => {
+        setIsAnimating(true);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [animateOn]);
 
@@ -162,503 +179,192 @@ const DecryptedText = ({
   );
 };
 
-/* ─── Loader ─── */
-
 interface ECellLoaderProps {
   onComplete?: () => void;
 }
 
-/* Helper: deterministic pseudo-random from seed */
-const seededRandom = (seed: number) => {
-  const x = Math.sin(seed * 9301 + 49297) * 49297;
-  return x - Math.floor(x);
-};
-
 const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
-  const [showEcell, setShowEcell] = useState(false);
-  const [showIPS, setShowIPS] = useState(false);
-  const [exitPhase, setExitPhase] = useState(false);
+  useFonts();
 
-  /* Pre-compute geometric shapes */
-  const geometricShapes = useMemo(
-    () =>
-      Array.from({ length: 12 }).map((_, i) => {
-        const angle = (i / 12) * Math.PI * 2;
-        const dist = 180 + seededRandom(i + 10) * 220;
-        return {
-          id: i,
-          x: Math.cos(angle) * dist,
-          y: Math.sin(angle) * dist,
-          size: 20 + seededRandom(i + 20) * 50,
-          rotation: seededRandom(i + 30) * 360,
-          type: i % 3, // 0 = square, 1 = circle, 2 = diamond
-          delay: seededRandom(i + 40) * 0.3,
-        };
-      }),
-    []
-  );
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
 
-  /* Floating dots */
-  const floatingDots = useMemo(
-    () =>
-      Array.from({ length: 20 }).map((_, i) => ({
-        id: i,
-        x: (seededRandom(i + 100) - 0.5) * 800,
-        y: (seededRandom(i + 200) - 0.5) * 600,
-        size: 3 + seededRandom(i + 300) * 5,
-        delay: seededRandom(i + 400) * 0.8,
-      })),
-    []
-  );
-
-  /* Master timeline - everything in ~2 seconds */
   useEffect(() => {
-    // E-CELL decrypt starts at 0.15s
-    const t1 = setTimeout(() => {
-      setShowEcell(true);
-    }, 150);
-
-    // IPS ACADEMY at 0.7s
-    const t2 = setTimeout(() => {
-      setShowIPS(true);
-    }, 700);
-
-    // Start exit wipe at 1.8s
-    const t3 = setTimeout(() => {
-      setExitPhase(true);
-    }, 1800);
-
-    // Call onComplete at 2.2s
-    const t4 = setTimeout(() => {
-      onComplete?.();
-    }, 2200);
-
-    return () => {
-      [t1, t2, t3, t4].forEach(clearTimeout);
-    };
+    const steps = [{ delay: 0 }, { delay: 1400 }, { delay: 2800 }];
+    const timers = steps.map((step, index) =>
+      setTimeout(() => {
+        setCurrentStep(index);
+        if (index === steps.length - 1) {
+          setTimeout(() => {
+            setIsComplete(true);
+            if (onComplete) {
+              setTimeout(onComplete, 700);
+            }
+          }, 1400);
+        }
+      }, step.delay),
+    );
+    return () => timers.forEach(clearTimeout);
   }, [onComplete]);
 
   return (
-    <AnimatePresence>
-      {!exitPhase ? (
-        <motion.div
-          key="loader"
-          className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden"
+    <motion.div
+      className="fixed inset-0 bg-black flex items-center justify-center z-50"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: isComplete ? 0 : 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.7 }}
+    >
+      {/* Background Grid */}
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="w-full h-full"
           style={{
-            background:
-              "linear-gradient(135deg, #ffffff 0%, #f8f6ff 40%, #f0ebff 100%)",
-          }}
-          exit={{
-            clipPath: "inset(0 0 100% 0)",
-          }}
-          transition={{
-            duration: 0.4,
-            ease: [0.76, 0, 0.24, 1],
-          }}
-        >
-          {/* ── CSS Keyframes ── */}
-          <style>{`
-            @keyframes loaderSpin {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-            @keyframes loaderMorph {
-              0%, 100% { border-radius: 20%; }
-              50% { border-radius: 50%; }
-            }
-            @keyframes loaderFloat {
-              0%, 100% { transform: translateY(0px); }
-              50% { transform: translateY(-8px); }
-            }
-            @keyframes loaderPulseRing {
-              0% { transform: scale(0.8); opacity: 0.6; }
-              100% { transform: scale(1.6); opacity: 0; }
-            }
-          `}</style>
-
-          {/* ── Subtle grid pattern ── */}
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(124,58,237,1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(124,58,237,1) 1px, transparent 1px)
-              `,
-              backgroundSize: "40px 40px",
-            }}
-          />
-
-          {/* ── Large gradient blob (top right) ── */}
-          <motion.div
-            className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(168,85,247,0.08) 0%, rgba(139,92,246,0.03) 50%, transparent 70%)",
-            }}
-            animate={{
-              scale: [1, 1.15, 1],
-              x: [0, 20, 0],
-              y: [0, -15, 0],
-            }}
-            transition={{
-              duration: 3,
-              ease: "easeInOut",
-              repeat: Infinity,
-            }}
-          />
-
-          {/* ── Large gradient blob (bottom left) ── */}
-          <motion.div
-            className="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(124,58,237,0.06) 0%, rgba(168,85,247,0.02) 50%, transparent 70%)",
-            }}
-            animate={{
-              scale: [1, 1.1, 1],
-              x: [0, -10, 0],
-              y: [0, 20, 0],
-            }}
-            transition={{
-              duration: 4,
-              ease: "easeInOut",
-              repeat: Infinity,
-            }}
-          />
-
-          {/* ── Geometric shapes (rotating squares, morphing circles, diamonds) ── */}
-          {geometricShapes.map((shape) => (
-            <motion.div
-              key={shape.id}
-              className="absolute pointer-events-none"
-              style={{
-                width: shape.size,
-                height: shape.size,
-                left: "50%",
-                top: "50%",
-                border:
-                  shape.type === 1
-                    ? "1.5px solid rgba(139,92,246,0.15)"
-                    : "1.5px solid rgba(168,85,247,0.12)",
-                borderRadius: shape.type === 1 ? "50%" : shape.type === 2 ? "4px" : "0px",
-                background:
-                  shape.type === 0
-                    ? "rgba(168,85,247,0.03)"
-                    : shape.type === 1
-                    ? "rgba(139,92,246,0.04)"
-                    : "rgba(124,58,237,0.03)",
-                transform:
-                  shape.type === 2 ? "rotate(45deg)" : "rotate(0deg)",
-              }}
-              initial={{
-                x: shape.x,
-                y: shape.y,
-                opacity: 0,
-                scale: 0,
-                rotate: shape.rotation,
-              }}
-              animate={{
-                x: shape.x * 0.6,
-                y: shape.y * 0.6,
-                opacity: [0, 0.8, 0.6],
-                scale: 1,
-                rotate: shape.rotation + (shape.type === 0 ? 180 : 90),
-              }}
-              transition={{
-                duration: 2,
-                delay: shape.delay,
-                ease: "easeOut",
-              }}
-            />
-          ))}
-
-          {/* ── Floating dots ── */}
-          {floatingDots.map((dot) => (
-            <motion.div
-              key={`dot-${dot.id}`}
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: dot.size,
-                height: dot.size,
-                left: "50%",
-                top: "50%",
-                background:
-                  "radial-gradient(circle, rgba(168,85,247,0.3) 0%, rgba(139,92,246,0.1) 100%)",
-              }}
-              initial={{
-                x: dot.x,
-                y: dot.y,
-                opacity: 0,
-                scale: 0,
-              }}
-              animate={{
-                x: dot.x,
-                y: [dot.y, dot.y - 15, dot.y],
-                opacity: [0, 0.6, 0.4],
-                scale: [0, 1.2, 1],
-              }}
-              transition={{
-                duration: 2.5,
-                delay: dot.delay,
-                ease: "easeOut",
-              }}
-            />
-          ))}
-
-          {/* ── Pulse rings from center ── */}
-          {[0, 0.4, 0.8].map((delay, i) => (
-            <motion.div
-              key={`ring-${i}`}
-              className="absolute rounded-full border pointer-events-none"
-              style={{
-                width: 120,
-                height: 120,
-                left: "50%",
-                top: "50%",
-                marginLeft: -60,
-                marginTop: -60,
-                borderColor: "rgba(168,85,247,0.1)",
-              }}
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{
-                scale: [0.5, 3],
-                opacity: [0.4, 0],
-              }}
-              transition={{
-                duration: 1.8,
-                delay,
-                ease: "easeOut",
-                repeat: Infinity,
-                repeatDelay: 0.6,
-              }}
-            />
-          ))}
-
-          {/* ── Central content ── */}
-          <div className="relative z-10 flex flex-col items-center justify-center">
-            {/* ── Hexagonal accent mark above text ── */}
-            <motion.div
-              className="mb-6 relative"
-              initial={{ opacity: 0, scale: 0, rotate: -30 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <svg width="48" height="48" viewBox="0 0 48 48">
-                <defs>
-                  <linearGradient
-                    id="loaderHexGrad"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stopColor="#a855f7" />
-                    <stop offset="100%" stopColor="#7c3aed" />
-                  </linearGradient>
-                </defs>
-                <motion.polygon
-                  points="24,2 44,14 44,34 24,46 4,34 4,14"
-                  fill="none"
-                  stroke="url(#loaderHexGrad)"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
-                />
-                <motion.polygon
-                  points="24,10 36,17 36,31 24,38 12,31 12,17"
-                  fill="rgba(168,85,247,0.1)"
-                  stroke="rgba(168,85,247,0.3)"
-                  strokeWidth="1"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  style={{ transformOrigin: "center" }}
-                />
-                <motion.circle
-                  cx="24"
-                  cy="24"
-                  r="3"
-                  fill="#a855f7"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: [0, 1.4, 1] }}
-                  transition={{ duration: 0.3, delay: 0.5 }}
-                  style={{ transformOrigin: "center" }}
-                />
-              </svg>
-
-              {/* Rotating orbit ring */}
-              <motion.div
-                className="absolute inset-[-12px] rounded-full border border-purple-400/20"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, ease: "linear", repeat: Infinity }}
-              />
-            </motion.div>
-
-            {/* ── E-CELL Text ── */}
-            {showEcell && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="relative text-5xl md:text-7xl font-black tracking-[0.15em] font-mono">
-                  {/* Purple shadow layer (offset) */}
-                  <span
-                    className="absolute inset-0"
-                    style={{
-                      transform: "translateX(-2px) translateY(2px)",
-                      opacity: 0.1,
-                    }}
-                    aria-hidden="true"
-                  >
-                    <DecryptedText
-                      text="E-CELL"
-                      speed={15}
-                      maxIterations={6}
-                      sequential={true}
-                      revealDirection="start"
-                      className="text-purple-700"
-                      encryptedClassName="text-purple-400"
-                      animateOn="auto"
-                    />
-                  </span>
-                  {/* Main text */}
-                  <span className="relative">
-                    <DecryptedText
-                      text="E-CELL"
-                      speed={15}
-                      maxIterations={6}
-                      sequential={true}
-                      revealDirection="start"
-                      className="bg-gradient-to-r from-purple-900 via-purple-700 to-violet-800 bg-clip-text text-transparent"
-                      encryptedClassName="text-purple-400/60"
-                      animateOn="auto"
-                      style={{
-                        filter: "drop-shadow(0 2px 8px rgba(124,58,237,0.15))",
-                      }}
-                    />
-                  </span>
-                </div>
-              </motion.div>
-            )}
-
-            {/* ── IPS ACADEMY Text ── */}
-            {showIPS && (
-              <motion.div
-                className="mt-2 overflow-hidden"
-                initial={{ width: 0 }}
-                animate={{ width: "auto" }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <motion.div
-                  className="text-xl md:text-3xl font-bold tracking-[0.3em] font-mono whitespace-nowrap"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #6d28d9 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                  initial={{ x: -40, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                >
-                  IPS ACADEMY
-                </motion.div>
-              </motion.div>
-            )}
-
-            {/* ── Subtitle ── */}
-            {showIPS && (
-              <motion.div
-                className="mt-3 text-xs md:text-sm tracking-[0.25em] text-purple-400/60 font-mono"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: 0.1 }}
-              >
-                ENTREPRENEURSHIP CELL
-              </motion.div>
-            )}
-          </div>
-
-          {/* ── Progress bar at bottom ── */}
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-purple-100/50">
-            <motion.div
-              className="h-full origin-left"
-              style={{
-                background:
-                  "linear-gradient(90deg, #a855f7, #7c3aed, #6d28d9)",
-              }}
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{
-                duration: 1.8,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-            />
-            {/* Glowing dot at progress tip */}
-            <motion.div
-              className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
-              style={{
-                background: "#a855f7",
-                boxShadow:
-                  "0 0 8px rgba(168,85,247,0.8), 0 0 16px rgba(168,85,247,0.4)",
-              }}
-              initial={{ left: "0%" }}
-              animate={{ left: "100%" }}
-              transition={{
-                duration: 1.8,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-            />
-          </div>
-
-          {/* ── Corner accents (thinner, more elegant on white) ── */}
-          <motion.div
-            className="absolute top-6 left-6 w-10 h-10 border-l border-t border-purple-400/30"
-            initial={{ opacity: 0, x: -8, y: -8 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.05 }}
-          />
-          <motion.div
-            className="absolute top-6 right-6 w-10 h-10 border-r border-t border-purple-400/30"
-            initial={{ opacity: 0, x: 8, y: -8 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.1 }}
-          />
-          <motion.div
-            className="absolute bottom-6 left-6 w-10 h-10 border-l border-b border-purple-400/30"
-            initial={{ opacity: 0, x: -8, y: 8 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.15 }}
-          />
-          <motion.div
-            className="absolute bottom-6 right-6 w-10 h-10 border-r border-b border-purple-400/30"
-            initial={{ opacity: 0, x: 8, y: 8 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.2 }}
-          />
-        </motion.div>
-      ) : (
-        /* ── Exit: White wipe upward revealing dark site ── */
-        <motion.div
-          key="loader-exit"
-          className="fixed inset-0 z-50 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(135deg, #ffffff 0%, #f8f6ff 40%, #f0ebff 100%)",
-          }}
-          initial={{ clipPath: "inset(0 0 0% 0)" }}
-          animate={{ clipPath: "inset(0 0 100% 0)" }}
-          transition={{
-            duration: 0.4,
-            ease: [0.76, 0, 0.24, 1],
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: "50px 50px",
           }}
         />
-      )}
-    </AnimatePresence>
+      </div>
+
+      {/* Background Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-purple-400/30 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [-20, -40, -20],
+              opacity: [0, 1, 0],
+              scale: [0, 1, 0],
+            }}
+            transition={{
+              duration: 2.5 + Math.random() * 1.5,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 text-center space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="space-y-2"
+        >
+          {/* "E-CELL IPS" — Instrument Serif, light weight */}
+          {currentStep >= 0 && (
+            <div
+              style={{
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontWeight: 400,
+                fontSize: "clamp(2rem, 8vw, 3.5rem)",
+                letterSpacing: "0.08em",
+              }}
+            >
+              <DecryptedText
+                text="E-CELL IPS"
+                speed={40}
+                sequential={true}
+                revealDirection="start"
+                className="text-white drop-shadow-2xl"
+                encryptedClassName="text-gray-500"
+                animateOn="auto"
+              />
+            </div>
+          )}
+
+          {/* "ACADEMY" — DM Mono, extralight feel via opacity */}
+          {currentStep >= 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontWeight: 400,
+                fontSize: "clamp(0.9rem, 2.5vw, 1.15rem)",
+                letterSpacing: "0.35em",
+              }}
+            >
+              <DecryptedText
+                text="ACADEMY"
+                speed={55}
+                sequential={true}
+                revealDirection="start"
+                className="text-purple-300 drop-shadow-lg"
+                encryptedClassName="text-gray-600"
+                animateOn="auto"
+              />
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Subtitles — DM Mono */}
+        {currentStep >= 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="space-y-1.5"
+          >
+            <div
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontWeight: 400,
+                fontSize: "clamp(0.55rem, 1.2vw, 0.7rem)",
+                letterSpacing: "0.32em",
+              }}
+            >
+              <DecryptedText
+                text="ENTREPRENEURSHIP CELL"
+                speed={28}
+                sequential={true}
+                revealDirection="center"
+                className="text-gray-300"
+                encryptedClassName="text-gray-700"
+                animateOn="auto"
+              />
+            </div>
+
+            <div
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontWeight: 400,
+                fontSize: "clamp(0.5rem, 1vw, 0.62rem)",
+                letterSpacing: "0.22em",
+              }}
+            >
+              <DecryptedText
+                text="IPS ACADEMY × IIT BOMBAY"
+                speed={35}
+                sequential={true}
+                revealDirection="start"
+                className="text-blue-400"
+                encryptedClassName="text-gray-700"
+                animateOn="auto"
+              />
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Corner Elements */}
+      <div className="absolute top-8 left-8 w-16 h-16 border-l-2 border-t-2 border-white/20" />
+      <div className="absolute top-8 right-8 w-16 h-16 border-r-2 border-t-2 border-white/20" />
+      <div className="absolute bottom-8 left-8 w-16 h-16 border-l-2 border-b-2 border-white/20" />
+      <div className="absolute bottom-8 right-8 w-16 h-16 border-r-2 border-b-2 border-white/20" />
+    </motion.div>
   );
 };
 

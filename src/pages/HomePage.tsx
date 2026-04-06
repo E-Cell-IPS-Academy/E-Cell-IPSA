@@ -1,6 +1,5 @@
 import HeroSection from "../components/Home/HeroSection";
 import ECellStatsSection from "../components/Home/FeatureSection";
-import ECellSections from "../components/Home/StaticSection";
 import CardStackFeature from "../components/Home/CardStackFeature";
 import ParallaxShowcase from "../components/Home/ParallaxShowcase";
 
@@ -18,9 +17,6 @@ const HomePage = () => {
 
       {/* Parallax Showcase with Illustrations */}
       <ParallaxShowcase />
-
-      {/* About, Mission, Vision Sections */}
-      <ECellSections />
     </>
   );
 };
