@@ -36,7 +36,6 @@ const AdminLogin: React.FC = () => {
         "manage_settings",
       ],
     },
-   
   ];
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -61,7 +60,7 @@ const AdminLogin: React.FC = () => {
       const admin = ADMIN_CREDENTIALS.find(
         (cred) =>
           cred.username === credentials.username &&
-          cred.password === credentials.password
+          cred.password === credentials.password,
       );
 
       if (admin) {
@@ -209,34 +208,6 @@ const AdminLogin: React.FC = () => {
               )}
             </motion.button>
           </form>
-
-          {/* Demo Credentials */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10"
-          >
-            <p className="text-xs text-gray-400 mb-3 text-center">
-              Demo Credentials:
-            </p>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300">Super Admin:</span>
-                <span className="text-purple-300">admin1 / ecell@2024</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300">Content Admin:</span>
-                <span className="text-blue-300">admin2 / ipsacademy@2024</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300">Event Admin:</span>
-                <span className="text-green-300">
-                  admin3 / entrepreneurship@2024
-                </span>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </motion.div>
     </div>

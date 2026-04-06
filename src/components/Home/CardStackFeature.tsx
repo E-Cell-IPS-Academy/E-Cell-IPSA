@@ -13,7 +13,7 @@ import {
   Trophy,
   Globe,
 } from "lucide-react";
-import { FadeInOnScroll, TextReveal } from "../animations/ScrollAnimations";
+import { FadeInOnScroll } from "../animations/ScrollAnimations";
 import { useTheme } from "../../context/ThemeContext";
 
 // ─── Google Fonts loader ──────────────────────────────────────

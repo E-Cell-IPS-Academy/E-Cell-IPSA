@@ -12,9 +12,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Home, Calendar, Image, FileText, Phone } from "lucide-react";
+import { Home, Calendar, Image, FileText, Phone, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useTheme } from "../../context/ThemeContext";
 
 const GOOGLE_FONTS_URL =
   "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&family=Outfit:wght@300;400&display=swap";
@@ -40,7 +39,6 @@ const Navbar: React.FC = () => {
 
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const location = useLocation();
-  const { isDark } = useTheme();
 
   useEffect(() => {
     const handleScroll = (): void => {
@@ -54,6 +52,7 @@ const Navbar: React.FC = () => {
     { name: "Home", href: "/", icon: Home },
     { name: "Events", href: "/past-events", icon: Calendar },
     { name: "Gallery", href: "/gallery", icon: Image },
+    { name: "Teams", href: "/team", icon: Users },
     { name: "Blogs", href: "/blog", icon: FileText },
     { name: "Contact", href: "/contact", icon: Phone },
   ];

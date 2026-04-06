@@ -12,7 +12,6 @@ import {
   ArrowUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useTheme } from "../../context/ThemeContext";
 import { db } from "../../firebase/config";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -81,7 +80,6 @@ const linkStyle: React.CSSProperties = {
 
 const Footer = () => {
   useFonts();
-  const { isDark } = useTheme(); // always dark per ThemeContext lock, kept for structure
 
   const [social, setSocial] = useState<SocialLinkData>(DEFAULT_SOCIAL);
   const [contact, setContact] = useState<ContactData>(DEFAULT_CONTACT);

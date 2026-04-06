@@ -1,10 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 
-// ─── Google Fonts ─────────────────────────────────────────────
-// DISPLAY → "Instrument Serif"  — "E-CELL IPS" main title
-// LABEL   → "DM Mono"           — "ACADEMY", "ENTREPRENEURSHIP CELL", "IPS ACADEMY × IIT BOMBAY"
-// (DecryptedText keeps font-mono from its own className; we override per element below)
 function useFonts() {
   useEffect(() => {
     if (document.getElementById("loader-fonts")) return;
@@ -234,7 +230,7 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-purple-400/30 rounded-full"
+            className="absolute w-1 h-1 bg-white/10 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -262,7 +258,7 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="space-y-2"
         >
-          {/* "E-CELL IPS" — Instrument Serif, light weight */}
+          {/* "E-CELL IPS" — Instrument Serif */}
           {currentStep >= 0 && (
             <div
               style={{
@@ -284,7 +280,7 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
             </div>
           )}
 
-          {/* "ACADEMY" — DM Mono, extralight feel via opacity */}
+          {/* "IPSA" — DM Mono (was "ACADEMY", now on same line as E-CELL IPS) */}
           {currentStep >= 1 && (
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -298,11 +294,11 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
               }}
             >
               <DecryptedText
-                text="ACADEMY"
+                text="IPSA"
                 speed={55}
                 sequential={true}
                 revealDirection="start"
-                className="text-purple-300 drop-shadow-lg"
+                className="text-white/55 drop-shadow-lg"
                 encryptedClassName="text-gray-600"
                 animateOn="auto"
               />
@@ -350,7 +346,7 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
                 speed={35}
                 sequential={true}
                 revealDirection="start"
-                className="text-blue-400"
+                className="text-white/40"
                 encryptedClassName="text-gray-700"
                 animateOn="auto"
               />
