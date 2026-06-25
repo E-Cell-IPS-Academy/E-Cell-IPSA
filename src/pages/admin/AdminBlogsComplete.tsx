@@ -1022,683 +1022,681 @@ const AdminBlogsComplete: React.FC = () => {
   );
 
   return (
-
-      <div className="space-y-6">
-        {/* Notification */}
-        <AnimatePresence>
-          {notification && (
-            <motion.div
-              initial={{ opacity: 0, y: -50, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -50, scale: 0.95 }}
-              className={`fixed top-4 right-4 z-50 p-4 rounded-lg border ${
-                notification.type === "success"
-                  ? "bg-green-500/20 border-green-500/30 text-green-400"
-                  : "bg-red-500/20 border-red-500/30 text-red-400"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {notification.type === "success" ? (
-                  <CheckCircle className="w-5 h-5" />
-                ) : (
-                  <AlertCircle className="w-5 h-5" />
-                )}
-                {notification.message}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Blog Management
-            </h1>
-            <p className="text-gray-400">
-              Create, edit, and manage blog posts with rich content
-            </p>
-          </div>
-
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
+    <div className="space-y-6">
+      {/* Notification */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.95 }}
+            className={`fixed top-4 right-4 z-50 p-4 rounded-lg border ${
+              notification.type === "success"
+                ? "bg-green-500/20 border-green-500/30 text-green-400"
+                : "bg-red-500/20 border-red-500/30 text-red-400"
+            }`}
           >
-            <Plus className="w-5 h-5" />
-            Create Post
-          </button>
-        </motion.div>
+            <div className="flex items-center gap-3">
+              {notification.type === "success" ? (
+                <CheckCircle className="w-5 h-5" />
+              ) : (
+                <AlertCircle className="w-5 h-5" />
+              )}
+              {notification.message}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+      >
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Blog Management
+          </h1>
+          <p className="text-gray-400">
+            Create, edit, and manage blog posts with rich content
+          </p>
+        </div>
+
+        <button
+          onClick={openCreateModal}
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-colors"
         >
-          {[
-            {
-              title: "Total Posts",
-              value: stats.total,
-              color: "from-purple-500 to-purple-600",
-              icon: FileText,
-            },
-            {
-              title: "Published",
-              value: stats.published,
-              color: "from-green-500 to-green-600",
-              icon: CheckCircle,
-            },
-            {
-              title: "Draft",
-              value: stats.draft,
-              color: "from-yellow-500 to-yellow-600",
-              icon: Edit,
-            },
-            {
-              title: "Archived",
-              value: stats.archived,
-              color: "from-gray-500 to-gray-600",
-              icon: FileText,
-            },
-            {
-              title: "Total Views",
-              value: stats.totalViews.toLocaleString(),
-              color: "from-blue-500 to-blue-600",
-              icon: Eye,
-            },
-          ].map((stat, index) => (
+          <Plus className="w-5 h-5" />
+          Create Post
+        </button>
+      </motion.div>
+
+      {/* Stats Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
+      >
+        {[
+          {
+            title: "Total Posts",
+            value: stats.total,
+            color: "from-purple-500 to-purple-600",
+            icon: FileText,
+          },
+          {
+            title: "Published",
+            value: stats.published,
+            color: "from-green-500 to-green-600",
+            icon: CheckCircle,
+          },
+          {
+            title: "Draft",
+            value: stats.draft,
+            color: "from-yellow-500 to-yellow-600",
+            icon: Edit,
+          },
+          {
+            title: "Archived",
+            value: stats.archived,
+            color: "from-gray-500 to-gray-600",
+            icon: FileText,
+          },
+          {
+            title: "Total Views",
+            value: stats.totalViews.toLocaleString(),
+            color: "from-blue-500 to-blue-600",
+            icon: Eye,
+          },
+        ].map((stat, index) => (
+          <div
+            key={index}
+            className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-4"
+          >
             <div
-              key={index}
-              className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-4"
+              className={`w-10 h-10 bg-gradient-to-r ${stat.color} rounded-lg flex items-center justify-center mb-3`}
             >
-              <div
-                className={`w-10 h-10 bg-gradient-to-r ${stat.color} rounded-lg flex items-center justify-center mb-3`}
-              >
-                <stat.icon className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-white">{stat.value}</h3>
-              <p className="text-gray-400 text-sm">{stat.title}</p>
+              <stat.icon className="w-5 h-5 text-white" />
             </div>
-          ))}
-        </motion.div>
-
-        {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6"
-        >
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search blog posts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
-            >
-              <option value="all">All Status</option>
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-              <option value="archived">Archived</option>
-            </select>
+            <h3 className="text-xl font-bold text-white">{stat.value}</h3>
+            <p className="text-gray-400 text-sm">{stat.title}</p>
           </div>
-        </motion.div>
+        ))}
+      </motion.div>
 
-        {/* Blog Posts Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-white/5 rounded-2xl border border-white/10 p-6 animate-pulse"
-                >
-                  <div className="h-48 bg-white/10 rounded-lg mb-4"></div>
-                  <div className="h-4 bg-white/10 rounded mb-2"></div>
-                  <div className="h-3 bg-white/10 rounded w-2/3"></div>
-                </div>
-              ))}
-            </div>
-          ) : filteredBlogs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredBlogs.map((blog, index) => (
-                <motion.div
-                  key={blog.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  <BlogCard blog={blog} />
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <FileText className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">
-                No blog posts found
-              </h3>
-              <p className="text-gray-400 mb-6">
-                Try adjusting your search criteria
-              </p>
-              <button
-                onClick={openCreateModal}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium"
+      {/* Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6"
+      >
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search blog posts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+          >
+            <option value="all">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </motion.div>
+
+      {/* Blog Posts Grid */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white/5 rounded-2xl border border-white/10 p-6 animate-pulse"
               >
-                Create First Post
-              </button>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Modal */}
-        <AnimatePresence>
-          {modalMode && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              onClick={closeModal}
-            >
+                <div className="h-48 bg-white/10 rounded-lg mb-4"></div>
+                <div className="h-4 bg-white/10 rounded mb-2"></div>
+                <div className="h-3 bg-white/10 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
+        ) : filteredBlogs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBlogs.map((blog, index) => (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-gray-900 border border-white/20 rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
+                key={blog.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
               >
-                {/* Modal Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10">
-                  <h2 className="text-2xl font-bold text-white">
-                    {modalMode === "create" && "Create New Blog Post"}
-                    {modalMode === "edit" && "Edit Blog Post"}
-                    {modalMode === "view" && "Blog Post Details"}
-                  </h2>
-                  <button
-                    onClick={closeModal}
-                    className="p-2 text-gray-400 hover:text-white transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
+                <BlogCard blog={blog} />
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <FileText className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white mb-2">
+              No blog posts found
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Try adjusting your search criteria
+            </p>
+            <button
+              onClick={openCreateModal}
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium"
+            >
+              Create First Post
+            </button>
+          </div>
+        )}
+      </motion.div>
 
-                {/* Modal Content */}
-                <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
-                  {modalMode === "view" && selectedBlog ? (
-                    /* View Mode */
-                    <div className="p-6 space-y-6">
-                      {/* Featured Image */}
-                      {selectedBlog.featuredImage && (
-                        <img
-                          src={selectedBlog.featuredImage}
-                          alt={selectedBlog.title}
-                          className="w-full h-64 object-cover rounded-lg"
-                        />
-                      )}
+      {/* Modal */}
+      <AnimatePresence>
+        {modalMode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-gray-900 border border-white/20 rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/10">
+                <h2 className="text-2xl font-bold text-white">
+                  {modalMode === "create" && "Create New Blog Post"}
+                  {modalMode === "edit" && "Edit Blog Post"}
+                  {modalMode === "view" && "Blog Post Details"}
+                </h2>
+                <button
+                  onClick={closeModal}
+                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
 
-                      {/* Header */}
-                      <div>
-                        <div className="flex items-center gap-4 mb-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs ${getStatusColor(
-                              selectedBlog.status
-                            )}`}
-                          >
-                            {selectedBlog.status}
+              {/* Modal Content */}
+              <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
+                {modalMode === "view" && selectedBlog ? (
+                  /* View Mode */
+                  <div className="p-6 space-y-6">
+                    {/* Featured Image */}
+                    {selectedBlog.featuredImage && (
+                      <img
+                        src={selectedBlog.featuredImage}
+                        alt={selectedBlog.title}
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                    )}
+
+                    {/* Header */}
+                    <div>
+                      <div className="flex items-center gap-4 mb-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs ${getStatusColor(
+                            selectedBlog.status
+                          )}`}
+                        >
+                          {selectedBlog.status}
+                        </span>
+                        {selectedBlog.isFeature && (
+                          <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">
+                            Featured
                           </span>
-                          {selectedBlog.isFeature && (
-                            <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">
-                              Featured
-                            </span>
-                          )}
-                          <span className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">
-                            {selectedBlog.category}
-                          </span>
-                        </div>
-                        <h1 className="text-3xl font-bold text-white mb-4">
-                          {selectedBlog.title}
-                        </h1>
-                        <p className="text-gray-300 text-lg mb-6">
-                          {selectedBlog.excerpt}
-                        </p>
+                        )}
+                        <span className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">
+                          {selectedBlog.category}
+                        </span>
                       </div>
+                      <h1 className="text-3xl font-bold text-white mb-4">
+                        {selectedBlog.title}
+                      </h1>
+                      <p className="text-gray-300 text-lg mb-6">
+                        {selectedBlog.excerpt}
+                      </p>
+                    </div>
 
-                      {/* Meta Info */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-4">
-                            Article Info
-                          </h3>
-                          <div className="space-y-3">
-                            <div>
-                              <p className="text-gray-400 text-sm">Author</p>
-                              <p className="text-white">
-                                {selectedBlog.author.name}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-400 text-sm">
-                                Published Date
-                              </p>
-                              <p className="text-white">
-                                {selectedBlog.publishedDate
-                                  ? new Date(
-                                      selectedBlog.publishedDate
-                                    ).toLocaleDateString()
-                                  : "Not published"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-400 text-sm">Read Time</p>
-                              <p className="text-white">
-                                {selectedBlog.readTime || 0} minutes
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-400 text-sm">Views</p>
-                              <p className="text-white">
-                                {selectedBlog.viewCount} views
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-4">
-                            SEO & URLs
-                          </h3>
-                          <div className="space-y-3">
-                            <div>
-                              <p className="text-gray-400 text-sm">Slug</p>
-                              <p className="text-white font-mono text-sm">
-                                {selectedBlog.slug}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-400 text-sm">SEO Title</p>
-                              <p className="text-white">
-                                {selectedBlog.seoTitle || "Not set"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-400 text-sm">
-                                SEO Description
-                              </p>
-                              <p className="text-white">
-                                {selectedBlog.seoDescription || "Not set"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Tags */}
-                      {selectedBlog.tags && selectedBlog.tags.length > 0 && (
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-4">
-                            Tags
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedBlog.tags.map((tag, index) => (
-                              <span
-                                key={index}
-                                className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Content Preview */}
+                    {/* Meta Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-4">
-                          Content Preview
+                          Article Info
                         </h3>
-                        <div
-                          className="prose prose-invert max-w-none bg-white/5 rounded-lg p-6 border border-white/10"
-                          dangerouslySetInnerHTML={{
-                            __html: selectedBlog.content,
-                          }}
-                        />
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-gray-400 text-sm">Author</p>
+                            <p className="text-white">
+                              {selectedBlog.author.name}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">
+                              Published Date
+                            </p>
+                            <p className="text-white">
+                              {selectedBlog.publishedDate
+                                ? new Date(
+                                    selectedBlog.publishedDate
+                                  ).toLocaleDateString()
+                                : "Not published"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">Read Time</p>
+                            <p className="text-white">
+                              {selectedBlog.readTime || 0} minutes
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">Views</p>
+                            <p className="text-white">
+                              {selectedBlog.viewCount} views
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-4">
+                          SEO & URLs
+                        </h3>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-gray-400 text-sm">Slug</p>
+                            <p className="text-white font-mono text-sm">
+                              {selectedBlog.slug}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">SEO Title</p>
+                            <p className="text-white">
+                              {selectedBlog.seoTitle || "Not set"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm">
+                              SEO Description
+                            </p>
+                            <p className="text-white">
+                              {selectedBlog.seoDescription || "Not set"}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    /* Create/Edit Form */
-                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                      {/* Basic Information */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Title *
-                          </label>
-                          <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                            placeholder="Enter blog title"
-                            required
-                          />
-                        </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Slug *
-                          </label>
-                          <input
-                            type="text"
-                            name="slug"
-                            value={formData.slug}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                            placeholder="url-friendly-slug"
-                            required
-                          />
+                    {/* Tags */}
+                    {selectedBlog.tags && selectedBlog.tags.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-4">
+                          Tags
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedBlog.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
                         </div>
                       </div>
+                    )}
 
-                      {/* Category and Status */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Category *
-                          </label>
-                          <select
-                            name="category"
-                            value={formData.category}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                            required
-                          >
-                            <option value="">Select category</option>
-                            <option value="Entrepreneurship">
-                              Entrepreneurship
-                            </option>
-                            <option value="Technology">Technology</option>
-                            <option value="Business">Business</option>
-                            <option value="Innovation">Innovation</option>
-                            <option value="Startup Stories">
-                              Startup Stories
-                            </option>
-                            <option value="Tips & Guides">Tips & Guides</option>
-                            <option value="News">News</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Status
-                          </label>
-                          <select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                          >
-                            <option value="draft">Draft</option>
-                            <option value="published">Published</option>
-                            <option value="archived">Archived</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Published Date
-                          </label>
-                          <input
-                            type="date"
-                            name="publishedDate"
-                            value={formData.publishedDate}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Excerpt */}
+                    {/* Content Preview */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-4">
+                        Content Preview
+                      </h3>
+                      <div
+                        className="prose prose-invert max-w-none bg-white/5 rounded-lg p-6 border border-white/10"
+                        dangerouslySetInnerHTML={{
+                          __html: selectedBlog.content,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  /* Create/Edit Form */
+                  <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Basic Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Excerpt *
+                          Title *
                         </label>
-                        <textarea
-                          name="excerpt"
-                          value={formData.excerpt}
+                        <input
+                          type="text"
+                          name="title"
+                          value={formData.title}
                           onChange={handleInputChange}
-                          rows={3}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 resize-none"
-                          placeholder="Brief description of the blog post"
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                          placeholder="Enter blog title"
                           required
                         />
                       </div>
 
-                      {/* Featured Image */}
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Featured Image
-                        </label>
-                        <div className="flex items-center gap-4">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="hidden"
-                            id="featured-image-upload"
-                          />
-                          <label
-                            htmlFor="featured-image-upload"
-                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white cursor-pointer transition-colors"
-                          >
-                            <Upload className="w-4 h-4" />
-                            Upload Image
-                          </label>
-                          {featuredImagePreview && (
-                            <img
-                              src={featuredImagePreview}
-                              alt="Featured Preview"
-                              className="w-20 h-12 object-cover rounded-lg"
-                            />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Content Editor */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Content *
-                        </label>
-                        <RichTextEditor
-                          content={formData.content}
-                          onChange={(content) =>
-                            setFormData((prev) => ({ ...prev, content }))
-                          }
-                        />
-                      </div>
-
-                      {/* Author Information */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-4">
-                          Author Information
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                              Author Name *
-                            </label>
-                            <input
-                              type="text"
-                              value={formData.author.name}
-                              onChange={(e) =>
-                                handleAuthorChange("name", e.target.value)
-                              }
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                              placeholder="Author name"
-                              required
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                              Author Email *
-                            </label>
-                            <input
-                              type="email"
-                              value={formData.author.email}
-                              onChange={(e) =>
-                                handleAuthorChange("email", e.target.value)
-                              }
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                              placeholder="author@example.com"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="mt-4">
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Author Bio
-                          </label>
-                          <textarea
-                            value={formData.author.bio || ""}
-                            onChange={(e) =>
-                              handleAuthorChange("bio", e.target.value)
-                            }
-                            rows={2}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 resize-none"
-                            placeholder="Brief author bio"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Tags */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Tags (comma separated)
+                          Slug *
                         </label>
                         <input
                           type="text"
-                          value={formData.tags.join(", ")}
-                          onChange={(e) => handleTagsChange(e.target.value)}
+                          name="slug"
+                          value={formData.slug}
+                          onChange={handleInputChange}
                           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                          placeholder="e.g., startup, technology, innovation"
+                          placeholder="url-friendly-slug"
+                          required
                         />
                       </div>
+                    </div>
 
-                      {/* SEO Section */}
+                    {/* Category and Status */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
-                        <h3 className="text-lg font-semibold text-white mb-4">
-                          SEO Settings
-                        </h3>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                              SEO Title
-                            </label>
-                            <input
-                              type="text"
-                              name="seoTitle"
-                              value={formData.seoTitle}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                              placeholder="SEO optimized title"
-                            />
-                          </div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Category *
+                        </label>
+                        <select
+                          name="category"
+                          value={formData.category}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                          required
+                        >
+                          <option value="">Select category</option>
+                          <option value="Entrepreneurship">
+                            Entrepreneurship
+                          </option>
+                          <option value="Technology">Technology</option>
+                          <option value="Business">Business</option>
+                          <option value="Innovation">Innovation</option>
+                          <option value="Startup Stories">
+                            Startup Stories
+                          </option>
+                          <option value="Tips & Guides">Tips & Guides</option>
+                          <option value="News">News</option>
+                        </select>
+                      </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                              SEO Description
-                            </label>
-                            <textarea
-                              name="seoDescription"
-                              value={formData.seoDescription}
-                              onChange={handleInputChange}
-                              rows={2}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 resize-none"
-                              placeholder="SEO meta description"
-                            />
-                          </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Status
+                        </label>
+                        <select
+                          name="status"
+                          value={formData.status}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                        >
+                          <option value="draft">Draft</option>
+                          <option value="published">Published</option>
+                          <option value="archived">Archived</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Published Date
+                        </label>
+                        <input
+                          type="date"
+                          name="publishedDate"
+                          value={formData.publishedDate}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Excerpt */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Excerpt *
+                      </label>
+                      <textarea
+                        name="excerpt"
+                        value={formData.excerpt}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 resize-none"
+                        placeholder="Brief description of the blog post"
+                        required
+                      />
+                    </div>
+
+                    {/* Featured Image */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Featured Image
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                          id="featured-image-upload"
+                        />
+                        <label
+                          htmlFor="featured-image-upload"
+                          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload Image
+                        </label>
+                        {featuredImagePreview && (
+                          <img
+                            src={featuredImagePreview}
+                            alt="Featured Preview"
+                            className="w-20 h-12 object-cover rounded-lg"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Content Editor */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Content *
+                      </label>
+                      <RichTextEditor
+                        content={formData.content}
+                        onChange={(content) =>
+                          setFormData((prev) => ({ ...prev, content }))
+                        }
+                      />
+                    </div>
+
+                    {/* Author Information */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-4">
+                        Author Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Author Name *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.author.name}
+                            onChange={(e) =>
+                              handleAuthorChange("name", e.target.value)
+                            }
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                            placeholder="Author name"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Author Email *
+                          </label>
+                          <input
+                            type="email"
+                            value={formData.author.email}
+                            onChange={(e) =>
+                              handleAuthorChange("email", e.target.value)
+                            }
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                            placeholder="author@example.com"
+                            required
+                          />
                         </div>
                       </div>
 
-                      {/* Featured Post Toggle */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          id="isFeature"
-                          name="isFeature"
-                          checked={formData.isFeature}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500 focus:ring-2"
-                        />
-                        <label
-                          htmlFor="isFeature"
-                          className="text-sm font-medium text-gray-300"
-                        >
-                          Mark as featured post
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Author Bio
                         </label>
+                        <textarea
+                          value={formData.author.bio || ""}
+                          onChange={(e) =>
+                            handleAuthorChange("bio", e.target.value)
+                          }
+                          rows={2}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 resize-none"
+                          placeholder="Brief author bio"
+                        />
                       </div>
+                    </div>
 
-                      {/* Form Actions */}
-                      <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10">
-                        <button
-                          type="button"
-                          onClick={closeModal}
-                          className="px-6 py-3 text-gray-400 hover:text-white transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              {modalMode === "create"
-                                ? "Creating..."
-                                : "Updating..."}
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-4 h-4" />
-                              {modalMode === "create"
-                                ? "Create Post"
-                                : "Update Post"}
-                            </>
-                          )}
-                        </button>
+                    {/* Tags */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Tags (comma separated)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tags.join(", ")}
+                        onChange={(e) => handleTagsChange(e.target.value)}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                        placeholder="e.g., startup, technology, innovation"
+                      />
+                    </div>
+
+                    {/* SEO Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-4">
+                        SEO Settings
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            SEO Title
+                          </label>
+                          <input
+                            type="text"
+                            name="seoTitle"
+                            value={formData.seoTitle}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                            placeholder="SEO optimized title"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            SEO Description
+                          </label>
+                          <textarea
+                            name="seoDescription"
+                            value={formData.seoDescription}
+                            onChange={handleInputChange}
+                            rows={2}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 resize-none"
+                            placeholder="SEO meta description"
+                          />
+                        </div>
                       </div>
-                    </form>
-                  )}
-                </div>
-              </motion.div>
+                    </div>
+
+                    {/* Featured Post Toggle */}
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="isFeature"
+                        name="isFeature"
+                        checked={formData.isFeature}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500 focus:ring-2"
+                      />
+                      <label
+                        htmlFor="isFeature"
+                        className="text-sm font-medium text-gray-300"
+                      >
+                        Mark as featured post
+                      </label>
+                    </div>
+
+                    {/* Form Actions */}
+                    <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={closeModal}
+                        className="px-6 py-3 text-gray-400 hover:text-white transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            {modalMode === "create"
+                              ? "Creating..."
+                              : "Updating..."}
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4" />
+                            {modalMode === "create"
+                              ? "Create Post"
+                              : "Update Post"}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
- 
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

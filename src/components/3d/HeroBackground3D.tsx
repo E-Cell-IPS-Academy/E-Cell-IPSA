@@ -96,7 +96,8 @@ const ParticleField = ({ count }: ParticleFieldProps) => {
       new THREE.Color("#C4B5FD"),
     ];
     for (let i = 0; i < count; i++) {
-      const color = purpleShades[Math.floor(Math.random() * purpleShades.length)];
+      const color =
+        purpleShades[Math.floor(Math.random() * purpleShades.length)];
       meshRef.current.setColorAt(i, color);
     }
     if (meshRef.current.instanceColor) {
@@ -133,10 +134,7 @@ const ParticleField = ({ count }: ParticleFieldProps) => {
   });
 
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[geometry, undefined, count]}
-    >
+    <instancedMesh ref={meshRef} args={[geometry, undefined, count]}>
       <meshBasicMaterial
         transparent
         opacity={0.7}
@@ -195,11 +193,16 @@ const FloatingGeo = ({
 
     // Breathing glow via emissive intensity
     const mat = meshRef.current.material as THREE.MeshStandardMaterial;
-    mat.emissiveIntensity = 0.3 + Math.sin(state.clock.elapsedTime * 1.5) * 0.15;
+    mat.emissiveIntensity =
+      0.3 + Math.sin(state.clock.elapsedTime * 1.5) * 0.15;
   });
 
   return (
-    <Float speed={floatSpeed} rotationIntensity={0.2} floatIntensity={floatIntensity}>
+    <Float
+      speed={floatSpeed}
+      rotationIntensity={0.2}
+      floatIntensity={floatIntensity}
+    >
       <mesh ref={meshRef} position={position} geometry={geo}>
         <meshStandardMaterial
           color={color}
@@ -258,20 +261,108 @@ const Scene = ({ isMobile }: SceneProps) => {
       isMobile
         ? [
             // Fewer shapes on mobile
-            { position: [-2.5, 1.5, -3], type: "icosahedron" as const, color: "#8B5CF6", size: 0.7, rotationSpeed: 0.5, floatSpeed: 1, floatIntensity: 1 },
-            { position: [2.5, -1.5, -2], type: "torusKnot" as const, color: "#3B82F6", size: 0.4, rotationSpeed: 0.7, floatSpeed: 1.2, floatIntensity: 0.8 },
-            { position: [0, 2, -4], type: "icosahedron" as const, color: "#7C3AED", size: 0.5, rotationSpeed: 0.6, floatSpeed: 0.8, floatIntensity: 1.2 },
+            {
+              position: [-2.5, 1.5, -3],
+              type: "icosahedron" as const,
+              color: "#8B5CF6",
+              size: 0.7,
+              rotationSpeed: 0.5,
+              floatSpeed: 1,
+              floatIntensity: 1,
+            },
+            {
+              position: [2.5, -1.5, -2],
+              type: "torusKnot" as const,
+              color: "#3B82F6",
+              size: 0.4,
+              rotationSpeed: 0.7,
+              floatSpeed: 1.2,
+              floatIntensity: 0.8,
+            },
+            {
+              position: [0, 2, -4],
+              type: "icosahedron" as const,
+              color: "#7C3AED",
+              size: 0.5,
+              rotationSpeed: 0.6,
+              floatSpeed: 0.8,
+              floatIntensity: 1.2,
+            },
           ]
         : [
             // Desktop: rich geometry field
-            { position: [-4, 2, -3], type: "icosahedron" as const, color: "#8B5CF6", size: 0.8, rotationSpeed: 0.4, floatSpeed: 1, floatIntensity: 1.2 },
-            { position: [4, -1.5, -2], type: "torusKnot" as const, color: "#3B82F6", size: 0.5, rotationSpeed: 0.7, floatSpeed: 1.5, floatIntensity: 0.8 },
-            { position: [0, 3, -4], type: "icosahedron" as const, color: "#7C3AED", size: 0.6, rotationSpeed: 0.5, floatSpeed: 0.8, floatIntensity: 1 },
-            { position: [-3, -2, -2], type: "torusKnot" as const, color: "#6366F1", size: 0.35, rotationSpeed: 0.9, floatSpeed: 1.3, floatIntensity: 1.5 },
-            { position: [3, 2.5, -3.5], type: "icosahedron" as const, color: "#A78BFA", size: 0.5, rotationSpeed: 0.6, floatSpeed: 1.1, floatIntensity: 1.3 },
-            { position: [-1.5, -3, -3], type: "torusKnot" as const, color: "#8B5CF6", size: 0.3, rotationSpeed: 1, floatSpeed: 0.9, floatIntensity: 0.9 },
-            { position: [2, 0.5, -5], type: "icosahedron" as const, color: "#3B82F6", size: 0.45, rotationSpeed: 0.8, floatSpeed: 1.4, floatIntensity: 1.1 },
-            { position: [-5, 0, -4], type: "icosahedron" as const, color: "#C4B5FD", size: 0.4, rotationSpeed: 0.3, floatSpeed: 0.7, floatIntensity: 1.6 },
+            {
+              position: [-4, 2, -3],
+              type: "icosahedron" as const,
+              color: "#8B5CF6",
+              size: 0.8,
+              rotationSpeed: 0.4,
+              floatSpeed: 1,
+              floatIntensity: 1.2,
+            },
+            {
+              position: [4, -1.5, -2],
+              type: "torusKnot" as const,
+              color: "#3B82F6",
+              size: 0.5,
+              rotationSpeed: 0.7,
+              floatSpeed: 1.5,
+              floatIntensity: 0.8,
+            },
+            {
+              position: [0, 3, -4],
+              type: "icosahedron" as const,
+              color: "#7C3AED",
+              size: 0.6,
+              rotationSpeed: 0.5,
+              floatSpeed: 0.8,
+              floatIntensity: 1,
+            },
+            {
+              position: [-3, -2, -2],
+              type: "torusKnot" as const,
+              color: "#6366F1",
+              size: 0.35,
+              rotationSpeed: 0.9,
+              floatSpeed: 1.3,
+              floatIntensity: 1.5,
+            },
+            {
+              position: [3, 2.5, -3.5],
+              type: "icosahedron" as const,
+              color: "#A78BFA",
+              size: 0.5,
+              rotationSpeed: 0.6,
+              floatSpeed: 1.1,
+              floatIntensity: 1.3,
+            },
+            {
+              position: [-1.5, -3, -3],
+              type: "torusKnot" as const,
+              color: "#8B5CF6",
+              size: 0.3,
+              rotationSpeed: 1,
+              floatSpeed: 0.9,
+              floatIntensity: 0.9,
+            },
+            {
+              position: [2, 0.5, -5],
+              type: "icosahedron" as const,
+              color: "#3B82F6",
+              size: 0.45,
+              rotationSpeed: 0.8,
+              floatSpeed: 1.4,
+              floatIntensity: 1.1,
+            },
+            {
+              position: [-5, 0, -4],
+              type: "icosahedron" as const,
+              color: "#C4B5FD",
+              size: 0.4,
+              rotationSpeed: 0.3,
+              floatSpeed: 0.7,
+              floatIntensity: 1.6,
+            },
           ],
     [isMobile]
   );
@@ -329,8 +420,7 @@ const HeroBackground3D = ({ className = "" }: HeroBackground3DProps) => {
   const checkWebGL = useCallback(() => {
     try {
       const canvas = document.createElement("canvas");
-      const gl =
-        canvas.getContext("webgl2") || canvas.getContext("webgl");
+      const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
       if (!gl) {
         setWebGLSupported(false);
       }

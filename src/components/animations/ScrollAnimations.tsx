@@ -325,7 +325,7 @@ export const TextReveal = ({ text, className = "" }: TextRevealProps) => {
               end: "top 50%",
               scrub: 1,
             },
-          },
+          }
         );
       });
     }, containerRef);

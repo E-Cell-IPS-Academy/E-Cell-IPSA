@@ -82,10 +82,35 @@ import { db } from "../../firebase/config";
 
 // ─── Icon Registry ────────────────────────────────────────────────────────────
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Users, Crown, Star, Shield, Award, Briefcase, Code, Cpu, Database,
-  Megaphone, Palette, PenTool, Rocket, Target, TrendingUp, Zap, Heart,
-  Music, Camera, BookOpen, FileText, Settings, Wrench, Lightbulb, Flag,
-  Globe, Activity, Sparkles, Layers,
+  Users,
+  Crown,
+  Star,
+  Shield,
+  Award,
+  Briefcase,
+  Code,
+  Cpu,
+  Database,
+  Megaphone,
+  Palette,
+  PenTool,
+  Rocket,
+  Target,
+  TrendingUp,
+  Zap,
+  Heart,
+  Music,
+  Camera,
+  BookOpen,
+  FileText,
+  Settings,
+  Wrench,
+  Lightbulb,
+  Flag,
+  Globe,
+  Activity,
+  Sparkles,
+  Layers,
 };
 
 const ICON_OPTIONS = Object.keys(ICON_MAP);
@@ -95,7 +120,11 @@ const DynamicIcon: React.FC<{ name: string; className?: string }> = ({
   className,
 }) => {
   const IconComp = ICON_MAP[name];
-  return IconComp ? <IconComp className={className} /> : <Users className={className} />;
+  return IconComp ? (
+    <IconComp className={className} />
+  ) : (
+    <Users className={className} />
+  );
 };
 
 // ─── Cloudinary Service (inline, same pattern as other admin pages) ───────────
@@ -203,7 +232,10 @@ const defaultMemberForm: Omit<TeamMember, "id" | "createdAt" | "updatedAt"> = {
   isActive: true,
 };
 
-const defaultCategoryForm: Omit<TeamCategory, "id" | "createdAt" | "updatedAt"> = {
+const defaultCategoryForm: Omit<
+  TeamCategory,
+  "id" | "createdAt" | "updatedAt"
+> = {
   name: "",
   icon: "Users",
   description: "",
@@ -235,17 +267,24 @@ const AdminTeamManagement: React.FC = () => {
   const [memberModalMode, setMemberModalMode] = useState<MemberModalMode>(null);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [memberForm, setMemberForm] =
-    useState<Omit<TeamMember, "id" | "createdAt" | "updatedAt">>(defaultMemberForm);
+    useState<Omit<TeamMember, "id" | "createdAt" | "updatedAt">>(
+      defaultMemberForm
+    );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   // Category modal
-  const [categoryModalMode, setCategoryModalMode] = useState<CategoryModalMode>(null);
-  const [selectedCategory, setSelectedCategory] = useState<TeamCategory | null>(null);
+  const [categoryModalMode, setCategoryModalMode] =
+    useState<CategoryModalMode>(null);
+  const [selectedCategory, setSelectedCategory] = useState<TeamCategory | null>(
+    null
+  );
   const [categoryForm, setCategoryForm] =
-    useState<Omit<TeamCategory, "id" | "createdAt" | "updatedAt">>(defaultCategoryForm);
+    useState<Omit<TeamCategory, "id" | "createdAt" | "updatedAt">>(
+      defaultCategoryForm
+    );
 
   // Bulk select
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -283,14 +322,16 @@ const AdminTeamManagement: React.FC = () => {
     setLoading(true);
     try {
       const [catSnap, memSnap] = await Promise.all([
-        getDocs(query(collection(db, "teamCategories"), orderBy("order", "asc"))),
+        getDocs(
+          query(collection(db, "teamCategories"), orderBy("order", "asc"))
+        ),
         getDocs(query(collection(db, "teamMembers"), orderBy("order", "asc"))),
       ]);
       setCategories(
-        catSnap.docs.map((d) => ({ id: d.id, ...d.data() } as TeamCategory))
+        catSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as TeamCategory)
       );
       setMembers(
-        memSnap.docs.map((d) => ({ id: d.id, ...d.data() } as TeamMember))
+        memSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as TeamMember)
       );
     } catch (err) {
       console.error(err);
@@ -373,7 +414,10 @@ const AdminTeamManagement: React.FC = () => {
     setDeleteConfirm({ type: "category", id: cat.id, name: cat.name });
   };
 
-  const reorderCategory = async (cat: TeamCategory, direction: "up" | "down") => {
+  const reorderCategory = async (
+    cat: TeamCategory,
+    direction: "up" | "down"
+  ) => {
     const sorted = [...categories].sort((a, b) => a.order - b.order);
     const idx = sorted.findIndex((c) => c.id === cat.id);
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
@@ -643,8 +687,12 @@ const AdminTeamManagement: React.FC = () => {
                     <Trash2 className="w-6 h-6 text-red-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">Confirm Delete</h3>
-                    <p className="text-gray-400 text-sm">This action cannot be undone</p>
+                    <h3 className="text-lg font-bold text-white">
+                      Confirm Delete
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      This action cannot be undone
+                    </p>
                   </div>
                 </div>
                 <p className="text-gray-300 mb-6">
@@ -1147,7 +1195,9 @@ const AdminTeamManagement: React.FC = () => {
                       <h3 className="text-white font-semibold text-lg">
                         {member.name}
                       </h3>
-                      <p className="text-purple-300 text-sm">{member.position}</p>
+                      <p className="text-purple-300 text-sm">
+                        {member.position}
+                      </p>
                       <span className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 bg-white/5 border border-white/10 rounded-full text-gray-400 text-xs">
                         <DynamicIcon
                           name={getCategoryIcon(member.category)}
@@ -1437,7 +1487,10 @@ const AdminTeamManagement: React.FC = () => {
                           type="text"
                           value={memberForm.name}
                           onChange={(e) =>
-                            setMemberForm({ ...memberForm, name: e.target.value })
+                            setMemberForm({
+                              ...memberForm,
+                              name: e.target.value,
+                            })
                           }
                           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors"
                           placeholder="Full name"
@@ -1549,9 +1602,12 @@ const AdminTeamManagement: React.FC = () => {
                       <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                         <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                         <p className="text-amber-300 text-xs">
-                          Only one lead per category. Setting this member as lead will
-                          remove lead status from any existing lead in{" "}
-                          <strong>{getCategoryName(memberForm.category)}</strong>.
+                          Only one lead per category. Setting this member as
+                          lead will remove lead status from any existing lead in{" "}
+                          <strong>
+                            {getCategoryName(memberForm.category)}
+                          </strong>
+                          .
                         </p>
                       </div>
                     )}
@@ -1718,8 +1774,8 @@ const AdminTeamManagement: React.FC = () => {
                             ? "Uploading..."
                             : "Saving..."
                           : memberModalMode === "create"
-                          ? "Add Member"
-                          : "Save Changes"}
+                            ? "Add Member"
+                            : "Save Changes"}
                       </button>
                     </div>
                   </form>
@@ -1774,7 +1830,10 @@ const AdminTeamManagement: React.FC = () => {
                       type="text"
                       value={categoryForm.name}
                       onChange={(e) =>
-                        setCategoryForm({ ...categoryForm, name: e.target.value })
+                        setCategoryForm({
+                          ...categoryForm,
+                          name: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors"
                       placeholder="e.g. Technical Team"
@@ -1807,7 +1866,10 @@ const AdminTeamManagement: React.FC = () => {
                       ))}
                     </div>
                     <p className="text-gray-500 text-xs mt-1">
-                      Selected: <span className="text-purple-300">{categoryForm.icon}</span>
+                      Selected:{" "}
+                      <span className="text-purple-300">
+                        {categoryForm.icon}
+                      </span>
                     </p>
                   </div>
 
@@ -1871,8 +1933,8 @@ const AdminTeamManagement: React.FC = () => {
                       {isSubmitting
                         ? "Saving..."
                         : categoryModalMode === "create"
-                        ? "Create Category"
-                        : "Save Changes"}
+                          ? "Create Category"
+                          : "Save Changes"}
                     </button>
                   </div>
                 </form>

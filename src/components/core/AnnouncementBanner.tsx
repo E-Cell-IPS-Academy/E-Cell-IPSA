@@ -167,7 +167,10 @@ const AnnouncementBanner: React.FC = () => {
                     className="flex whitespace-nowrap"
                     animate={{ x: ["0%", "-50%"] }}
                     transition={{
-                      duration: Math.max(10, (announcement?.text?.length || 0) * 0.25),
+                      duration: Math.max(
+                        10,
+                        (announcement?.text?.length || 0) * 0.25
+                      ),
                       ease: "linear",
                       repeat: Infinity,
                     }}

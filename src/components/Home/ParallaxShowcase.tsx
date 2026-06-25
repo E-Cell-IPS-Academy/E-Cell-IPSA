@@ -61,7 +61,7 @@ const F = {
 const useAnimatedCounter = (
   end: number,
   duration = 2000,
-  isInView: boolean,
+  isInView: boolean
 ) => {
   const [count, setCount] = useState(0);
   useEffect(() => {

@@ -87,8 +87,8 @@ class BlogDetailService {
           collection(db, this.collection),
           where("slug", "==", slug),
           where("status", "==", "published"),
-          limit(1),
-        ),
+          limit(1)
+        )
       );
       if (snap.empty) return null;
       const d = snap.docs[0];
@@ -100,7 +100,7 @@ class BlogDetailService {
   async getRelatedPosts(
     currentPostId: string,
     category: string,
-    tags: string[],
+    tags: string[]
   ): Promise<BlogPost[]> {
     try {
       const snap = await getDocs(
@@ -108,8 +108,8 @@ class BlogDetailService {
           collection(db, this.collection),
           where("status", "==", "published"),
           where("category", "==", category),
-          limit(6),
-        ),
+          limit(6)
+        )
       );
       let related = snap.docs
         .map((d) => ({ id: d.id, ...d.data() }) as BlogPost)
@@ -119,14 +119,14 @@ class BlogDetailService {
           query(
             collection(db, this.collection),
             where("status", "==", "published"),
-            limit(6),
-          ),
+            limit(6)
+          )
         );
         const all = gSnap.docs
           .map((d) => ({ id: d.id, ...d.data() }) as BlogPost)
           .filter((p) => p.id !== currentPostId);
         related = Array.from(
-          new Map([...related, ...all].map((p) => [p.id, p])).values(),
+          new Map([...related, ...all].map((p) => [p.id, p])).values()
         );
       }
       return related
@@ -198,7 +198,7 @@ const BlogDetail: React.FC = () => {
       const related = await blogDetailService.getRelatedPosts(
         post.id!,
         post.category,
-        post.tags,
+        post.tags
       );
       setRelatedPosts(related);
       document.title = post.seoTitle || post.title;
@@ -226,17 +226,17 @@ const BlogDetail: React.FC = () => {
     if (platform === "twitter")
       window.open(
         `https://twitter.com/intent/tweet?text=${encodeURIComponent(blogPost.title)}&url=${encodeURIComponent(url)}`,
-        "_blank",
+        "_blank"
       );
     else if (platform === "facebook")
       window.open(
         `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-        "_blank",
+        "_blank"
       );
     else if (platform === "linkedin")
       window.open(
         `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(blogPost.title)}`,
-        "_blank",
+        "_blank"
       );
     else if (platform === "copy")
       navigator.clipboard

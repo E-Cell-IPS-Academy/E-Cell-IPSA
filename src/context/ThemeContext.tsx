@@ -20,7 +20,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       toggleTheme: () => {}, // no-op — theme is locked to dark
       isDark: true,
     }),
-    [],
+    []
   );
 
   // Keep the dark class on <html> at all times

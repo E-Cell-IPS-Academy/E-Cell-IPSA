@@ -27,7 +27,7 @@ const useCounter = (
   end: number,
   duration = 2000,
   delay = 0,
-  isInView: boolean,
+  isInView: boolean
 ) => {
   const [count, setCount] = useState(0);
   useEffect(() => {

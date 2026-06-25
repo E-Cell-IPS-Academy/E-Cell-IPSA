@@ -1,5 +1,5 @@
 // Create /src/services/authService.ts
-import { 
+import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
@@ -12,7 +12,11 @@ import {
 import type { User } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
-import type { LoginCredentials, SignupCredentials, UserProfile } from "../types/user";
+import type {
+  LoginCredentials,
+  SignupCredentials,
+  UserProfile,
+} from "../types/user";
 
 class AuthService {
   private googleProvider: GoogleAuthProvider;
@@ -20,7 +24,7 @@ class AuthService {
   constructor() {
     this.googleProvider = new GoogleAuthProvider();
     this.googleProvider.setCustomParameters({
-      prompt: 'select_account'
+      prompt: "select_account",
     });
   }
 
@@ -28,11 +32,11 @@ class AuthService {
   async loginWithEmail(credentials: LoginCredentials): Promise<UserProfile> {
     try {
       const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        credentials.email, 
+        auth,
+        credentials.email,
         credentials.password
       );
-      
+
       await this.updateUserLastLogin(userCredential.user.uid);
       return this.mapFirebaseUserToProfile(userCredential.user);
     } catch (error: any) {
@@ -59,14 +63,17 @@ class AuthService {
 
       // Update display name
       await updateProfile(userCredential.user, {
-        displayName: credentials.displayName
+        displayName: credentials.displayName,
       });
 
       // Send email verification
       await sendEmailVerification(userCredential.user);
 
       // Create user document in Firestore
-      await this.createUserDocument(userCredential.user, credentials.displayName);
+      await this.createUserDocument(
+        userCredential.user,
+        credentials.displayName
+      );
 
       return this.mapFirebaseUserToProfile(userCredential.user);
     } catch (error: any) {
@@ -78,12 +85,12 @@ class AuthService {
   async loginWithGoogle(): Promise<UserProfile> {
     try {
       const userCredential = await signInWithPopup(auth, this.googleProvider);
-      
+
       // Check if user document exists, create if not
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       if (!userDoc.exists()) {
         await this.createUserDocument(
-          userCredential.user, 
+          userCredential.user,
           userCredential.user.displayName || "User"
         );
       } else {
@@ -128,7 +135,10 @@ class AuthService {
   }
 
   // Create user document in Firestore
-  private async createUserDocument(user: User, displayName: string): Promise<void> {
+  private async createUserDocument(
+    user: User,
+    displayName: string
+  ): Promise<void> {
     const userRef = doc(db, "users", user.uid);
     const userData = {
       uid: user.uid,
@@ -138,7 +148,7 @@ class AuthService {
       emailVerified: user.emailVerified,
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
-      role: "user" // Default role
+      role: "user", // Default role
     };
 
     await setDoc(userRef, userData);
@@ -147,9 +157,13 @@ class AuthService {
   // Update user last login
   private async updateUserLastLogin(uid: string): Promise<void> {
     const userRef = doc(db, "users", uid);
-    await setDoc(userRef, {
-      lastLoginAt: new Date().toISOString()
-    }, { merge: true });
+    await setDoc(
+      userRef,
+      {
+        lastLoginAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
   }
 
   // Map Firebase User to UserProfile
@@ -161,7 +175,7 @@ class AuthService {
       photoURL: user.photoURL,
       emailVerified: user.emailVerified,
       createdAt: "", // Will be fetched from Firestore if needed
-      lastLoginAt: new Date().toISOString()
+      lastLoginAt: new Date().toISOString(),
     };
   }
 

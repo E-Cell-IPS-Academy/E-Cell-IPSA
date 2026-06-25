@@ -98,8 +98,8 @@ class PublicBlogService {
         query(
           collection(db, this.collection),
           where("status", "==", "published"),
-          orderBy("createdAt", "desc"),
-        ),
+          orderBy("createdAt", "desc")
+        )
       );
       return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as BlogPost[];
     } catch {
@@ -107,8 +107,8 @@ class PublicBlogService {
         const snap = await getDocs(
           query(
             collection(db, this.collection),
-            where("status", "==", "published"),
-          ),
+            where("status", "==", "published")
+          )
         );
         const blogs = snap.docs.map((d) => ({
           id: d.id,
@@ -117,7 +117,7 @@ class PublicBlogService {
         return blogs.sort(
           (a, b) =>
             (b.createdAt?.toDate().getTime() || 0) -
-            (a.createdAt?.toDate().getTime() || 0),
+            (a.createdAt?.toDate().getTime() || 0)
         );
       } catch {
         throw new Error("Failed to fetch blog posts");
@@ -150,7 +150,7 @@ class PublicBlogService {
         slug: name.toLowerCase().replace(/\s+/g, "-"),
         description: `${name} posts`,
         count,
-      }),
+      })
     );
     return cats;
   }

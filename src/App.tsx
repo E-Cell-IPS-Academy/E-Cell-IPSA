@@ -87,7 +87,10 @@ const App: React.FC = () => {
                       <AdminLayout>
                         <Routes>
                           <Route path="/" element={<AdminDashboard />} />
-                          <Route path="/dashboard" element={<AdminDashboard />} />
+                          <Route
+                            path="/dashboard"
+                            element={<AdminDashboard />}
+                          />
 
                           <Route
                             path="/dashboard/events"
@@ -205,19 +208,34 @@ const App: React.FC = () => {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/team" element={<TeamPage />} />
-                        <Route path="/past-events" element={<PastEventsPage />} />
+                        <Route
+                          path="/past-events"
+                          element={<PastEventsPage />}
+                        />
                         <Route path="/gallery" element={<Gallery />} />
                         <Route path="/blog" element={<BlogListing />} />
                         <Route path="/blog/:slug" element={<BlogDetail />} />
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/startup" element={<StartupOfWeek />} />
-                        <Route path="/hiring" element={<IgniteXRegistration />} />
+                        <Route
+                          path="/hiring"
+                          element={<IgniteXRegistration />}
+                        />
 
                         {/* Programs */}
-                        <Route path="/incubation" element={<IncubationPage />} />
-                        <Route path="/mentorship" element={<MentorshipPage />} />
+                        <Route
+                          path="/incubation"
+                          element={<IncubationPage />}
+                        />
+                        <Route
+                          path="/mentorship"
+                          element={<MentorshipPage />}
+                        />
                         <Route path="/workshops" element={<WorkshopsPage />} />
-                        <Route path="/competitions" element={<CompetitionsPage />} />
+                        <Route
+                          path="/competitions"
+                          element={<CompetitionsPage />}
+                        />
                         <Route path="/funding" element={<FundingPage />} />
 
                         {/* Resources */}

@@ -39,10 +39,22 @@ const FloatingSphere = ({ delay = 0, size = 60, color = "purple" }) => (
       width: size,
       height: size,
       background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), ${
-        color === "purple" ? "#8b5cf6" : color === "blue" ? "#3b82f6" : color === "green" ? "#10b981" : "#f59e0b"
+        color === "purple"
+          ? "#8b5cf6"
+          : color === "blue"
+            ? "#3b82f6"
+            : color === "green"
+              ? "#10b981"
+              : "#f59e0b"
       })`,
       boxShadow: `0 20px 40px rgba(${
-        color === "purple" ? "139, 92, 246" : color === "blue" ? "59, 130, 246" : color === "green" ? "16, 185, 129" : "245, 158, 11"
+        color === "purple"
+          ? "139, 92, 246"
+          : color === "blue"
+            ? "59, 130, 246"
+            : color === "green"
+              ? "16, 185, 129"
+              : "245, 158, 11"
       }, 0.3)`,
     }}
     animate={{ y: [-20, 20, -20], x: [-10, 10, -10], rotateY: [0, 360] }}
@@ -68,11 +80,22 @@ const OrbitingElements = () => (
             transform: `rotate(${angle}deg) translate(120px, -12px)`,
           }}
           animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            delay: i * 0.2,
+            ease: "easeInOut",
+          }}
         >
           <div
             className={`w-full h-full rounded-full shadow-lg ${
-              ["bg-purple-500", "bg-blue-500", "bg-green-500", "bg-orange-500", "bg-pink-500"][i]
+              [
+                "bg-purple-500",
+                "bg-blue-500",
+                "bg-green-500",
+                "bg-orange-500",
+                "bg-pink-500",
+              ][i]
             }`}
           />
         </motion.div>
@@ -94,7 +117,10 @@ const AboutSection = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
 
   return (
-    <section ref={sectionRef} className={`relative py-20 ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}>
+    <section
+      ref={sectionRef}
+      className={`relative py-20 ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}
+    >
       <div className="container mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
@@ -165,8 +191,14 @@ const AboutSection = () => {
                   className={`flex items-center gap-2 px-4 py-2 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-full border ${isDark ? "border-white/10" : "border-gray-200"} ${isDark ? "hover:bg-white/10" : "hover:bg-black/10"} transition-all duration-300`}
                   whileHover={{ scale: 1.05, y: -2 }}
                 >
-                  <item.icon className={`w-4 h-4 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>{item.text}</span>
+                  <item.icon
+                    className={`w-4 h-4 ${isDark ? "text-purple-400" : "text-purple-600"}`}
+                  />
+                  <span
+                    className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                  >
+                    {item.text}
+                  </span>
                 </motion.div>
               ))}
             </motion.div>
@@ -211,13 +243,21 @@ const MissionSection = () => {
       {/* 3D Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10">
-          <FloatingCube delay={0} size="w-12 h-12" color="from-purple-500 to-pink-500" />
+          <FloatingCube
+            delay={0}
+            size="w-12 h-12"
+            color="from-purple-500 to-pink-500"
+          />
         </div>
         <div className="absolute top-40 right-20">
           <FloatingSphere delay={1} size={40} color="blue" />
         </div>
         <div className="absolute bottom-20 left-1/4">
-          <FloatingCube delay={2} size="w-8 h-8" color="from-green-500 to-emerald-500" />
+          <FloatingCube
+            delay={2}
+            size="w-8 h-8"
+            color="from-green-500 to-emerald-500"
+          />
         </div>
         <div className="absolute top-60 right-1/3">
           <FloatingSphere delay={1.5} size={30} color="orange" />
@@ -225,7 +265,10 @@ const MissionSection = () => {
         <OrbitingElements />
       </div>
 
-      <motion.div style={{ scale }} className="container mx-auto px-6 lg:px-8 relative z-10">
+      <motion.div
+        style={{ scale }}
+        className="container mx-auto px-6 lg:px-8 relative z-10"
+      >
         <div className="text-center max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -256,15 +299,17 @@ const MissionSection = () => {
             className={`text-lg md:text-xl font-light ${isDark ? "text-gray-300" : "text-gray-600"} leading-relaxed mb-12`}
           >
             Our mission at the Entrepreneurship Cell is to ignite creativity and
-            foster an entrepreneurial spirit by providing exceptional mentorship,
-            resources, and opportunities for students to turn their ideas into
-            impactful ventures.
+            foster an entrepreneurial spirit by providing exceptional
+            mentorship, resources, and opportunities for students to turn their
+            ideas into impactful ventures.
           </motion.p>
 
           {/* Illustration */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+            animate={
+              isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
+            }
             transition={{ delay: 0.6, duration: 0.8 }}
             className="max-w-xs mx-auto mb-16"
           >
@@ -279,24 +324,55 @@ const MissionSection = () => {
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
           >
             {[
-              { icon: Users, number: "100+", text: "Students Guided", color: "from-blue-500 to-cyan-500" },
-              { icon: Rocket, number: "25+", text: "Startups Supported", color: "from-purple-500 to-pink-500" },
-              { icon: Target, number: "∞", text: "Impact Created", color: "from-green-500 to-emerald-500" },
+              {
+                icon: Users,
+                number: "100+",
+                text: "Students Guided",
+                color: "from-blue-500 to-cyan-500",
+              },
+              {
+                icon: Rocket,
+                number: "25+",
+                text: "Startups Supported",
+                color: "from-purple-500 to-pink-500",
+              },
+              {
+                icon: Target,
+                number: "∞",
+                text: "Impact Created",
+                color: "from-green-500 to-emerald-500",
+              },
             ].map((item, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                animate={
+                  isInView
+                    ? { opacity: 1, scale: 1 }
+                    : { opacity: 0, scale: 0.8 }
+                }
                 transition={{ delay: 0.9 + index * 0.1 }}
                 className="relative group"
                 whileHover={{ y: -8 }}
               >
-                <div className={`${isDark ? "bg-white/5" : "bg-black/5"} backdrop-blur-sm rounded-2xl p-8 border ${isDark ? "border-white/10" : "border-gray-200"} ${isDark ? "hover:bg-white/10" : "hover:bg-black/10"} transition-all duration-300`}>
-                  <div className={`w-16 h-16 bg-gradient-to-r ${item.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <div
+                  className={`${isDark ? "bg-white/5" : "bg-black/5"} backdrop-blur-sm rounded-2xl p-8 border ${isDark ? "border-white/10" : "border-gray-200"} ${isDark ? "hover:bg-white/10" : "hover:bg-black/10"} transition-all duration-300`}
+                >
+                  <div
+                    className={`w-16 h-16 bg-gradient-to-r ${item.color} rounded-full flex items-center justify-center mx-auto mb-4`}
+                  >
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className={`text-3xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-2`}>{item.number}</h3>
-                  <p className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{item.text}</p>
+                  <h3
+                    className={`text-3xl font-thin ${isDark ? "text-white" : "text-gray-900"} mb-2`}
+                  >
+                    {item.number}
+                  </h3>
+                  <p
+                    className={`${isDark ? "text-gray-400" : "text-gray-500"}`}
+                  >
+                    {item.text}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -319,13 +395,30 @@ const VisionSection = () => {
   const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
 
   const visionPoints = [
-    { icon: Lightbulb, title: "Innovation Hub", description: "Nurturing creative ideas and fostering innovative solutions" },
-    { icon: Brain, title: "Entrepreneurial Mindset", description: "Developing leaders driven by creativity and sustainable growth" },
-    { icon: Globe, title: "Global Impact", description: "Making meaningful contributions to society and economy" },
+    {
+      icon: Lightbulb,
+      title: "Innovation Hub",
+      description:
+        "Nurturing creative ideas and fostering innovative solutions",
+    },
+    {
+      icon: Brain,
+      title: "Entrepreneurial Mindset",
+      description:
+        "Developing leaders driven by creativity and sustainable growth",
+    },
+    {
+      icon: Globe,
+      title: "Global Impact",
+      description: "Making meaningful contributions to society and economy",
+    },
   ];
 
   return (
-    <section ref={sectionRef} className={`relative py-20 ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}>
+    <section
+      ref={sectionRef}
+      className={`relative py-20 ${isDark ? "bg-black" : "bg-white"} overflow-hidden`}
+    >
       <div className="container mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left - Illustration with Parallax */}
@@ -393,7 +486,9 @@ const VisionSection = () => {
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: 30 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
+                  animate={
+                    isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }
+                  }
                   transition={{ delay: 0.9 + index * 0.1 }}
                   className={`flex items-start gap-4 p-4 ${isDark ? "bg-white/5" : "bg-black/5"} rounded-xl border ${isDark ? "border-white/10" : "border-gray-200"} ${isDark ? "hover:bg-white/10" : "hover:bg-black/10"} transition-all duration-300`}
                   whileHover={{ x: 8, scale: 1.02 }}
@@ -403,15 +498,23 @@ const VisionSection = () => {
                       index === 0
                         ? "bg-gradient-to-r from-yellow-500 to-orange-500"
                         : index === 1
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500"
-                        : "bg-gradient-to-r from-green-500 to-emerald-500"
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500"
+                          : "bg-gradient-to-r from-green-500 to-emerald-500"
                     }`}
                   >
                     <point.icon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className={`text-lg font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}>{point.title}</h3>
-                    <p className={`text-sm font-light ${isDark ? "text-gray-400" : "text-gray-500"}`}>{point.description}</p>
+                    <h3
+                      className={`text-lg font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}
+                    >
+                      {point.title}
+                    </h3>
+                    <p
+                      className={`text-sm font-light ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                    >
+                      {point.description}
+                    </p>
                   </div>
                 </motion.div>
               ))}

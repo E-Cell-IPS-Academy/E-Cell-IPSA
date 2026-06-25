@@ -21,12 +21,32 @@ interface TOCItem {
 }
 
 const tocItems: TOCItem[] = [
-  { id: "information-collection", title: "Information Collection", icon: <Database className="w-4 h-4" /> },
-  { id: "use-of-data", title: "Use of Data", icon: <Eye className="w-4 h-4" /> },
-  { id: "data-protection", title: "Data Protection", icon: <Lock className="w-4 h-4" /> },
+  {
+    id: "information-collection",
+    title: "Information Collection",
+    icon: <Database className="w-4 h-4" />,
+  },
+  {
+    id: "use-of-data",
+    title: "Use of Data",
+    icon: <Eye className="w-4 h-4" />,
+  },
+  {
+    id: "data-protection",
+    title: "Data Protection",
+    icon: <Lock className="w-4 h-4" />,
+  },
   { id: "cookies", title: "Cookies", icon: <Cookie className="w-4 h-4" /> },
-  { id: "third-party", title: "Third-party Services", icon: <Globe className="w-4 h-4" /> },
-  { id: "user-rights", title: "User Rights", icon: <UserCheck className="w-4 h-4" /> },
+  {
+    id: "third-party",
+    title: "Third-party Services",
+    icon: <Globe className="w-4 h-4" />,
+  },
+  {
+    id: "user-rights",
+    title: "User Rights",
+    icon: <UserCheck className="w-4 h-4" />,
+  },
   { id: "contact", title: "Contact", icon: <Mail className="w-4 h-4" /> },
 ];
 
@@ -125,7 +145,9 @@ const PrivacyPolicyPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8"
           >
-            <Link to="/" className="hover:text-purple-400 transition-colors">Home</Link>
+            <Link to="/" className="hover:text-purple-400 transition-colors">
+              Home
+            </Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-purple-400">Privacy Policy</span>
           </motion.nav>
@@ -177,7 +199,8 @@ const PrivacyPolicyPage: React.FC = () => {
               <div
                 className="p-6 rounded-2xl border border-white/10"
                 style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+                  background:
+                    "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
                   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
                 }}
               >
@@ -195,7 +218,13 @@ const PrivacyPolicyPage: React.FC = () => {
                           : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
                       }`}
                     >
-                      <span className={activeSection === item.id ? "text-purple-400" : "text-gray-600"}>
+                      <span
+                        className={
+                          activeSection === item.id
+                            ? "text-purple-400"
+                            : "text-gray-600"
+                        }
+                      >
                         {item.icon}
                       </span>
                       {item.title}
@@ -224,45 +253,61 @@ const PrivacyPolicyPage: React.FC = () => {
               className="mb-12 p-6 rounded-2xl border border-white/10 bg-white/5"
             >
               <p className="text-gray-300 leading-relaxed">
-                E-Cell IPS Academy ("we", "our", or "us") is committed to protecting
-                your privacy. This Privacy Policy explains how we collect, use,
-                disclose, and safeguard your information when you visit our website,
-                participate in our events, or use our services. Please read this policy
-                carefully to understand our practices regarding your personal data.
+                E-Cell IPS Academy ("we", "our", or "us") is committed to
+                protecting your privacy. This Privacy Policy explains how we
+                collect, use, disclose, and safeguard your information when you
+                visit our website, participate in our events, or use our
+                services. Please read this policy carefully to understand our
+                practices regarding your personal data.
               </p>
             </motion.div>
 
-            <SectionBlock id="information-collection" title="Information We Collect" index={0}>
+            <SectionBlock
+              id="information-collection"
+              title="Information We Collect"
+              index={0}
+            >
               <p>We may collect the following types of information:</p>
               <div className="space-y-3 mt-4">
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <h4 className="text-white font-semibold mb-2">Personal Information</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    Personal Information
+                  </h4>
                   <p className="text-sm text-gray-400">
-                    When you register for events, create an account, or contact us, we may collect
-                    your name, email address, phone number, college details, year of study,
-                    department, and other details you voluntarily provide.
+                    When you register for events, create an account, or contact
+                    us, we may collect your name, email address, phone number,
+                    college details, year of study, department, and other
+                    details you voluntarily provide.
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
                   <h4 className="text-white font-semibold mb-2">Usage Data</h4>
                   <p className="text-sm text-gray-400">
-                    We automatically collect information about how you interact with our website,
-                    including your IP address, browser type, pages visited, time spent on pages,
-                    and referral sources. This helps us improve our services and user experience.
+                    We automatically collect information about how you interact
+                    with our website, including your IP address, browser type,
+                    pages visited, time spent on pages, and referral sources.
+                    This helps us improve our services and user experience.
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <h4 className="text-white font-semibold mb-2">Event Participation Data</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    Event Participation Data
+                  </h4>
                   <p className="text-sm text-gray-400">
-                    When you participate in our events, competitions, or workshops, we may collect
-                    project submissions, team information, presentation materials, and feedback
-                    that you provide during the event.
+                    When you participate in our events, competitions, or
+                    workshops, we may collect project submissions, team
+                    information, presentation materials, and feedback that you
+                    provide during the event.
                   </p>
                 </div>
               </div>
             </SectionBlock>
 
-            <SectionBlock id="use-of-data" title="How We Use Your Data" index={1}>
+            <SectionBlock
+              id="use-of-data"
+              title="How We Use Your Data"
+              index={1}
+            >
               <p>We use your information for the following purposes:</p>
               <ul className="list-none space-y-2 mt-4">
                 {[
@@ -283,34 +328,45 @@ const PrivacyPolicyPage: React.FC = () => {
               </ul>
             </SectionBlock>
 
-            <SectionBlock id="data-protection" title="Data Protection" index={2}>
+            <SectionBlock
+              id="data-protection"
+              title="Data Protection"
+              index={2}
+            >
               <p>
-                We implement appropriate technical and organizational security measures
-                to protect your personal information against unauthorized access,
-                alteration, disclosure, or destruction.
+                We implement appropriate technical and organizational security
+                measures to protect your personal information against
+                unauthorized access, alteration, disclosure, or destruction.
               </p>
               <div className="mt-4 space-y-3">
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
                   <h4 className="text-white font-semibold mb-2">Encryption</h4>
                   <p className="text-sm text-gray-400">
-                    All data transmitted between your browser and our servers is encrypted using
-                    SSL/TLS protocols. Sensitive data stored in our databases is encrypted at rest.
+                    All data transmitted between your browser and our servers is
+                    encrypted using SSL/TLS protocols. Sensitive data stored in
+                    our databases is encrypted at rest.
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <h4 className="text-white font-semibold mb-2">Access Controls</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    Access Controls
+                  </h4>
                   <p className="text-sm text-gray-400">
-                    Access to personal data is restricted to authorized E-Cell team members who
-                    need it to perform their duties. We use role-based access controls and
-                    regularly review access permissions.
+                    Access to personal data is restricted to authorized E-Cell
+                    team members who need it to perform their duties. We use
+                    role-based access controls and regularly review access
+                    permissions.
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <h4 className="text-white font-semibold mb-2">Data Retention</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    Data Retention
+                  </h4>
                   <p className="text-sm text-gray-400">
-                    We retain personal data only for as long as necessary to fulfill the purposes
-                    outlined in this policy. Event-related data is typically retained for 2 academic
-                    years. Account data is retained until you request deletion.
+                    We retain personal data only for as long as necessary to
+                    fulfill the purposes outlined in this policy. Event-related
+                    data is typically retained for 2 academic years. Account
+                    data is retained until you request deletion.
                   </p>
                 </div>
               </div>
@@ -318,46 +374,76 @@ const PrivacyPolicyPage: React.FC = () => {
 
             <SectionBlock id="cookies" title="Cookies & Tracking" index={3}>
               <p>
-                Our website uses cookies and similar tracking technologies to enhance
-                your browsing experience and analyze site traffic.
+                Our website uses cookies and similar tracking technologies to
+                enhance your browsing experience and analyze site traffic.
               </p>
               <div className="mt-4 space-y-3">
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <h4 className="text-white font-semibold mb-2">Essential Cookies</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    Essential Cookies
+                  </h4>
                   <p className="text-sm text-gray-400">
-                    Required for basic site functionality such as authentication, session
-                    management, and security. These cannot be disabled.
+                    Required for basic site functionality such as
+                    authentication, session management, and security. These
+                    cannot be disabled.
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                  <h4 className="text-white font-semibold mb-2">Analytics Cookies</h4>
+                  <h4 className="text-white font-semibold mb-2">
+                    Analytics Cookies
+                  </h4>
                   <p className="text-sm text-gray-400">
-                    We use Firebase Analytics and Google Analytics to understand how visitors
-                    interact with our site. This data is aggregated and anonymized. You can opt
-                    out through your browser settings.
+                    We use Firebase Analytics and Google Analytics to understand
+                    how visitors interact with our site. This data is aggregated
+                    and anonymized. You can opt out through your browser
+                    settings.
                   </p>
                 </div>
               </div>
             </SectionBlock>
 
-            <SectionBlock id="third-party" title="Third-party Services" index={4}>
-              <p>We use the following third-party services that may process your data:</p>
+            <SectionBlock
+              id="third-party"
+              title="Third-party Services"
+              index={4}
+            >
+              <p>
+                We use the following third-party services that may process your
+                data:
+              </p>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
-                  { name: "Firebase / Google Cloud", purpose: "Hosting, database, authentication, analytics" },
-                  { name: "Google Forms", purpose: "Event registrations and surveys" },
-                  { name: "Cloudinary", purpose: "Image storage and optimization" },
-                  { name: "Social Media Platforms", purpose: "Event promotion, community engagement" },
+                  {
+                    name: "Firebase / Google Cloud",
+                    purpose: "Hosting, database, authentication, analytics",
+                  },
+                  {
+                    name: "Google Forms",
+                    purpose: "Event registrations and surveys",
+                  },
+                  {
+                    name: "Cloudinary",
+                    purpose: "Image storage and optimization",
+                  },
+                  {
+                    name: "Social Media Platforms",
+                    purpose: "Event promotion, community engagement",
+                  },
                 ].map((service) => (
-                  <div key={service.name} className="p-4 bg-white/5 rounded-xl border border-white/5">
-                    <h4 className="text-white font-semibold text-sm mb-1">{service.name}</h4>
+                  <div
+                    key={service.name}
+                    className="p-4 bg-white/5 rounded-xl border border-white/5"
+                  >
+                    <h4 className="text-white font-semibold text-sm mb-1">
+                      {service.name}
+                    </h4>
                     <p className="text-xs text-gray-500">{service.purpose}</p>
                   </div>
                 ))}
               </div>
               <p className="mt-4 text-sm text-gray-500">
-                Each third-party service has its own privacy policy governing the use of your
-                data. We encourage you to review their policies.
+                Each third-party service has its own privacy policy governing
+                the use of your data. We encourage you to review their policies.
               </p>
             </SectionBlock>
 
@@ -365,29 +451,52 @@ const PrivacyPolicyPage: React.FC = () => {
               <p>You have the following rights regarding your personal data:</p>
               <ul className="list-none space-y-2 mt-4">
                 {[
-                  { right: "Right to Access", desc: "Request a copy of the personal data we hold about you." },
-                  { right: "Right to Rectification", desc: "Request correction of inaccurate or incomplete data." },
-                  { right: "Right to Deletion", desc: "Request deletion of your personal data, subject to legal retention requirements." },
-                  { right: "Right to Withdraw Consent", desc: "Withdraw consent for data processing at any time by contacting us." },
-                  { right: "Right to Data Portability", desc: "Request your data in a structured, machine-readable format." },
-                  { right: "Right to Object", desc: "Object to processing of your data for marketing purposes." },
+                  {
+                    right: "Right to Access",
+                    desc: "Request a copy of the personal data we hold about you.",
+                  },
+                  {
+                    right: "Right to Rectification",
+                    desc: "Request correction of inaccurate or incomplete data.",
+                  },
+                  {
+                    right: "Right to Deletion",
+                    desc: "Request deletion of your personal data, subject to legal retention requirements.",
+                  },
+                  {
+                    right: "Right to Withdraw Consent",
+                    desc: "Withdraw consent for data processing at any time by contacting us.",
+                  },
+                  {
+                    right: "Right to Data Portability",
+                    desc: "Request your data in a structured, machine-readable format.",
+                  },
+                  {
+                    right: "Right to Object",
+                    desc: "Object to processing of your data for marketing purposes.",
+                  },
                 ].map((item) => (
-                  <li key={item.right} className="p-3 bg-white/5 rounded-xl border border-white/5">
-                    <span className="text-purple-300 font-semibold text-sm">{item.right}</span>
+                  <li
+                    key={item.right}
+                    className="p-3 bg-white/5 rounded-xl border border-white/5"
+                  >
+                    <span className="text-purple-300 font-semibold text-sm">
+                      {item.right}
+                    </span>
                     <p className="text-sm text-gray-400 mt-1">{item.desc}</p>
                   </li>
                 ))}
               </ul>
               <p className="mt-4 text-sm text-gray-500">
-                To exercise any of these rights, please contact us using the details below.
-                We will respond to your request within 30 days.
+                To exercise any of these rights, please contact us using the
+                details below. We will respond to your request within 30 days.
               </p>
             </SectionBlock>
 
             <SectionBlock id="contact" title="Contact Us" index={6}>
               <p>
-                If you have questions about this Privacy Policy or wish to exercise your
-                data rights, please contact us:
+                If you have questions about this Privacy Policy or wish to
+                exercise your data rights, please contact us:
               </p>
               <div className="mt-4 p-6 bg-white/5 rounded-2xl border border-white/5">
                 <div className="space-y-3">
@@ -399,17 +508,22 @@ const PrivacyPolicyPage: React.FC = () => {
                   </p>
                   <p className="text-gray-400 text-sm">
                     Email:{" "}
-                    <a href="mailto:ecell@ipsacademy.org" className="text-purple-400 hover:text-purple-300 transition-colors">
+                    <a
+                      href="mailto:ecell@ipsacademy.org"
+                      className="text-purple-400 hover:text-purple-300 transition-colors"
+                    >
                       ecell@ipsacademy.org
                     </a>
                   </p>
-                  <p className="text-gray-400 text-sm">Phone: +91 731 2570631</p>
+                  <p className="text-gray-400 text-sm">
+                    Phone: +91 731 2570631
+                  </p>
                 </div>
               </div>
               <p className="mt-6 text-sm text-gray-500">
-                We reserve the right to update this Privacy Policy at any time. Changes will be
-                posted on this page with an updated revision date. We encourage you to review this
-                policy periodically.
+                We reserve the right to update this Privacy Policy at any time.
+                Changes will be posted on this page with an updated revision
+                date. We encourage you to review this policy periodically.
               </p>
             </SectionBlock>
           </div>

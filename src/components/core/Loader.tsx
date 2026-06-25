@@ -86,7 +86,7 @@ const DecryptedText = ({
 
     const shuffleText = (
       originalText: string,
-      currentRevealed: Set<number>,
+      currentRevealed: Set<number>
     ): string => {
       return originalText
         .split("")
@@ -198,7 +198,7 @@ const ECellLoader = ({ onComplete }: ECellLoaderProps) => {
             }
           }, 1400);
         }
-      }, step.delay),
+      }, step.delay)
     );
     return () => timers.forEach(clearTimeout);
   }, [onComplete]);

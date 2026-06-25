@@ -23,17 +23,17 @@ This is the official web platform for **E-Cell IPS Academy**, the Entrepreneursh
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React 19 + TypeScript |
-| Build tool | Vite 7 |
-| Styling | Tailwind CSS |
-| Animation | Framer Motion · GSAP · Three.js / React Three Fiber |
-| Backend | Firebase (Authentication + Cloud Firestore) |
-| Media | Cloudinary (unsigned client-side uploads) |
-| Routing | React Router DOM |
-| Icons | lucide-react |
-| Data export | xlsx |
+| Layer       | Technology                                          |
+| ----------- | --------------------------------------------------- |
+| Framework   | React 19 + TypeScript                               |
+| Build tool  | Vite 7                                              |
+| Styling     | Tailwind CSS                                        |
+| Animation   | Framer Motion · GSAP · Three.js / React Three Fiber |
+| Backend     | Firebase (Authentication + Cloud Firestore)         |
+| Media       | Cloudinary (unsigned client-side uploads)           |
+| Routing     | React Router DOM                                    |
+| Icons       | lucide-react                                        |
+| Data export | xlsx                                                |
 
 ## Features
 
@@ -45,7 +45,9 @@ This is the official web platform for **E-Cell IPS Academy**, the Entrepreneursh
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20.6+ and npm
+
+- **Node.js 20.6+**
+- **pnpm** (this project uses pnpm, not npm) — `npm install -g pnpm`
 - A Firebase project (Authentication + Firestore enabled)
 - A Cloudinary account with an **unsigned** upload preset
 
@@ -53,14 +55,14 @@ This is the official web platform for **E-Cell IPS Academy**, the Entrepreneursh
 
 ```bash
 # 1. Install dependencies
-npm install
+pnpm install
 
 # 2. Create your local environment file
 cp .env.example .env
 # then open .env and fill in your real values
 
 # 3. Start the dev server
-npm run dev
+pnpm dev
 ```
 
 The app runs at `http://localhost:5173`.
@@ -71,26 +73,36 @@ All client-side config is loaded from environment variables — see [`.env.examp
 
 > ⚠️ **Important:** Every `VITE_*` variable is **inlined into the production bundle** and is publicly visible to anyone who opens the site. Only put public-safe values (Firebase web config, Cloudinary cloud name + unsigned preset) in `VITE_*` vars. **Never** put a true secret (Cloudinary API secret, database password, service-account key) in a `VITE_*` variable — those belong on a backend only.
 
-| Variable | Description |
-|---|---|
-| `VITE_FIREBASE_*` | Firebase web app config (public by design — secure data via Firestore Security Rules) |
-| `VITE_CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
-| `VITE_CLOUDINARY_UPLOAD_PRESET` | Cloudinary **unsigned** upload preset |
-| `VITE_ADMIN_USERNAME` / `VITE_ADMIN_PASSWORD` | Admin-panel login (see security note below) |
+| Variable                                      | Description                                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `VITE_FIREBASE_*`                             | Firebase web app config (public by design — secure data via Firestore Security Rules) |
+| `VITE_CLOUDINARY_CLOUD_NAME`                  | Cloudinary cloud name                                                                 |
+| `VITE_CLOUDINARY_UPLOAD_PRESET`               | Cloudinary **unsigned** upload preset                                                 |
+| `VITE_ADMIN_USERNAME` / `VITE_ADMIN_PASSWORD` | Admin-panel login (see security note below)                                           |
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Type-check and build for production (`dist/`) |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run ESLint |
-| `npm run seed:admin` | Provision an admin user in Firebase (see below) |
+| Command             | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| `pnpm dev`          | Start the Vite dev server                       |
+| `pnpm build`        | Type-check and build for production (`dist/`)   |
+| `pnpm preview`      | Preview the production build locally            |
+| `pnpm lint`         | Run ESLint                                      |
+| `pnpm lint:fix`     | Run ESLint with autofix                         |
+| `pnpm format`       | Format the codebase with Prettier               |
+| `pnpm format:check` | Check formatting without writing                |
+| `pnpm test:e2e`     | Run Playwright end-to-end tests                 |
+| `pnpm seed:admin`   | Provision an admin user in Firebase (see below) |
+
+### Code quality & git hooks
+
+- **Prettier** formats the code; **ESLint** lints it.
+- **Husky** runs a **pre-commit** hook (via **lint-staged**) that auto-formats and lint-fixes staged files, and a **commit-msg** hook that enforces [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, …).
+- **Playwright** drives end-to-end smoke tests in `e2e/`.
 
 ## Seeding an Admin
 
-`npm run seed:admin` provisions an administrator in **Firebase Authentication** (creates the user, sets an `admin: true` custom claim, and writes an `admins/{uid}` document in Firestore). It uses the Firebase **Admin SDK**, so it requires a **service-account key**.
+`pnpm seed:admin` provisions an administrator in **Firebase Authentication** (creates the user, sets an `admin: true` custom claim, and writes an `admins/{uid}` document in Firestore). It uses the Firebase **Admin SDK**, so it requires a **service-account key**.
 
 ```bash
 # 1. In the Firebase Console:
@@ -98,7 +110,7 @@ All client-side config is loaded from environment variables — see [`.env.examp
 #    Save the JSON file (it is gitignored — never commit it).
 
 # 2. Run the seeder (flags or env vars):
-npm run seed:admin -- \
+pnpm seed:admin -- \
   --service-account ./serviceAccountKey.json \
   --email admin@ecell.ipsacademy.org \
   --password "a-strong-password" \
@@ -128,7 +140,7 @@ scripts/
 
 ## Deployment
 
-`npm run build` outputs static assets to `dist/`. Deploy to any static host (Vercel, Netlify, Firebase Hosting, etc.). **Set every `VITE_*` variable in your host's environment settings** — they are read at build time, so a build without them will ship empty config.
+`pnpm build` outputs static assets to `dist/`. Deploy to any static host (Vercel, Netlify, Firebase Hosting, etc.). **Set every `VITE_*` variable in your host's environment settings** — they are read at build time, so a build without them will ship empty config.
 
 ## Security Notes
 

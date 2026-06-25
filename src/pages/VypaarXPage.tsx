@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Clock,
-  X,
-  ArrowLeft,
-  AlertCircle,
-} from "lucide-react";
+import { Clock, X, ArrowLeft, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const RegistrationClosed: React.FC = () => {

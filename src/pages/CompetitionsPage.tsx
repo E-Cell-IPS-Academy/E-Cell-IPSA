@@ -258,7 +258,7 @@ const CompetitionsPage: React.FC = () => {
   ];
 
   const getCatIcon = (
-    cat: string,
+    cat: string
   ): React.ComponentType<{ className?: string }> =>
     ({
       pitch: Target,

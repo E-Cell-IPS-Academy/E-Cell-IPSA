@@ -28,11 +28,31 @@ interface TOCItem {
 }
 
 const tocItems: TOCItem[] = [
-  { id: "core-values", title: "Core Values", icon: <Star className="w-4 h-4" /> },
-  { id: "expected-behavior", title: "Expected Behavior", icon: <ThumbsUp className="w-4 h-4" /> },
-  { id: "unacceptable-behavior", title: "Unacceptable Behavior", icon: <ThumbsDown className="w-4 h-4" /> },
-  { id: "reporting", title: "Reporting Procedures", icon: <MessageCircle className="w-4 h-4" /> },
-  { id: "enforcement", title: "Enforcement", icon: <Gavel className="w-4 h-4" /> },
+  {
+    id: "core-values",
+    title: "Core Values",
+    icon: <Star className="w-4 h-4" />,
+  },
+  {
+    id: "expected-behavior",
+    title: "Expected Behavior",
+    icon: <ThumbsUp className="w-4 h-4" />,
+  },
+  {
+    id: "unacceptable-behavior",
+    title: "Unacceptable Behavior",
+    icon: <ThumbsDown className="w-4 h-4" />,
+  },
+  {
+    id: "reporting",
+    title: "Reporting Procedures",
+    icon: <MessageCircle className="w-4 h-4" />,
+  },
+  {
+    id: "enforcement",
+    title: "Enforcement",
+    icon: <Gavel className="w-4 h-4" />,
+  },
 ];
 
 const LAST_UPDATED = "March 15, 2026";
@@ -211,7 +231,9 @@ const CodeOfConductPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8"
           >
-            <Link to="/" className="hover:text-purple-400 transition-colors">Home</Link>
+            <Link to="/" className="hover:text-purple-400 transition-colors">
+              Home
+            </Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-purple-400">Code of Conduct</span>
           </motion.nav>
@@ -223,7 +245,9 @@ const CodeOfConductPage: React.FC = () => {
             className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full"
           >
             <Shield className="w-4 h-4 text-purple-400" />
-            <span className="text-purple-300 text-sm font-medium">Community Standards</span>
+            <span className="text-purple-300 text-sm font-medium">
+              Community Standards
+            </span>
           </motion.div>
 
           <motion.h1
@@ -260,7 +284,11 @@ const CodeOfConductPage: React.FC = () => {
       </section>
 
       {/* Core Values Section */}
-      <section id="core-values" ref={valuesRef} className="relative py-20 px-6 scroll-mt-32">
+      <section
+        id="core-values"
+        ref={valuesRef}
+        className="relative py-20 px-6 scroll-mt-32"
+      >
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -272,7 +300,8 @@ const CodeOfConductPage: React.FC = () => {
               Our Core Values
             </h2>
             <p className="text-gray-400 max-w-lg mx-auto">
-              These values guide everything we do and how we interact with each other
+              These values guide everything we do and how we interact with each
+              other
             </p>
           </motion.div>
 
@@ -334,7 +363,8 @@ const CodeOfConductPage: React.FC = () => {
               <div
                 className="p-6 rounded-2xl border border-white/10"
                 style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+                  background:
+                    "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
                   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
                 }}
               >
@@ -352,7 +382,13 @@ const CodeOfConductPage: React.FC = () => {
                           : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
                       }`}
                     >
-                      <span className={activeSection === item.id ? "text-purple-400" : "text-gray-600"}>
+                      <span
+                        className={
+                          activeSection === item.id
+                            ? "text-purple-400"
+                            : "text-gray-600"
+                        }
+                      >
                         {item.icon}
                       </span>
                       {item.title}
@@ -391,8 +427,9 @@ const CodeOfConductPage: React.FC = () => {
               </div>
 
               <p className="text-gray-300 mb-6 leading-relaxed">
-                All members, participants, mentors, sponsors, and guests are expected to
-                uphold the following standards in all E-Cell spaces, both online and offline:
+                All members, participants, mentors, sponsors, and guests are
+                expected to uphold the following standards in all E-Cell spaces,
+                both online and offline:
               </p>
 
               <div className="space-y-3">
@@ -436,7 +473,9 @@ const CodeOfConductPage: React.FC = () => {
                     <div className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="text-white font-semibold mb-1">{item.title}</h4>
+                        <h4 className="text-white font-semibold mb-1">
+                          {item.title}
+                        </h4>
                         <p className="text-sm text-gray-400">{item.desc}</p>
                       </div>
                     </div>
@@ -463,8 +502,8 @@ const CodeOfConductPage: React.FC = () => {
               </div>
 
               <p className="text-gray-300 mb-6 leading-relaxed">
-                The following behaviors are considered violations of this Code of Conduct
-                and will not be tolerated under any circumstances:
+                The following behaviors are considered violations of this Code
+                of Conduct and will not be tolerated under any circumstances:
               </p>
 
               <div className="space-y-3">
@@ -508,7 +547,9 @@ const CodeOfConductPage: React.FC = () => {
                     <div className="flex items-start gap-3">
                       <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="text-white font-semibold mb-1">{item.title}</h4>
+                        <h4 className="text-white font-semibold mb-1">
+                          {item.title}
+                        </h4>
                         <p className="text-sm text-gray-400">{item.desc}</p>
                       </div>
                     </div>
@@ -535,24 +576,31 @@ const CodeOfConductPage: React.FC = () => {
               </div>
 
               <p className="text-gray-300 mb-6 leading-relaxed">
-                If you experience or witness behavior that violates this Code of Conduct,
-                please report it promptly. All reports will be handled with discretion and
-                confidentiality.
+                If you experience or witness behavior that violates this Code of
+                Conduct, please report it promptly. All reports will be handled
+                with discretion and confidentiality.
               </p>
 
               <div className="space-y-6">
                 <GlassCard className="p-6">
-                  <h4 className="text-white font-semibold text-lg mb-4">How to Report</h4>
+                  <h4 className="text-white font-semibold text-lg mb-4">
+                    How to Report
+                  </h4>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
                       <div className="w-8 h-8 bg-purple-500/10 border border-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Mail className="w-4 h-4 text-purple-400" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">Email (Preferred)</p>
+                        <p className="text-white font-medium">
+                          Email (Preferred)
+                        </p>
                         <p className="text-sm text-gray-400 mt-1">
                           Send a detailed report to{" "}
-                          <a href="mailto:ecell@ipsacademy.org" className="text-purple-400 hover:text-purple-300 transition-colors">
+                          <a
+                            href="mailto:ecell@ipsacademy.org"
+                            className="text-purple-400 hover:text-purple-300 transition-colors"
+                          >
                             ecell@ipsacademy.org
                           </a>{" "}
                           with the subject line "Code of Conduct Report".
@@ -567,8 +615,9 @@ const CodeOfConductPage: React.FC = () => {
                       <div>
                         <p className="text-white font-medium">In Person</p>
                         <p className="text-sm text-gray-400 mt-1">
-                          Approach any E-Cell Core Team member or Faculty Advisor at events.
-                          During events, designated safety contacts will be identified.
+                          Approach any E-Cell Core Team member or Faculty
+                          Advisor at events. During events, designated safety
+                          contacts will be identified.
                         </p>
                       </div>
                     </div>
@@ -578,11 +627,15 @@ const CodeOfConductPage: React.FC = () => {
                         <MessageCircle className="w-4 h-4 text-purple-400" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">Anonymous Reporting</p>
+                        <p className="text-white font-medium">
+                          Anonymous Reporting
+                        </p>
                         <p className="text-sm text-gray-400 mt-1">
-                          We understand that reporting can be difficult. Anonymous reports can be
-                          submitted through our contact form on the website. While anonymity may
-                          limit our ability to investigate fully, all reports are taken seriously.
+                          We understand that reporting can be difficult.
+                          Anonymous reports can be submitted through our contact
+                          form on the website. While anonymity may limit our
+                          ability to investigate fully, all reports are taken
+                          seriously.
                         </p>
                       </div>
                     </div>
@@ -590,7 +643,9 @@ const CodeOfConductPage: React.FC = () => {
                 </GlassCard>
 
                 <GlassCard className="p-6">
-                  <h4 className="text-white font-semibold text-lg mb-4">What to Include in a Report</h4>
+                  <h4 className="text-white font-semibold text-lg mb-4">
+                    What to Include in a Report
+                  </h4>
                   <ul className="space-y-2">
                     {[
                       "Your name and contact information (unless reporting anonymously)",
@@ -629,9 +684,9 @@ const CodeOfConductPage: React.FC = () => {
               </div>
 
               <p className="text-gray-300 mb-6 leading-relaxed">
-                Violations of this Code of Conduct will be reviewed by the E-Cell Core Team
-                and Faculty Advisor. Actions taken will be proportional to the severity of
-                the violation.
+                Violations of this Code of Conduct will be reviewed by the
+                E-Cell Core Team and Faculty Advisor. Actions taken will be
+                proportional to the severity of the violation.
               </p>
 
               <div className="space-y-4">
@@ -673,10 +728,16 @@ const CodeOfConductPage: React.FC = () => {
                     className={`p-6 rounded-xl border ${item.color} transition-all duration-300`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className={`w-3 h-3 ${item.dotColor} rounded-full mt-1.5 flex-shrink-0`} />
+                      <span
+                        className={`w-3 h-3 ${item.dotColor} rounded-full mt-1.5 flex-shrink-0`}
+                      />
                       <div>
-                        <h4 className="text-white font-semibold mb-2">{item.level}</h4>
-                        <p className="text-sm text-gray-400">{item.description}</p>
+                        <h4 className="text-white font-semibold mb-2">
+                          {item.level}
+                        </h4>
+                        <p className="text-sm text-gray-400">
+                          {item.description}
+                        </p>
                       </div>
                     </div>
                   </motion.div>
@@ -686,12 +747,16 @@ const CodeOfConductPage: React.FC = () => {
               {/* Appeals Process */}
               <div className="mt-8">
                 <GlassCard className="p-6">
-                  <h4 className="text-white font-semibold text-lg mb-3">Appeals Process</h4>
+                  <h4 className="text-white font-semibold text-lg mb-3">
+                    Appeals Process
+                  </h4>
                   <p className="text-gray-400 text-sm leading-relaxed">
-                    Individuals who receive enforcement actions have the right to appeal within
-                    14 days of receiving the decision. Appeals should be submitted in writing to
-                    the Faculty Advisor. The appeal will be reviewed by a committee separate from
-                    the original decision-makers. The appeals committee's decision is final.
+                    Individuals who receive enforcement actions have the right
+                    to appeal within 14 days of receiving the decision. Appeals
+                    should be submitted in writing to the Faculty Advisor. The
+                    appeal will be reviewed by a committee separate from the
+                    original decision-makers. The appeals committee's decision
+                    is final.
                   </p>
                 </GlassCard>
               </div>
@@ -701,13 +766,16 @@ const CodeOfConductPage: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-white font-semibold mb-2">Scope of This Code</h4>
+                    <h4 className="text-white font-semibold mb-2">
+                      Scope of This Code
+                    </h4>
                     <p className="text-sm text-gray-400">
-                      This Code of Conduct applies to all E-Cell spaces including but not limited
-                      to: in-person events, online meetings, social media channels, WhatsApp groups,
-                      Discord servers, email communications, and any other medium used for E-Cell
-                      activities. It applies to all members, participants, speakers, sponsors,
-                      volunteers, and guests.
+                      This Code of Conduct applies to all E-Cell spaces
+                      including but not limited to: in-person events, online
+                      meetings, social media channels, WhatsApp groups, Discord
+                      servers, email communications, and any other medium used
+                      for E-Cell activities. It applies to all members,
+                      participants, speakers, sponsors, volunteers, and guests.
                     </p>
                   </div>
                 </div>
@@ -717,12 +785,19 @@ const CodeOfConductPage: React.FC = () => {
               <div className="mt-8 p-6 bg-white/5 rounded-2xl border border-white/5">
                 <h4 className="text-white font-semibold mb-3">Questions?</h4>
                 <p className="text-sm text-gray-400">
-                  If you have questions about this Code of Conduct, please reach out to us at{" "}
-                  <a href="mailto:ecell@ipsacademy.org" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  If you have questions about this Code of Conduct, please reach
+                  out to us at{" "}
+                  <a
+                    href="mailto:ecell@ipsacademy.org"
+                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                  >
                     ecell@ipsacademy.org
                   </a>{" "}
                   or visit our{" "}
-                  <Link to="/contact" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  <Link
+                    to="/contact"
+                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                  >
                     Contact page
                   </Link>
                   .

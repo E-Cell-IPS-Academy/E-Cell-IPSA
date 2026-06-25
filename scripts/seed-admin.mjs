@@ -103,7 +103,7 @@ async function main() {
   try {
     admin = await import("firebase-admin");
   } catch {
-    fail('firebase-admin is not installed. Run: npm install -D firebase-admin');
+    fail("firebase-admin is not installed. Run: npm install -D firebase-admin");
   }
 
   const app = admin.default.initializeApp({
@@ -138,20 +138,17 @@ async function main() {
   await auth.setCustomUserClaims(user.uid, { admin: true, role });
 
   // Firestore admin record
-  await db
-    .collection("admins")
-    .doc(user.uid)
-    .set(
-      {
-        uid: user.uid,
-        email,
-        name,
-        role,
-        permissions,
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true }
-    );
+  await db.collection("admins").doc(user.uid).set(
+    {
+      uid: user.uid,
+      email,
+      name,
+      role,
+      permissions,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
 
   console.log(`\n✅ Admin provisioned successfully`);
   console.log(`   email:       ${email}`);

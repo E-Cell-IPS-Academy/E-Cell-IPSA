@@ -76,7 +76,10 @@ const GlobalSearch: React.FC = () => {
         className="fixed top-4 right-20 z-50 p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-purple-500/20 hover:border-purple-500/50 transition-all group"
         aria-label="Search"
       >
-        <Search size={18} className="text-[var(--text-secondary)] group-hover:text-purple-400 transition-colors" />
+        <Search
+          size={18}
+          className="text-[var(--text-secondary)] group-hover:text-purple-400 transition-colors"
+        />
       </button>
 
       <AnimatePresence>
@@ -141,7 +144,9 @@ const GlobalSearch: React.FC = () => {
                 <kbd className="text-[10px] text-[var(--text-secondary)] px-1.5 py-0.5 rounded border border-purple-500/20 bg-purple-500/5">
                   ESC
                 </kbd>
-                <span className="text-[10px] text-[var(--text-secondary)]">to close</span>
+                <span className="text-[10px] text-[var(--text-secondary)]">
+                  to close
+                </span>
               </div>
             </motion.div>
           </motion.div>

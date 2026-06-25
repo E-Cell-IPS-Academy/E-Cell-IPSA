@@ -20,7 +20,8 @@ const AnnouncementBanner: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-3 text-sm">
             <Megaphone size={16} className="shrink-0 animate-pulse" />
             <span className="font-medium text-center">
-              Welcome to E-Cell IPSA! Stay tuned for upcoming events and opportunities.
+              Welcome to E-Cell IPSA! Stay tuned for upcoming events and
+              opportunities.
             </span>
             <button
               onClick={() => setIsVisible(false)}

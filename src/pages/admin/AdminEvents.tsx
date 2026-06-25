@@ -1457,8 +1457,8 @@ const AdminEventsComplete: React.FC = () => {
                               {isUploading
                                 ? "Uploading..."
                                 : modalMode === "create"
-                                ? "Creating..."
-                                : "Updating..."}
+                                  ? "Creating..."
+                                  : "Updating..."}
                             </>
                           ) : (
                             <>

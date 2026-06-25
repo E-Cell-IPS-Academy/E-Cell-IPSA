@@ -263,10 +263,10 @@ const UserSignup: React.FC = () => {
                         passwordStrength.strength <= 1
                           ? "bg-red-500"
                           : passwordStrength.strength <= 2
-                          ? "bg-orange-500"
-                          : passwordStrength.strength <= 3
-                          ? "bg-yellow-500"
-                          : "bg-green-500"
+                            ? "bg-orange-500"
+                            : passwordStrength.strength <= 3
+                              ? "bg-yellow-500"
+                              : "bg-green-500"
                       }`}
                       style={{
                         width: `${(passwordStrength.strength / 4) * 100}%`,
@@ -298,9 +298,9 @@ const UserSignup: React.FC = () => {
                     credentials.password !== credentials.confirmPassword
                       ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
                       : credentials.confirmPassword &&
-                        credentials.password === credentials.confirmPassword
-                      ? "border-green-500 focus:border-green-500 focus:ring-green-500/20"
-                      : "border-white/10 focus:border-purple-500 focus:ring-purple-500/20"
+                          credentials.password === credentials.confirmPassword
+                        ? "border-green-500 focus:border-green-500 focus:ring-green-500/20"
+                        : "border-white/10 focus:border-purple-500 focus:ring-purple-500/20"
                   }`}
                   placeholder="Confirm your password"
                   required

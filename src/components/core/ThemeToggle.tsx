@@ -10,9 +10,7 @@ const ThemeToggle = () => {
       onClick={toggleTheme}
       className="relative flex items-center justify-center w-10 h-10 rounded-full cursor-pointer overflow-hidden"
       style={{
-        background: isDark
-          ? "rgba(255,255,255,0.08)"
-          : "rgba(139,92,246,0.1)",
+        background: isDark ? "rgba(255,255,255,0.08)" : "rgba(139,92,246,0.1)",
         border: isDark
           ? "1px solid rgba(255,255,255,0.12)"
           : "1px solid rgba(139,92,246,0.2)",

@@ -161,7 +161,7 @@ const ContactPage: React.FC = () => {
   const [contactInfo, setContactInfo] =
     useState<ContactInfo>(defaultContactInfo);
   const [mapEmbedUrl, setMapEmbedUrl] = useState(
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3681.943374193864!2d75.82072097535772!3d22.655899779432467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3962fd9732905ba3%3A0xb086d4368f83ed6e!2sIPS%20Academy%20Gate%20No.%2002!5e0!3m2!1sen!2sin!4v1752119183392!5m2!1sen!2sin",
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3681.943374193864!2d75.82072097535772!3d22.655899779432467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3962fd9732905ba3%3A0xb086d4368f83ed6e!2sIPS%20Academy%20Gate%20No.%2002!5e0!3m2!1sen!2sin!4v1752119183392!5m2!1sen!2sin"
   );
 
   useEffect(() => {
@@ -197,7 +197,7 @@ const ContactPage: React.FC = () => {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -214,7 +214,7 @@ const ContactPage: React.FC = () => {
       await contactService.submitContact(formData);
       showNotification(
         "success",
-        "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+        "Thank you! Your message has been sent successfully. We'll get back to you soon."
       );
       setFormData({
         name: "",
@@ -229,7 +229,7 @@ const ContactPage: React.FC = () => {
     } catch {
       showNotification(
         "error",
-        "Failed to send your message. Please try again or contact us directly.",
+        "Failed to send your message. Please try again or contact us directly."
       );
     } finally {
       setIsSubmitting(false);
@@ -430,7 +430,7 @@ const ContactPage: React.FC = () => {
                           required={required}
                         />
                       </div>
-                    ),
+                    )
                   )}
                 </div>
 
@@ -864,7 +864,7 @@ const ContactPage: React.FC = () => {
                         {platform}
                       </span>
                     </a>
-                  ) : null,
+                  ) : null
                 )}
               </div>
             </GlassCard>

@@ -1,5 +1,10 @@
 // /src/pages/admin/AdminHeroManagement.tsx
-import React, { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
+import React, {
+  useState,
+  useEffect,
+  type FormEvent,
+  type ChangeEvent,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Save,
@@ -15,7 +20,13 @@ import {
   Loader2,
   Upload,
 } from "lucide-react";
-import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "../../firebase/config";
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -73,7 +84,10 @@ const AdminHeroManagement: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const showNotification = (type: "success" | "error", message: string) => {
     setNotification({ type, message });
@@ -99,7 +113,9 @@ const AdminHeroManagement: React.FC = () => {
     load();
   }, []);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
@@ -141,9 +157,16 @@ const AdminHeroManagement: React.FC = () => {
   // ── Gradient preview helper ──────────────────────────────────────
   const previewBg = (): React.CSSProperties => {
     if (formData.backgroundType === "image" && formData.backgroundUrl) {
-      return { backgroundImage: `url(${formData.backgroundUrl})`, backgroundSize: "cover", backgroundPosition: "center" };
+      return {
+        backgroundImage: `url(${formData.backgroundUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      };
     }
-    return { background: "linear-gradient(135deg, #1e1b4b 0%, #0f0f23 50%, #1a0533 100%)" };
+    return {
+      background:
+        "linear-gradient(135deg, #1e1b4b 0%, #0f0f23 50%, #1a0533 100%)",
+    };
   };
 
   if (loading) {
@@ -171,7 +194,11 @@ const AdminHeroManagement: React.FC = () => {
               }`}
             >
               <div className="flex items-center gap-3">
-                {notification.type === "success" ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                {notification.type === "success" ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <AlertCircle className="w-5 h-5" />
+                )}
                 {notification.message}
               </div>
             </motion.div>
@@ -179,10 +206,16 @@ const AdminHeroManagement: React.FC = () => {
         </AnimatePresence>
 
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        >
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Hero Section</h1>
-            <p className="text-gray-400">Manage the landing page hero content</p>
+            <p className="text-gray-400">
+              Manage the landing page hero content
+            </p>
           </div>
           <button
             onClick={() => setShowPreview(!showPreview)}
@@ -202,17 +235,28 @@ const AdminHeroManagement: React.FC = () => {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="rounded-2xl border border-white/10 overflow-hidden" style={previewBg()}>
+              <div
+                className="rounded-2xl border border-white/10 overflow-hidden"
+                style={previewBg()}
+              >
                 <div className="bg-black/50 backdrop-blur-sm p-12 text-center space-y-4">
                   {formData.videoUrl && formData.backgroundType === "video" && (
                     <div className="mb-4 flex justify-center">
                       <Monitor className="w-8 h-8 text-purple-400" />
-                      <span className="text-purple-400 text-sm ml-2">Video background active</span>
+                      <span className="text-purple-400 text-sm ml-2">
+                        Video background active
+                      </span>
                     </div>
                   )}
-                  <h2 className="text-4xl font-bold text-white">{formData.title || "Hero Title"}</h2>
-                  <h3 className="text-2xl text-purple-300">{formData.subtitle || "Subtitle"}</h3>
-                  <p className="text-gray-300 max-w-2xl mx-auto">{formData.description || "Description text goes here..."}</p>
+                  <h2 className="text-4xl font-bold text-white">
+                    {formData.title || "Hero Title"}
+                  </h2>
+                  <h3 className="text-2xl text-purple-300">
+                    {formData.subtitle || "Subtitle"}
+                  </h3>
+                  <p className="text-gray-300 max-w-2xl mx-auto">
+                    {formData.description || "Description text goes here..."}
+                  </p>
                   {formData.ctaText && (
                     <button className="mt-4 px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-medium">
                       {formData.ctaText}
@@ -225,7 +269,13 @@ const AdminHeroManagement: React.FC = () => {
         </AnimatePresence>
 
         {/* Form */}
-        <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden"
+        >
           <div className="p-6 border-b border-white/10">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
               <Type className="w-5 h-5 text-purple-400" />
@@ -236,7 +286,9 @@ const AdminHeroManagement: React.FC = () => {
           <div className="p-6 space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Title</label>
+                <label className="block text-sm text-gray-300 mb-1">
+                  Title
+                </label>
                 <input
                   name="title"
                   value={formData.title}
@@ -246,7 +298,9 @@ const AdminHeroManagement: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Subtitle</label>
+                <label className="block text-sm text-gray-300 mb-1">
+                  Subtitle
+                </label>
                 <input
                   name="subtitle"
                   value={formData.subtitle}
@@ -258,7 +312,9 @@ const AdminHeroManagement: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Description</label>
+              <label className="block text-sm text-gray-300 mb-1">
+                Description
+              </label>
               <textarea
                 name="description"
                 value={formData.description}
@@ -271,7 +327,9 @@ const AdminHeroManagement: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-gray-300 mb-1">CTA Button Text</label>
+                <label className="block text-sm text-gray-300 mb-1">
+                  CTA Button Text
+                </label>
                 <input
                   name="ctaText"
                   value={formData.ctaText}
@@ -281,7 +339,9 @@ const AdminHeroManagement: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-300 mb-1">CTA Link</label>
+                <label className="block text-sm text-gray-300 mb-1">
+                  CTA Link
+                </label>
                 <div className="relative">
                   <Link className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
@@ -304,13 +364,17 @@ const AdminHeroManagement: React.FC = () => {
             </h2>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-2">Background Type</label>
+              <label className="block text-sm text-gray-300 mb-2">
+                Background Type
+              </label>
               <div className="flex gap-2">
                 {(["gradient", "image", "video"] as const).map((t) => (
                   <button
                     key={t}
                     type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, backgroundType: t }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, backgroundType: t }))
+                    }
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                       formData.backgroundType === t
                         ? "bg-purple-500 text-white"
@@ -328,7 +392,9 @@ const AdminHeroManagement: React.FC = () => {
 
             {formData.backgroundType === "video" && (
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Video URL</label>
+                <label className="block text-sm text-gray-300 mb-1">
+                  Video URL
+                </label>
                 <div className="relative">
                   <Video className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
@@ -342,22 +408,39 @@ const AdminHeroManagement: React.FC = () => {
               </div>
             )}
 
-            {(formData.backgroundType === "image" || formData.backgroundType === "video") && (
+            {(formData.backgroundType === "image" ||
+              formData.backgroundType === "video") && (
               <div>
                 <label className="block text-sm text-gray-300 mb-2">
-                  {formData.backgroundType === "image" ? "Background Image" : "Fallback Image"}
+                  {formData.backgroundType === "image"
+                    ? "Background Image"
+                    : "Fallback Image"}
                 </label>
                 <div className="flex items-start gap-4">
                   {formData.backgroundUrl && (
                     <div className="w-32 h-20 rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
-                      <img src={formData.backgroundUrl} alt="Background" className="w-full h-full object-cover" />
+                      <img
+                        src={formData.backgroundUrl}
+                        alt="Background"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   )}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-300 hover:bg-white/10 cursor-pointer transition-colors">
-                      {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      {uploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
                       {uploading ? "Uploading..." : "Upload"}
-                      <input type="file" accept="image/*" onChange={handleBgUpload} className="hidden" disabled={uploading} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBgUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
                     </label>
                     <p className="text-xs text-gray-500">Or paste URL below</p>
                     <input

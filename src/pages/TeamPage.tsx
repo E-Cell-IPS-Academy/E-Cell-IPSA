@@ -934,19 +934,19 @@ const TeamPage: React.FC = () => {
       try {
         const [catSnap, memSnap] = await Promise.all([
           getDocs(
-            query(collection(db, "teamCategories"), orderBy("order", "asc")),
+            query(collection(db, "teamCategories"), orderBy("order", "asc"))
           ),
           getDocs(
-            query(collection(db, "teamMembers"), orderBy("order", "asc")),
+            query(collection(db, "teamMembers"), orderBy("order", "asc"))
           ),
         ]);
         setCategories(
-          catSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as TeamCategory),
+          catSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as TeamCategory)
         );
         setMembers(
           memSnap.docs
             .map((d) => ({ id: d.id, ...d.data() }) as TeamMember)
-            .filter((m) => m.isActive !== false), // only active members
+            .filter((m) => m.isActive !== false) // only active members
         );
       } catch (err) {
         console.error("TeamPage: fetch error", err);
@@ -959,12 +959,12 @@ const TeamPage: React.FC = () => {
   // ── Lookup helpers ──────────────────────────────────────────────────────────
   const getCategoryName = useCallback(
     (id: string) => categories.find((c) => c.id === id)?.name || "Team",
-    [categories],
+    [categories]
   );
 
   const getCategoryIcon = useCallback(
     (id: string) => categories.find((c) => c.id === id)?.icon || "Users",
-    [categories],
+    [categories]
   );
 
   // ── Sorted filtered list ────────────────────────────────────────────────────
@@ -993,7 +993,7 @@ const TeamPage: React.FC = () => {
         if (a.isLead && !b.isLead) return -1;
         if (!a.isLead && b.isLead) return 1;
         return (a.order ?? 999) - (b.order ?? 999);
-      }),
+      })
     );
     return categories
       .filter((c) => map[c.id]?.length)
@@ -1013,7 +1013,7 @@ const TeamPage: React.FC = () => {
         color:
           i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.03)",
       })),
-    [],
+    []
   );
 
   const openCarousel = (memberList: TeamMember[], index: number) =>
@@ -1120,7 +1120,7 @@ const TeamPage: React.FC = () => {
                 {
                   label: "Teams",
                   value: categories.filter((c) =>
-                    members.some((m) => m.category === c.id),
+                    members.some((m) => m.category === c.id)
                   ).length,
                 },
                 {

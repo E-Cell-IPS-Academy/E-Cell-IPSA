@@ -396,8 +396,8 @@ const AdminStartupsComplete: React.FC = () => {
         type === "checkbox"
           ? checked
           : type === "number"
-          ? parseInt(value) || 0
-          : value,
+            ? parseInt(value) || 0
+            : value,
     }));
   };
 

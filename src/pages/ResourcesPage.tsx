@@ -261,9 +261,7 @@ const ResourcesPage: React.FC = () => {
       searchQuery === "" ||
       r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.tags.some((t) =>
-        t.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      r.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
@@ -287,7 +285,9 @@ const ResourcesPage: React.FC = () => {
         className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
       >
         {/* Animated background */}
-        <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-black via-purple-950/50 to-black" : "bg-gradient-to-br from-white via-purple-50 to-white"}`} />
+        <div
+          className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-black via-purple-950/50 to-black" : "bg-gradient-to-br from-white via-purple-50 to-white"}`}
+        />
 
         {/* Floating particles */}
         {particles.map((p) => (
@@ -447,10 +447,14 @@ const ResourcesPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}>
+            <h2
+              className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"} mb-4`}
+            >
               Browse by Category
             </h2>
-            <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light max-w-lg mx-auto`}>
+            <p
+              className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light max-w-lg mx-auto`}
+            >
               Explore curated resources across different formats and topics
             </p>
           </motion.div>
@@ -467,7 +471,9 @@ const ResourcesPage: React.FC = () => {
               className={`relative group p-6 rounded-2xl border transition-all duration-300 ${
                 activeCategory === "All"
                   ? "border-purple-500/50 bg-purple-500/10"
-                  : isDark ? "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10" : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                  : isDark
+                    ? "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                    : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
               }`}
             >
               <div
@@ -475,8 +481,16 @@ const ResourcesPage: React.FC = () => {
               >
                 <Filter className="w-6 h-6 text-white" />
               </div>
-              <h3 className={`${isDark ? "text-white" : "text-gray-900"} font-light text-xs mb-1`}>All</h3>
-              <p className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs`}>{resources.length} items</p>
+              <h3
+                className={`${isDark ? "text-white" : "text-gray-900"} font-light text-xs mb-1`}
+              >
+                All
+              </h3>
+              <p
+                className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs`}
+              >
+                {resources.length} items
+              </p>
             </motion.button>
 
             {categories.map((cat, index) => (
@@ -491,7 +505,9 @@ const ResourcesPage: React.FC = () => {
                 className={`relative group p-6 rounded-2xl border transition-all duration-300 ${
                   activeCategory === cat.name
                     ? "border-purple-500/50 bg-purple-500/10"
-                    : isDark ? "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10" : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                    : isDark
+                      ? "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                      : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 {/* Hover glow */}
@@ -504,10 +520,16 @@ const ResourcesPage: React.FC = () => {
                 >
                   <span className="text-white">{cat.icon}</span>
                 </div>
-                <h3 className={`${isDark ? "text-white" : "text-gray-900"} font-light text-xs mb-1`}>
+                <h3
+                  className={`${isDark ? "text-white" : "text-gray-900"} font-light text-xs mb-1`}
+                >
                   {cat.name}
                 </h3>
-                <p className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs`}>{cat.count} items</p>
+                <p
+                  className={`${isDark ? "text-gray-500" : "text-gray-400"} text-xs`}
+                >
+                  {cat.count} items
+                </p>
               </motion.button>
             ))}
           </div>
@@ -527,7 +549,9 @@ const ResourcesPage: React.FC = () => {
               <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
                 <Star className="w-5 h-5 text-white" />
               </div>
-              <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"}`}>
+              <h2
+                className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"}`}
+              >
                 Featured Resources
               </h2>
             </motion.div>
@@ -542,7 +566,10 @@ const ResourcesPage: React.FC = () => {
                   whileHover={{ y: -8, scale: 1.02 }}
                   className="group"
                 >
-                  <GlassCard isDark={isDark} className="p-6 h-full relative overflow-hidden">
+                  <GlassCard
+                    isDark={isDark}
+                    className="p-6 h-full relative overflow-hidden"
+                  >
                     {/* Gradient accent */}
                     <div
                       className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
@@ -570,13 +597,19 @@ const ResourcesPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} uppercase tracking-wider`}>
+                    <span
+                      className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} uppercase tracking-wider`}
+                    >
                       {resource.category}
                     </span>
-                    <h3 className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} mt-1 mb-2 group-hover:text-purple-300 transition-colors line-clamp-2`}>
+                    <h3
+                      className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} mt-1 mb-2 group-hover:text-purple-300 transition-colors line-clamp-2`}
+                    >
                       {resource.title}
                     </h3>
-                    <p className={`text-xs font-light ${isDark ? "text-gray-400" : "text-gray-500"} mb-4 line-clamp-3`}>
+                    <p
+                      className={`text-xs font-light ${isDark ? "text-gray-400" : "text-gray-500"} mb-4 line-clamp-3`}
+                    >
                       {resource.description}
                     </p>
 
@@ -621,11 +654,13 @@ const ResourcesPage: React.FC = () => {
       <section className="relative py-16 px-6 pb-32">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-10">
-            <h2 className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"}`}>
-              {activeCategory === "All"
-                ? "All Resources"
-                : activeCategory}{" "}
-              <span className={`${isDark ? "text-gray-500" : "text-gray-400"} text-sm font-light`}>
+            <h2
+              className={`text-xl font-light ${isDark ? "text-white" : "text-gray-900"}`}
+            >
+              {activeCategory === "All" ? "All Resources" : activeCategory}{" "}
+              <span
+                className={`${isDark ? "text-gray-500" : "text-gray-400"} text-sm font-light`}
+              >
                 ({filteredResources.length})
               </span>
             </h2>
@@ -640,7 +675,11 @@ const ResourcesPage: React.FC = () => {
               >
                 <Loader className="w-8 h-8 text-purple-500" />
               </motion.div>
-              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}>Loading resources...</p>
+              <p
+                className={`${isDark ? "text-gray-400" : "text-gray-500"} text-sm font-light`}
+              >
+                Loading resources...
+              </p>
             </div>
           ) : filteredResources.length > 0 ? (
             <AnimatePresence mode="wait">
@@ -661,7 +700,10 @@ const ResourcesPage: React.FC = () => {
                     whileHover={{ y: -5 }}
                     className="group"
                   >
-                    <GlassCard isDark={isDark} className={`p-6 h-full ${isDark ? "hover:border-white/20" : "hover:border-gray-300"} transition-all duration-300`}>
+                    <GlassCard
+                      isDark={isDark}
+                      className={`p-6 h-full ${isDark ? "hover:border-white/20" : "hover:border-gray-300"} transition-all duration-300`}
+                    >
                       <div className="flex items-start gap-4 mb-4">
                         <div
                           className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center bg-gradient-to-br ${
@@ -676,16 +718,22 @@ const ResourcesPage: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} uppercase tracking-wider`}>
+                          <span
+                            className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} uppercase tracking-wider`}
+                          >
                             {resource.category}
                           </span>
-                          <h3 className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} group-hover:text-purple-300 transition-colors line-clamp-2`}>
+                          <h3
+                            className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} group-hover:text-purple-300 transition-colors line-clamp-2`}
+                          >
                             {resource.title}
                           </h3>
                         </div>
                       </div>
 
-                      <p className={`text-xs font-light ${isDark ? "text-gray-400" : "text-gray-500"} mb-4 line-clamp-3`}>
+                      <p
+                        className={`text-xs font-light ${isDark ? "text-gray-400" : "text-gray-500"} mb-4 line-clamp-3`}
+                      >
                         {resource.description}
                       </p>
 
@@ -701,7 +749,9 @@ const ResourcesPage: React.FC = () => {
                       </div>
 
                       {resource.author && (
-                        <p className={`text-xs ${isDark ? "text-gray-600" : "text-gray-400"} mb-3`}>
+                        <p
+                          className={`text-xs ${isDark ? "text-gray-600" : "text-gray-400"} mb-3`}
+                        >
                           By {resource.author}
                           {resource.date &&
                             ` | ${new Date(resource.date).toLocaleDateString(
@@ -748,10 +798,14 @@ const ResourcesPage: React.FC = () => {
               className="text-center py-20"
             >
               <BookOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}>
+              <h3
+                className={`text-sm font-light ${isDark ? "text-white" : "text-gray-900"} mb-2`}
+              >
                 No resources found
               </h3>
-              <p className={`${isDark ? "text-gray-400" : "text-gray-500"} text-xs font-light mb-6`}>
+              <p
+                className={`${isDark ? "text-gray-400" : "text-gray-500"} text-xs font-light mb-6`}
+              >
                 Try adjusting your search or category filter.
               </p>
               <button

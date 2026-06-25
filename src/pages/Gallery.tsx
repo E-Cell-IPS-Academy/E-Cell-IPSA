@@ -254,7 +254,7 @@ const BentoGrid: React.FC<{
   <div
     className={cn(
       "mx-auto grid max-w-7xl grid-cols-1 gap-4 md:auto-rows-[18rem] md:grid-cols-3 lg:grid-cols-4",
-      className,
+      className
     )}
   >
     {children}
@@ -272,7 +272,7 @@ const BentoGridItem: React.FC<{
   <motion.div
     className={cn(
       `group/bento cursor-pointer row-span-1 flex flex-col justify-between space-y-4 rounded-xl border ${isDark ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20" : "border-gray-200 bg-white/80 hover:bg-white hover:border-gray-300"} backdrop-blur-sm p-4 transition duration-300`,
-      className,
+      className
     )}
     onClick={onClick}
     whileHover={{ scale: 1.02, y: -5 }}
@@ -670,7 +670,7 @@ const Gallery: React.FC = () => {
       img.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       img.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       img.tags.some((t) =>
-        t.toLowerCase().includes(searchTerm.toLowerCase()),
+        t.toLowerCase().includes(searchTerm.toLowerCase())
       ) ||
       img.eventName?.toLowerCase().includes(searchTerm.toLowerCase());
     return mc && ms;

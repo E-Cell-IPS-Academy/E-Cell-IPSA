@@ -91,7 +91,7 @@ const ParticleField: React.FC = () => {
               ? "rgba(59,130,246,0.4)"
               : "rgba(168,85,247,0.3)",
       })),
-    [],
+    []
   );
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">

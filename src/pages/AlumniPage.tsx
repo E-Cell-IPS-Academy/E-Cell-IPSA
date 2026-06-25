@@ -337,11 +337,7 @@ const AlumniPage: React.FC = () => {
                 <motion.div
                   key={stat.label}
                   initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                  animate={
-                    statsInView
-                      ? { opacity: 1, y: 0, scale: 1 }
-                      : {}
-                  }
+                  animate={statsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.6, delay: index * 0.15 }}
                   whileHover={{ y: -5, scale: 1.05 }}
                   className="text-center"
@@ -608,8 +604,8 @@ const AlumniPage: React.FC = () => {
                   Join the Alumni Network
                 </h3>
                 <p className="text-gray-300 max-w-lg mx-auto mb-8 text-lg">
-                  Are you an E-Cell IPSA alumnus? Stay connected, mentor
-                  current students, and be part of our growing community of
+                  Are you an E-Cell IPSA alumnus? Stay connected, mentor current
+                  students, and be part of our growing community of
                   changemakers.
                 </p>
 

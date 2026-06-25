@@ -109,8 +109,8 @@ class StartupService {
         query(
           collection(db, this.collection),
           where("status", "==", "featured"),
-          where("isActive", "==", true),
-        ),
+          where("isActive", "==", true)
+        )
       );
       if (snap.empty) return null;
       const list = snap.docs.map((d) => ({
@@ -121,7 +121,7 @@ class StartupService {
         list.sort(
           (a, b) =>
             (b.createdAt?.toDate().getTime() || 0) -
-            (a.createdAt?.toDate().getTime() || 0),
+            (a.createdAt?.toDate().getTime() || 0)
         )[0] || null
       );
     } catch {
@@ -129,8 +129,8 @@ class StartupService {
         const snap = await getDocs(
           query(
             collection(db, this.collection),
-            where("status", "==", "featured"),
-          ),
+            where("status", "==", "featured")
+          )
         );
         const list = snap.docs
           .map((d) => ({ id: d.id, ...d.data() }) as Startup)
@@ -139,7 +139,7 @@ class StartupService {
           list.sort(
             (a, b) =>
               (b.createdAt?.toDate().getTime() || 0) -
-              (a.createdAt?.toDate().getTime() || 0),
+              (a.createdAt?.toDate().getTime() || 0)
           )[0] || null
         );
       } catch {
@@ -150,7 +150,7 @@ class StartupService {
   async getAllStartups(): Promise<Startup[]> {
     try {
       const snap = await getDocs(
-        query(collection(db, this.collection), where("isActive", "==", true)),
+        query(collection(db, this.collection), where("isActive", "==", true))
       );
       const list = snap.docs.map((d) => ({
         id: d.id,
@@ -159,7 +159,7 @@ class StartupService {
       return list.sort(
         (a, b) =>
           (b.createdAt?.toDate().getTime() || 0) -
-          (a.createdAt?.toDate().getTime() || 0),
+          (a.createdAt?.toDate().getTime() || 0)
       );
     } catch {
       const snap = await getDocs(collection(db, this.collection));
@@ -665,7 +665,7 @@ const StartupOfWeek: React.FC = () => {
               >
                 {formatDate(
                   featuredStartup.featuredDate,
-                  featuredStartup.createdAt,
+                  featuredStartup.createdAt
                 )}
               </p>
             </div>

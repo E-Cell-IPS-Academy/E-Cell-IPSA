@@ -60,7 +60,7 @@ const AdminLogin: React.FC = () => {
       const admin = ADMIN_CREDENTIALS.find(
         (cred) =>
           cred.username === credentials.username &&
-          cred.password === credentials.password,
+          cred.password === credentials.password
       );
 
       if (admin) {

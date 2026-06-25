@@ -29,7 +29,8 @@ const NewsletterSection: React.FC = () => {
           Stay in the Loop
         </h2>
         <p className="text-[var(--text-secondary)] mb-8">
-          Subscribe to get updates on events, workshops, and startup opportunities.
+          Subscribe to get updates on events, workshops, and startup
+          opportunities.
         </p>
 
         <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto">

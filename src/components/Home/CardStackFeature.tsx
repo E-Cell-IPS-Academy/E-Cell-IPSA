@@ -112,7 +112,7 @@ const StickyCard = ({
   const cardOpacity = useTransform(
     scrollYProgress,
     [start, end - segment * 0.2, end],
-    [1, 1, index === totalCards - 1 ? 1 : 0.45],
+    [1, 1, index === totalCards - 1 ? 1 : 0.45]
   );
   const rotateX = useTransform(scrollYProgress, [start, end], [0, -1.5]);
 

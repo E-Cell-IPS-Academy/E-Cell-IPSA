@@ -348,7 +348,7 @@ const HeroSection = () => {
                           >
                             {word}
                           </motion.div>
-                        ),
+                        )
                       )}
                     </div>
 
