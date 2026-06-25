@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, useInView } from "framer-motion";
 import {
   Search,
@@ -16,19 +16,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { Timestamp } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  updateDoc,
-  doc,
-  increment,
-  Timestamp,
-} from "firebase/firestore";
-import { db } from "../firebase/config";
+import { useBlogs } from "@/features/blog";
+import type { BlogPost } from "@/features/blog";
 
 function useFonts() {
   useEffect(() => {
@@ -49,33 +40,6 @@ const F = {
   number: "'Cormorant Garamond', Georgia, serif",
 };
 
-interface Author {
-  name: string;
-  email: string;
-  bio?: string;
-  avatar?: string;
-}
-interface BlogPost {
-  id?: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  featuredImage?: string;
-  featuredImagePublicId?: string;
-  status: "draft" | "published" | "archived";
-  category: string;
-  tags: string[];
-  author: Author;
-  publishedDate?: string;
-  readTime?: number;
-  seoTitle?: string;
-  seoDescription?: string;
-  isFeature: boolean;
-  viewCount: number;
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
-}
 interface BlogCategory {
   id: string;
   name: string;
@@ -90,81 +54,35 @@ interface BlogFilter {
   sortBy: "latest" | "popular" | "oldest";
 }
 
-class PublicBlogService {
-  private collection = "blogs";
-  async getPublishedBlogs(): Promise<BlogPost[]> {
-    try {
-      const snap = await getDocs(
-        query(
-          collection(db, this.collection),
-          where("status", "==", "published"),
-          orderBy("createdAt", "desc")
-        )
-      );
-      return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as BlogPost[];
-    } catch {
-      try {
-        const snap = await getDocs(
-          query(
-            collection(db, this.collection),
-            where("status", "==", "published")
-          )
-        );
-        const blogs = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as BlogPost[];
-        return blogs.sort(
-          (a, b) =>
-            (b.createdAt?.toDate().getTime() || 0) -
-            (a.createdAt?.toDate().getTime() || 0)
-        );
-      } catch {
-        throw new Error("Failed to fetch blog posts");
-      }
-    }
-  }
-  async incrementViewCount(blogId: string): Promise<void> {
-    try {
-      await updateDoc(doc(db, this.collection, blogId), {
-        viewCount: increment(1),
-      });
-    } catch {}
-  }
-  generateCategories(blogs: BlogPost[]): BlogCategory[] {
-    const map = new Map<string, number>();
-    blogs.forEach((b) => map.set(b.category, (map.get(b.category) || 0) + 1));
-    const cats: BlogCategory[] = [
-      {
-        id: "all",
-        name: "All",
-        slug: "all",
-        description: "All blog posts",
-        count: blogs.length,
-      },
-    ];
-    map.forEach((count, name) =>
-      cats.push({
-        id: name.toLowerCase().replace(/\s+/g, "-"),
-        name,
-        slug: name.toLowerCase().replace(/\s+/g, "-"),
-        description: `${name} posts`,
-        count,
-      })
-    );
-    return cats;
-  }
+function generateCategories(blogs: BlogPost[]): BlogCategory[] {
+  const map = new Map<string, number>();
+  blogs.forEach((b) => map.set(b.category, (map.get(b.category) || 0) + 1));
+  const cats: BlogCategory[] = [
+    {
+      id: "all",
+      name: "All",
+      slug: "all",
+      description: "All blog posts",
+      count: blogs.length,
+    },
+  ];
+  map.forEach((count, name) =>
+    cats.push({
+      id: name.toLowerCase().replace(/\s+/g, "-"),
+      name,
+      slug: name.toLowerCase().replace(/\s+/g, "-"),
+      description: `${name} posts`,
+      count,
+    })
+  );
+  return cats;
 }
-
-const blogService = new PublicBlogService();
 
 const BlogListing: React.FC = () => {
   useFonts();
   const { isDark } = useTheme();
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [categories, setCategories] = useState<BlogCategory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: blogs, loading, error } = useBlogs();
+  const categories = useMemo(() => generateCategories(blogs), [blogs]);
   const [filters, setFilters] = useState<BlogFilter>({
     category: "All",
     tag: "",
@@ -174,23 +92,6 @@ const BlogListing: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
-  useEffect(() => {
-    loadBlogs();
-  }, []);
-  const loadBlogs = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await blogService.getPublishedBlogs();
-      setBlogs(data);
-      setCategories(blogService.generateCategories(data));
-    } catch {
-      setError("Failed to load blog posts. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const featuredPosts = blogs.filter((p) => p.isFeature);
   const filteredPosts = blogs.filter((p) => {
@@ -213,9 +114,6 @@ const BlogListing: React.FC = () => {
     return filters.sortBy === "oldest" ? ts(a) - ts(b) : ts(b) - ts(a);
   });
 
-  const handleBlogClick = async (id: string) => {
-    await blogService.incrementViewCount(id);
-  };
   const formatDate = (dateString?: string, timestamp?: Timestamp) => {
     const d = dateString ? new Date(dateString) : timestamp?.toDate();
     return d
@@ -241,11 +139,7 @@ const BlogListing: React.FC = () => {
       transition={{ duration: 0.6 }}
       className={`group ${isDark ? "bg-white/5 border-white/8 hover:bg-white/8 hover:border-white/14" : "bg-white/80 border-gray-200 hover:bg-white hover:border-gray-300"} backdrop-blur-sm rounded-2xl border overflow-hidden transition-all duration-300 ${featured ? "lg:col-span-2" : ""}`}
     >
-      <Link
-        to={`/blog/${post.slug}`}
-        className="block"
-        onClick={() => handleBlogClick(post.id!)}
-      >
+      <Link to={`/blog/${post.slug}`} className="block">
         <div
           className={`relative overflow-hidden ${featured ? "h-64" : "h-48"}`}
         >
@@ -722,10 +616,10 @@ const BlogListing: React.FC = () => {
                   marginBottom: "1.5rem",
                 }}
               >
-                {error}
+                Failed to load blog posts. Please try again later.
               </p>
               <button
-                onClick={loadBlogs}
+                onClick={() => window.location.reload()}
                 style={{
                   fontFamily: F.body,
                   fontWeight: 300,

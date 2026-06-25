@@ -20,14 +20,9 @@ import {
   Loader,
   AlertCircle,
 } from "lucide-react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  Timestamp,
-} from "firebase/firestore";
-import { db } from "../firebase/config";
+import type { Timestamp } from "firebase/firestore";
+import { useStartups, useFeaturedStartups } from "@/features/startups";
+import type { Startup } from "@/features/startups";
 
 // ─── Google Fonts ─────────────────────────────────────────────
 // DISPLAY → "Instrument Serif"  — page h1, section headings, startup name
@@ -52,48 +47,7 @@ const F = {
   number: "'Cormorant Garamond', Georgia, serif",
 };
 
-// Types — unchanged
-interface Founder {
-  name: string;
-  position: string;
-  bio: string;
-  linkedin?: string;
-  image?: string;
-}
-interface Startup {
-  id?: string;
-  name: string;
-  description: string;
-  shortDescription: string;
-  logo?: string;
-  logoPublicId?: string;
-  coverImage?: string;
-  coverImagePublicId?: string;
-  industry: string;
-  foundedYear: number;
-  location: string;
-  website?: string;
-  status: "featured" | "upcoming" | "past";
-  fundingStage: string;
-  fundingAmount?: number;
-  employeeCount?: number;
-  founders: Founder[];
-  achievements: string[];
-  problem: string;
-  solution: string;
-  businessModel: string;
-  targetMarket: string;
-  socialLinks: {
-    linkedin?: string;
-    twitter?: string;
-    instagram?: string;
-    facebook?: string;
-  };
-  featuredDate?: string;
-  isActive: boolean;
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
-}
+// Local UI-only type. `Startup`/`Founder` come from the startups feature.
 interface StartupFilter {
   industry: string;
   stage: string;
@@ -101,89 +55,8 @@ interface StartupFilter {
   search: string;
 }
 
-class StartupService {
-  private collection = "startups";
-  async getFeaturedStartup(): Promise<Startup | null> {
-    try {
-      const snap = await getDocs(
-        query(
-          collection(db, this.collection),
-          where("status", "==", "featured"),
-          where("isActive", "==", true)
-        )
-      );
-      if (snap.empty) return null;
-      const list = snap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      })) as Startup[];
-      return (
-        list.sort(
-          (a, b) =>
-            (b.createdAt?.toDate().getTime() || 0) -
-            (a.createdAt?.toDate().getTime() || 0)
-        )[0] || null
-      );
-    } catch {
-      try {
-        const snap = await getDocs(
-          query(
-            collection(db, this.collection),
-            where("status", "==", "featured")
-          )
-        );
-        const list = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() }) as Startup)
-          .filter((s) => s.isActive);
-        return (
-          list.sort(
-            (a, b) =>
-              (b.createdAt?.toDate().getTime() || 0) -
-              (a.createdAt?.toDate().getTime() || 0)
-          )[0] || null
-        );
-      } catch {
-        throw new Error("Failed to fetch featured startup");
-      }
-    }
-  }
-  async getAllStartups(): Promise<Startup[]> {
-    try {
-      const snap = await getDocs(
-        query(collection(db, this.collection), where("isActive", "==", true))
-      );
-      const list = snap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      })) as Startup[];
-      return list.sort(
-        (a, b) =>
-          (b.createdAt?.toDate().getTime() || 0) -
-          (a.createdAt?.toDate().getTime() || 0)
-      );
-    } catch {
-      const snap = await getDocs(collection(db, this.collection));
-      return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Startup[];
-    }
-  }
-  async getPastStartups(): Promise<Startup[]> {
-    try {
-      const all = await this.getAllStartups();
-      return all.filter((s) => s.status === "past");
-    } catch {
-      return [];
-    }
-  }
-}
-
-const startupService = new StartupService();
-
 const StartupOfWeek: React.FC = () => {
   useFonts();
-  const [featuredStartup, setFeaturedStartup] = useState<Startup | null>(null);
-  const [pastStartups, setPastStartups] = useState<Startup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<StartupFilter>({
     industry: "All",
     stage: "All",
@@ -194,25 +67,27 @@ const StartupOfWeek: React.FC = () => {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
 
-  useEffect(() => {
-    loadStartups();
-  }, []);
-  const loadStartups = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [featured, past] = await Promise.all([
-        startupService.getFeaturedStartup(),
-        startupService.getPastStartups(),
-      ]);
-      setFeaturedStartup(featured);
-      setPastStartups(past);
-    } catch {
-      setError("Failed to load startups. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Live data via the startups feature hooks (active set + featured set).
+  const {
+    data: activeStartups,
+    loading: activeLoading,
+    error: activeError,
+  } = useStartups();
+  const {
+    data: featuredStartups,
+    loading: featuredLoading,
+    error: featuredError,
+  } = useFeaturedStartups();
+  const loading = activeLoading || featuredLoading;
+  const error =
+    activeError || featuredError
+      ? "Failed to load startups. Please try again later."
+      : null;
+
+  // Most recent featured startup (hook returns them newest-first).
+  const featuredStartup: Startup | null = featuredStartups[0] ?? null;
+  // "Past" startups are derived from the active set, mirroring prior behavior.
+  const pastStartups = activeStartups.filter((s) => s.status === "past");
 
   const filteredStartups = pastStartups.filter((s) => {
     return (
@@ -560,7 +435,7 @@ const StartupOfWeek: React.FC = () => {
             {error}
           </p>
           <button
-            onClick={loadStartups}
+            onClick={() => window.location.reload()}
             style={{ fontFamily: F.body, fontWeight: 300, fontSize: "0.82rem" }}
             className="px-6 py-3 bg-white text-black rounded-lg hover:bg-white/90 transition-colors"
           >

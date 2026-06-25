@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -18,19 +18,10 @@ import {
   Loader,
   AlertCircle,
 } from "lucide-react";
+import type { Timestamp } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  updateDoc,
-  doc,
-  increment,
-  Timestamp,
-  limit,
-} from "firebase/firestore";
-import { db } from "../firebase/config";
+import { useBlog, useBlogs } from "@/features/blog";
+import type { BlogPost } from "@/features/blog";
 
 function useFonts() {
   useEffect(() => {
@@ -50,106 +41,23 @@ const F = {
   body: "'Outfit', sans-serif",
 };
 
-interface Author {
-  name: string;
-  email: string;
-  bio?: string;
-  avatar?: string;
-}
-interface BlogPost {
-  id?: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  featuredImage?: string;
-  featuredImagePublicId?: string;
-  status: "draft" | "published" | "archived";
-  category: string;
-  tags: string[];
-  author: Author;
-  publishedDate?: string;
-  readTime?: number;
-  seoTitle?: string;
-  seoDescription?: string;
-  isFeature: boolean;
-  viewCount: number;
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+/**
+ * Rank published posts related to the current one: same-category first, falling
+ * back to any published post, ordered by shared-tag count then view count.
+ */
+function pickRelatedPosts(allPosts: BlogPost[], current: BlogPost): BlogPost[] {
+  const others = allPosts.filter((p) => p.id !== current.id);
+  const sameCategory = others.filter((p) => p.category === current.category);
+  const pool = sameCategory.length >= 2 ? sameCategory : others;
+  return [...pool]
+    .sort((a, b) => {
+      const at = a.tags.filter((t) => current.tags.includes(t)).length;
+      const bt = b.tags.filter((t) => current.tags.includes(t)).length;
+      return at !== bt ? bt - at : b.viewCount - a.viewCount;
+    })
+    .slice(0, 2);
 }
 
-class BlogDetailService {
-  private collection = "blogs";
-  async getBlogBySlug(slug: string): Promise<BlogPost | null> {
-    try {
-      const snap = await getDocs(
-        query(
-          collection(db, this.collection),
-          where("slug", "==", slug),
-          where("status", "==", "published"),
-          limit(1)
-        )
-      );
-      if (snap.empty) return null;
-      const d = snap.docs[0];
-      return { id: d.id, ...d.data() } as BlogPost;
-    } catch {
-      throw new Error("Failed to fetch blog post");
-    }
-  }
-  async getRelatedPosts(
-    currentPostId: string,
-    category: string,
-    tags: string[]
-  ): Promise<BlogPost[]> {
-    try {
-      const snap = await getDocs(
-        query(
-          collection(db, this.collection),
-          where("status", "==", "published"),
-          where("category", "==", category),
-          limit(6)
-        )
-      );
-      let related = snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }) as BlogPost)
-        .filter((p) => p.id !== currentPostId);
-      if (related.length < 2) {
-        const gSnap = await getDocs(
-          query(
-            collection(db, this.collection),
-            where("status", "==", "published"),
-            limit(6)
-          )
-        );
-        const all = gSnap.docs
-          .map((d) => ({ id: d.id, ...d.data() }) as BlogPost)
-          .filter((p) => p.id !== currentPostId);
-        related = Array.from(
-          new Map([...related, ...all].map((p) => [p.id, p])).values()
-        );
-      }
-      return related
-        .sort((a, b) => {
-          const at = a.tags.filter((t) => tags.includes(t)).length,
-            bt = b.tags.filter((t) => tags.includes(t)).length;
-          return at !== bt ? bt - at : b.viewCount - a.viewCount;
-        })
-        .slice(0, 2);
-    } catch {
-      return [];
-    }
-  }
-  async incrementViewCount(blogId: string): Promise<void> {
-    try {
-      await updateDoc(doc(db, this.collection, blogId), {
-        viewCount: increment(1),
-      });
-    } catch {}
-  }
-}
-
-const blogDetailService = new BlogDetailService();
 const getBlogSlugFromURL = (): string => {
   const s = window.location.pathname.split("/");
   return s[s.length - 1] || "";
@@ -158,59 +66,28 @@ const getBlogSlugFromURL = (): string => {
 const BlogDetail: React.FC = () => {
   useFonts();
   const { isDark } = useTheme();
-  const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const slug = getBlogSlugFromURL();
+  const { data: matches, loading: postLoading, error } = useBlog(slug);
+  const { data: allPosts } = useBlogs();
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [viewCountIncremented, setViewCountIncremented] = useState(false);
-  const slug = getBlogSlugFromURL();
+
+  const blogPost = matches[0] ?? null;
+  const loading = slug ? postLoading : false;
+
+  const relatedPosts = useMemo(
+    () => (blogPost ? pickRelatedPosts(allPosts, blogPost) : []),
+    [allPosts, blogPost]
+  );
 
   useEffect(() => {
-    if (slug) loadBlogPost(slug);
-    else {
-      setError("No blog slug provided");
-      setLoading(false);
-    }
-  }, [slug]);
-  useEffect(() => {
-    if (blogPost && !viewCountIncremented) {
-      const t = setTimeout(() => {
-        blogDetailService.incrementViewCount(blogPost.id!);
-        setViewCountIncremented(true);
-      }, 3000);
-      return () => clearTimeout(t);
-    }
-  }, [blogPost, viewCountIncremented]);
-
-  const loadBlogPost = async (postSlug: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const post = await blogDetailService.getBlogBySlug(postSlug);
-      if (!post) {
-        setError("Blog post not found");
-        return;
-      }
-      setBlogPost(post);
-      const related = await blogDetailService.getRelatedPosts(
-        post.id!,
-        post.category,
-        post.tags
-      );
-      setRelatedPosts(related);
-      document.title = post.seoTitle || post.title;
-      document
-        .querySelector('meta[name="description"]')
-        ?.setAttribute("content", post.seoDescription || post.excerpt);
-    } catch {
-      setError("Failed to load blog post. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (!blogPost) return;
+    document.title = blogPost.seoTitle || blogPost.title;
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", blogPost.seoDescription || blogPost.excerpt);
+  }, [blogPost]);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -309,7 +186,7 @@ const BlogDetail: React.FC = () => {
               marginBottom: "0.5rem",
             }}
           >
-            {error || "Post Not Found"}
+            {error ? "Failed to Load Post" : "Post Not Found"}
           </h1>
           <p
             style={{
