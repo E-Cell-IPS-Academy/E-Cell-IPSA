@@ -48,9 +48,12 @@ import {
   Star,
   Shield,
 } from "lucide-react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase/config";
 import { useTheme } from "../context/ThemeContext";
+import {
+  useTeamCategories,
+  useTeamMembers,
+  type TeamMember,
+} from "../features/team";
 
 // ─── Fonts ────────────────────────────────────────────────────────────────────
 function useFonts() {
@@ -111,34 +114,7 @@ const DynamicIcon: React.FC<{ name: string; className?: string }> = ({
   return <Icon className={className} />;
 };
 
-// ─── Types — field names EXACTLY match admin's Firestore schema ───────────────
-interface TeamCategory {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-  order: number;
-}
-
-interface TeamMember {
-  id: string;
-  name: string;
-  position: string; // admin writes "position"
-  category: string; // stores category ID
-  isLead: boolean;
-  photo: string; // admin writes "photo"
-  photoPublicId: string;
-  bio: string;
-  email: string;
-  socialLinks: {
-    linkedin?: string;
-    instagram?: string;
-    github?: string;
-    twitter?: string;
-  };
-  order: number;
-  isActive: boolean;
-}
+// ─── Types — `TeamMember`/`TeamCategory` come from the team feature slice ──────
 
 // ─── Floating particle ────────────────────────────────────────────────────────
 const FloatingParticle: React.FC<{
@@ -919,42 +895,16 @@ const TeamPage: React.FC = () => {
   useFonts();
   const { isDark } = useTheme();
 
-  const [categories, setCategories] = useState<TeamCategory[]>([]);
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [carousel, setCarousel] = useState<{
     members: TeamMember[];
     index: number;
   } | null>(null);
 
-  // ── Fetch teamCategories + teamMembers ──────────────────────────────────────
-  useEffect(() => {
-    (async () => {
-      try {
-        const [catSnap, memSnap] = await Promise.all([
-          getDocs(
-            query(collection(db, "teamCategories"), orderBy("order", "asc"))
-          ),
-          getDocs(
-            query(collection(db, "teamMembers"), orderBy("order", "asc"))
-          ),
-        ]);
-        setCategories(
-          catSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as TeamCategory)
-        );
-        setMembers(
-          memSnap.docs
-            .map((d) => ({ id: d.id, ...d.data() }) as TeamMember)
-            .filter((m) => m.isActive !== false) // only active members
-        );
-      } catch (err) {
-        console.error("TeamPage: fetch error", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  // ── Fetch teamCategories + teamMembers via the team feature slice ────────────
+  const { data: categories, loading: categoriesLoading } = useTeamCategories();
+  const { data: members, loading: membersLoading } = useTeamMembers();
+  const loading = categoriesLoading || membersLoading;
 
   // ── Lookup helpers ──────────────────────────────────────────────────────────
   const getCategoryName = useCallback(

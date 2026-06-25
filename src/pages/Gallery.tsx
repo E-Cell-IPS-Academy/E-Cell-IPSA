@@ -23,6 +23,7 @@ import {
   Search,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
+import { useGalleryImages, type GalleryImage } from "../features/gallery";
 
 function useFonts() {
   useEffect(() => {
@@ -41,208 +42,6 @@ const F = {
   mono: "'DM Mono', monospace",
   body: "'Outfit', sans-serif",
 };
-
-// Types & Static Data — unchanged from original
-interface GalleryImage {
-  id: string;
-  title: string;
-  description?: string;
-  url: string;
-  thumbnailUrl?: string;
-  category: string;
-  album?: string;
-  tags: string[];
-  eventName?: string;
-  eventDate?: string;
-  location?: string;
-  photographer?: string;
-  uploadedBy: string;
-  isFeature: boolean;
-  isFavorite: boolean;
-  status: "public" | "private" | "archived";
-  fileSize: number;
-  dimensions: { width: number; height: number };
-  metadata: { camera?: string; settings?: string; dateCreated?: string };
-  stats: { views: number; downloads: number; likes: number; shares: number };
-  createdAt: string;
-  updatedAt: string;
-}
-
-const staticGalleryImages: GalleryImage[] = [
-  {
-    id: "1",
-    title: "Innovation Summit 2024",
-    description:
-      "Entrepreneurs showcasing their innovative solutions at our annual summit.",
-    url: "/gallery/1.jpg",
-    thumbnailUrl: "/gallery/1.jpg",
-    category: "Events",
-    album: "Annual Summit",
-    tags: ["innovation", "entrepreneurship", "summit", "networking"],
-    eventName: "Innovation Summit 2024",
-    eventDate: "2024-03-15",
-    location: "Mumbai, India",
-    photographer: "Rahul Sharma",
-    uploadedBy: "ecell-admin",
-    isFeature: true,
-    isFavorite: true,
-    status: "public",
-    fileSize: 2048000,
-    dimensions: { width: 1920, height: 1080 },
-    metadata: {
-      camera: "Canon EOS R5",
-      settings: "f/2.8, 1/200s, ISO 400",
-      dateCreated: "2024-03-15T10:30:00Z",
-    },
-    stats: { views: 2500, downloads: 450, likes: 320, shares: 89 },
-    createdAt: "2024-03-15T10:30:00Z",
-    updatedAt: "2024-03-15T10:30:00Z",
-  },
-  {
-    id: "2",
-    title: "Startup Pitch Competition",
-    description:
-      "Young entrepreneurs presenting their business ideas to a panel of judges.",
-    url: "/gallery/2.jpg",
-    thumbnailUrl: "/gallery/2.jpg",
-    category: "Competitions",
-    album: "Pitch Events",
-    tags: ["startup", "pitch", "competition", "business"],
-    eventName: "VypaarX Pitch Competition",
-    eventDate: "2024-02-20",
-    location: "Bangalore, India",
-    photographer: "Priya Patel",
-    uploadedBy: "ecell-admin",
-    isFeature: true,
-    isFavorite: false,
-    status: "public",
-    fileSize: 1800000,
-    dimensions: { width: 1600, height: 900 },
-    metadata: {
-      camera: "Sony A7 III",
-      settings: "f/4.0, 1/125s, ISO 800",
-      dateCreated: "2024-02-20T14:15:00Z",
-    },
-    stats: { views: 1800, downloads: 280, likes: 195, shares: 67 },
-    createdAt: "2024-02-20T14:15:00Z",
-    updatedAt: "2024-02-20T14:15:00Z",
-  },
-  {
-    id: "3",
-    title: "Mentorship Session",
-    description:
-      "Industry experts sharing valuable insights with aspiring entrepreneurs.",
-    url: "/gallery/4.jpg",
-    thumbnailUrl: "/gallery/4.jpg",
-    category: "Workshops",
-    album: "Learning Sessions",
-    tags: ["mentorship", "guidance", "learning", "experts"],
-    eventName: "Mentor Connect Session",
-    eventDate: "2024-01-10",
-    location: "Delhi, India",
-    photographer: "Amit Kumar",
-    uploadedBy: "ecell-admin",
-    isFeature: false,
-    isFavorite: true,
-    status: "public",
-    fileSize: 2200000,
-    dimensions: { width: 1920, height: 1280 },
-    metadata: {
-      camera: "Nikon D850",
-      settings: "f/5.6, 1/60s, ISO 1000",
-      dateCreated: "2024-01-10T16:45:00Z",
-    },
-    stats: { views: 1200, downloads: 180, likes: 145, shares: 34 },
-    createdAt: "2024-01-10T16:45:00Z",
-    updatedAt: "2024-01-10T16:45:00Z",
-  },
-  {
-    id: "4",
-    title: "Product Launch Event",
-    description:
-      "Celebrating the successful launch of a startup's innovative product.",
-    url: "/gallery/3.jpg",
-    thumbnailUrl: "/gallery/3.jpg",
-    category: "Events",
-    album: "Product Launches",
-    tags: ["product", "launch", "innovation", "celebration"],
-    eventName: "TechStart Product Launch",
-    eventDate: "2023-12-05",
-    location: "Pune, India",
-    photographer: "Sarah Johnson",
-    uploadedBy: "ecell-admin",
-    isFeature: false,
-    isFavorite: false,
-    status: "public",
-    fileSize: 1900000,
-    dimensions: { width: 1600, height: 1067 },
-    metadata: {
-      camera: "Canon EOS 5D",
-      settings: "f/3.5, 1/100s, ISO 640",
-      dateCreated: "2023-12-05T19:20:00Z",
-    },
-    stats: { views: 980, downloads: 120, likes: 87, shares: 23 },
-    createdAt: "2023-12-05T19:20:00Z",
-    updatedAt: "2023-12-05T19:20:00Z",
-  },
-  {
-    id: "5",
-    title: "Team Building Workshop",
-    description: "Entrepreneurs learning collaboration and team dynamics.",
-    url: "/gallery/8.jpg",
-    thumbnailUrl: "/gallery/8.jpg",
-    category: "Workshops",
-    album: "Skill Development",
-    tags: ["teamwork", "collaboration", "workshop", "skills"],
-    eventName: "Leadership & Team Building",
-    eventDate: "2023-11-18",
-    location: "Chennai, India",
-    photographer: "Michael Chen",
-    uploadedBy: "ecell-admin",
-    isFeature: true,
-    isFavorite: false,
-    status: "public",
-    fileSize: 1650000,
-    dimensions: { width: 1500, height: 1000 },
-    metadata: {
-      camera: "Fujifilm X-T4",
-      settings: "f/2.8, 1/160s, ISO 320",
-      dateCreated: "2023-11-18T11:30:00Z",
-    },
-    stats: { views: 1500, downloads: 210, likes: 167, shares: 45 },
-    createdAt: "2023-11-18T11:30:00Z",
-    updatedAt: "2023-11-18T11:30:00Z",
-  },
-  {
-    id: "6",
-    title: "Networking Mixer",
-    description:
-      "Entrepreneurs connecting and building valuable relationships.",
-    url: "/gallery/6.jpg",
-    thumbnailUrl: "/gallery/6.jpg",
-    category: "Networking",
-    album: "Community Events",
-    tags: ["networking", "connections", "community", "relationships"],
-    eventName: "Monthly Networking Mixer",
-    eventDate: "2023-10-25",
-    location: "Hyderabad, India",
-    photographer: "Lisa Wang",
-    uploadedBy: "ecell-admin",
-    isFeature: false,
-    isFavorite: true,
-    status: "public",
-    fileSize: 1750000,
-    dimensions: { width: 1800, height: 1200 },
-    metadata: {
-      camera: "Canon EOS R6",
-      settings: "f/4.0, 1/80s, ISO 1600",
-      dateCreated: "2023-10-25T18:45:00Z",
-    },
-    stats: { views: 1100, downloads: 145, likes: 98, shares: 28 },
-    createdAt: "2023-10-25T18:45:00Z",
-    updatedAt: "2023-10-25T18:45:00Z",
-  },
-];
 
 const cn = (...classes: (string | undefined)[]) =>
   classes.filter(Boolean).join(" ");
@@ -644,21 +443,13 @@ const Lightbox: React.FC<{
 const Gallery: React.FC = () => {
   useFonts();
   const { isDark } = useTheme();
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: images, loading } = useGalleryImages();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
-  useEffect(() => {
-    setTimeout(() => {
-      setImages(staticGalleryImages);
-      setLoading(false);
-    }, 1000);
-  }, []);
 
   const categories = [
     "All",
