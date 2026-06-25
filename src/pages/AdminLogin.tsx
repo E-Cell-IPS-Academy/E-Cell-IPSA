@@ -25,8 +25,8 @@ const AdminLogin: React.FC = () => {
   // Static admin credentials with proper typing
   const ADMIN_CREDENTIALS: AdminCredential[] = [
     {
-      username: "admin1",
-      password: "ecell@2024",
+      username: import.meta.env.VITE_ADMIN_USERNAME,
+      password: import.meta.env.VITE_ADMIN_PASSWORD,
       role: "Super Admin",
       permissions: [
         "manage_events",

@@ -100,8 +100,8 @@ const DynamicIcon: React.FC<{ name: string; className?: string }> = ({
 
 // ─── Cloudinary Service (inline, same pattern as other admin pages) ───────────
 class CloudinaryService {
-  private cloudName = "dszmnqzhk";
-  private uploadPreset = "ml_default";
+  private cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  private uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   async uploadFile(
     file: File,

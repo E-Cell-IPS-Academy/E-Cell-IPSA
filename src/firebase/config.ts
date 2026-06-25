@@ -21,15 +21,15 @@ interface FirebaseConfig {
   measurementId: string;
 }
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration (loaded from environment variables)
 const firebaseConfig: FirebaseConfig = {
-  apiKey: "AIzaSyAg4I31IL6HqcxlcwgBDGg_A41cIu0uUjI",
-  authDomain: "swasthya-link.firebaseapp.com",
-  projectId: "swasthya-link",
-  storageBucket: "swasthya-link.firebasestorage.app",
-  messagingSenderId: "796605318362",
-  appId: "1:796605318362:web:e5009d2c29cc110fd391e3",
-  measurementId: "G-50DB4HQH40",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase

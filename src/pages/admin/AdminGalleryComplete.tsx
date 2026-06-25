@@ -45,8 +45,8 @@ import { db } from "../../firebase/config";
 
 // Browser-compatible Cloudinary service
 class CloudinaryService {
-  private cloudName = "dszmnqzhk";
-  private uploadPreset = "ml_default";
+  private cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  private uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   async uploadFile(
     file: File,

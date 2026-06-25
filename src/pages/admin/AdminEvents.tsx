@@ -85,8 +85,8 @@ type ModalMode = "create" | "edit" | "view" | null;
 
 // Browser-compatible Cloudinary service class
 class CloudinaryService {
-  private cloudName = "dszmnqzhk";
-  private uploadPreset = "ml_default"; // You need to create this in Cloudinary dashboard
+  private cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  private uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; // You need to create this in Cloudinary dashboard
 
   async uploadFile(
     file: File,
