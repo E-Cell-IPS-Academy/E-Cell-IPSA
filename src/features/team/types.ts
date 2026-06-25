@@ -35,3 +35,79 @@ export interface TeamMember extends WithId {
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
+
+/** Shape the member create/edit form works with (no server-managed fields). */
+export type TeamMemberFormValues = Omit<
+  TeamMember,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+/** Shape the category create/edit form works with (no server-managed fields). */
+export type TeamCategoryFormValues = Omit<
+  TeamCategory,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export interface TeamStats {
+  totalMembers: number;
+  totalCategories: number;
+  activeLeads: number;
+  activeMembers: number;
+  inactiveMembers: number;
+}
+
+/** Icon names available to categories (subset of lucide-react icons). */
+export const TEAM_ICON_OPTIONS = [
+  "Users",
+  "Crown",
+  "Star",
+  "Shield",
+  "Award",
+  "Briefcase",
+  "Code",
+  "Cpu",
+  "Database",
+  "Megaphone",
+  "Palette",
+  "PenTool",
+  "Rocket",
+  "Target",
+  "TrendingUp",
+  "Zap",
+  "Heart",
+  "Music",
+  "Camera",
+  "BookOpen",
+  "FileText",
+  "Settings",
+  "Wrench",
+  "Lightbulb",
+  "Flag",
+  "Globe",
+  "Activity",
+  "Sparkles",
+  "Layers",
+] as const;
+
+export type TeamIconName = (typeof TEAM_ICON_OPTIONS)[number];
+
+export const EMPTY_TEAM_MEMBER: TeamMemberFormValues = {
+  name: "",
+  position: "",
+  category: "",
+  isLead: false,
+  photo: "",
+  photoPublicId: "",
+  bio: "",
+  email: "",
+  socialLinks: { linkedin: "", instagram: "", github: "", twitter: "" },
+  order: 0,
+  isActive: true,
+};
+
+export const EMPTY_TEAM_CATEGORY: TeamCategoryFormValues = {
+  name: "",
+  icon: "Users",
+  description: "",
+  order: 0,
+};
