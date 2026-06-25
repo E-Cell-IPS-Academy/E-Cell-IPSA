@@ -1,28 +1,27 @@
-// Fixed /src/components/admin/AdminLayout.tsx
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Shield,
   BarChart3,
   Calendar,
   Users,
   FileText,
-  Settings,
-  LogOut,
-  Bell,
-  Menu,
-  X,
-  User,
-  ChevronDown,
   Image,
   UsersRound,
   Layout,
   Info,
   Phone,
   Wrench,
+  LogOut,
+  Menu,
+  X,
+  User,
+  ChevronDown,
+  Settings,
+  Shield,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { cn } from "../../shared/lib/cn";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -31,97 +30,147 @@ interface AdminLayoutProps {
 interface SidebarItem {
   id: string;
   label: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   href: string;
   permission: string;
-  badge?: number;
 }
 
+const SIDEBAR_ITEMS: SidebarItem[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    icon: BarChart3,
+    href: "/admin/dashboard",
+    permission: "view_analytics",
+  },
+  {
+    id: "events",
+    label: "Events",
+    icon: Calendar,
+    href: "/admin/dashboard/events",
+    permission: "manage_events",
+  },
+  {
+    id: "startups",
+    label: "Startups",
+    icon: Users,
+    href: "/admin/dashboard/startups",
+    permission: "manage_content",
+  },
+  {
+    id: "blogs",
+    label: "Blog Posts",
+    icon: FileText,
+    href: "/admin/dashboard/blogs",
+    permission: "manage_content",
+  },
+  {
+    id: "gallery",
+    label: "Gallery",
+    icon: Image,
+    href: "/admin/dashboard/gallery",
+    permission: "manage_content",
+  },
+  {
+    id: "team",
+    label: "Team",
+    icon: UsersRound,
+    href: "/admin/dashboard/team",
+    permission: "manage_content",
+  },
+  {
+    id: "hero",
+    label: "Hero Section",
+    icon: Layout,
+    href: "/admin/dashboard/hero",
+    permission: "manage_content",
+  },
+  {
+    id: "about",
+    label: "About Page",
+    icon: Info,
+    href: "/admin/dashboard/about",
+    permission: "manage_content",
+  },
+  {
+    id: "contact",
+    label: "Contact",
+    icon: Phone,
+    href: "/admin/dashboard/contact",
+    permission: "manage_content",
+  },
+  {
+    id: "settings",
+    label: "Site Settings",
+    icon: Wrench,
+    href: "/admin/dashboard/settings",
+    permission: "manage_settings",
+  },
+];
+
+function titleFromPath(pathname: string): string {
+  if (pathname === "/admin" || pathname === "/admin/dashboard")
+    return "Dashboard";
+  const slug = pathname.split("/").filter(Boolean).pop() ?? "";
+  return slug
+    .replace(/-/g, " ")
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+const NavLinks: React.FC<{
+  items: SidebarItem[];
+  pathname: string;
+  hasPermission: (p: string) => boolean;
+  onNavigate?: () => void;
+}> = ({ items, pathname, hasPermission, onNavigate }) => (
+  <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+    {items.map((item) => {
+      if (!hasPermission(item.permission)) return null;
+      const isActive =
+        pathname === item.href ||
+        (item.href === "/admin/dashboard" && pathname === "/admin");
+      return (
+        <Link
+          key={item.id}
+          to={item.href}
+          onClick={onNavigate}
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+            isActive
+              ? "bg-indigo-50 font-medium text-indigo-700"
+              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          )}
+        >
+          <item.icon className="h-[18px] w-[18px]" />
+          <span>{item.label}</span>
+        </Link>
+      );
+    })}
+  </nav>
+);
+
+const Brand: React.FC = () => (
+  <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
+    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white">
+      <Shield className="h-5 w-5" />
+    </div>
+    <div>
+      <p className="text-sm font-semibold text-slate-900">Admin</p>
+      <p className="text-xs text-slate-500">E-Cell IPS Academy</p>
+    </div>
+  </div>
+);
+
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [showProfileDropdown, setShowProfileDropdown] =
-    useState<boolean>(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { adminSession, logout, hasPermission } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Sidebar navigation items
-  const sidebarItems: SidebarItem[] = [
-    {
-      id: "overview",
-      label: "Overview",
-      icon: BarChart3,
-      href: "/admin/dashboard",
-      permission: "view_analytics",
-    },
-    {
-      id: "events",
-      label: "Events",
-      icon: Calendar,
-      href: "/admin/dashboard/events",
-      permission: "manage_events",
-      badge: 3,
-    },
-    {
-      id: "startups",
-      label: "Startups",
-      icon: Users,
-      href: "/admin/dashboard/startups",
-      permission: "manage_content",
-    },
-    {
-      id: "blogs",
-      label: "Blog Posts",
-      icon: FileText,
-      href: "/admin/dashboard/blogs",
-      permission: "manage_content",
-    },
-    {
-      id: "gallery",
-      label: "Gallery",
-      icon: Image,
-      href: "/admin/dashboard/gallery",
-      permission: "manage_content",
-    },
-    {
-      id: "team",
-      label: "Team",
-      icon: UsersRound,
-      href: "/admin/dashboard/team",
-      permission: "manage_content",
-    },
-    {
-      id: "hero",
-      label: "Hero Section",
-      icon: Layout,
-      href: "/admin/dashboard/hero",
-      permission: "manage_content",
-    },
-    {
-      id: "about",
-      label: "About Page",
-      icon: Info,
-      href: "/admin/dashboard/about",
-      permission: "manage_content",
-    },
-    {
-      id: "contact",
-      label: "Contact",
-      icon: Phone,
-      href: "/admin/dashboard/contact",
-      permission: "manage_content",
-    },
-    {
-      id: "settings",
-      label: "Site Settings",
-      icon: Wrench,
-      href: "/admin/dashboard/settings",
-      permission: "manage_settings",
-    },
-  ];
-
-  const handleLogout = async (): Promise<void> => {
+  const handleLogout = async () => {
     try {
       await logout();
       navigate("/admin/login");
@@ -130,326 +179,171 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     }
   };
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  useEffect(() => setMobileOpen(false), [location.pathname]);
 
-  // Close profile dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
-      if (showProfileDropdown) {
-        setShowProfileDropdown(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [showProfileDropdown]);
+    if (!profileOpen) return;
+    const close = () => setProfileOpen(false);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [profileOpen]);
 
   if (!adminSession) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 text-white">
-      {/* Desktop Sidebar */}
-      <motion.aside
-        initial={{ x: -250 }}
-        animate={{ x: isSidebarOpen ? 0 : -200 }}
-        className="fixed left-0 top-0 h-full w-64 bg-black/50 backdrop-blur-xl border-r border-white/10 z-40 hidden lg:block"
-        style={{
-          backdropFilter: "blur(20px) saturate(150%)",
-          WebkitBackdropFilter: "blur(20px) saturate(150%)",
-        }}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-                <p className="text-xs text-gray-400">E-Cell IPS Academy</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Admin Info */}
-          <div className="p-6 border-b border-white/10">
-            <div className="bg-white/5 rounded-xl p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-white text-sm">
-                    {adminSession.username}
-                  </p>
-                  <p className="text-xs text-purple-400">{adminSession.role}</p>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400">
-                Last login:{" "}
-                {new Date(adminSession.loginTime).toLocaleDateString()}
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {sidebarItems.map((item) => {
-              if (!hasPermission(item.permission)) return null;
-
-              const isActive =
-                location.pathname === item.href ||
-                (item.href === "/admin/dashboard" &&
-                  location.pathname === "/admin");
-
-              return (
-                <motion.div key={item.id}>
-                  <Link
-                    to={item.href}
-                    className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      isActive
-                        ? "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white border border-purple-500/30"
-                        : "text-gray-400 hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
-                    {item.badge && (
-                      <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </nav>
-
-          {/* Logout */}
-          <div className="p-4 border-t border-white/10">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all duration-200"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Logout</span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      {/* Desktop sidebar */}
+      <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col border-r border-slate-200 bg-white lg:flex">
+        <Brand />
+        <NavLinks
+          items={SIDEBAR_ITEMS}
+          pathname={location.pathname}
+          hasPermission={hasPermission}
+        />
+        <div className="border-t border-slate-200 p-3">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+            <span>Logout</span>
+          </button>
         </div>
-      </motion.aside>
+      </aside>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile drawer */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
+        {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 lg:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 z-50 bg-slate-900/30 lg:hidden"
+            onClick={() => setMobileOpen(false)}
           >
             <motion.aside
-              initial={{ x: -250 }}
+              initial={{ x: -280 }}
               animate={{ x: 0 }}
-              exit={{ x: -250 }}
-              className="w-64 h-full bg-black/90 backdrop-blur-xl border-r border-white/10"
+              exit={{ x: -280 }}
+              transition={{ type: "tween", duration: 0.2 }}
+              className="flex h-full w-64 flex-col bg-white"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex flex-col h-full">
-                {/* Mobile Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="font-bold text-white">Admin Panel</span>
-                  </div>
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2 text-gray-400 hover:text-white"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Mobile Navigation */}
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                  {sidebarItems.map((item) => {
-                    if (!hasPermission(item.permission)) return null;
-
-                    const isActive = location.pathname === item.href;
-
-                    return (
-                      <Link
-                        key={item.id}
-                        to={item.href}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                          isActive
-                            ? "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white border border-purple-500/30"
-                            : "text-gray-400 hover:text-white hover:bg-white/10"
-                        }`}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.label}</span>
-                        {item.badge && (
-                          <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            {item.badge}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </nav>
+              <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <span className="text-sm font-semibold text-slate-900">
+                  Admin
+                </span>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <NavLinks
+                items={SIDEBAR_ITEMS}
+                pathname={location.pathname}
+                hasPermission={hasPermission}
+                onNavigate={() => setMobileOpen(false)}
+              />
+              <div className="border-t border-slate-200 p-3">
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                >
+                  <LogOut className="h-[18px] w-[18px]" />
+                  <span>Logout</span>
+                </button>
               </div>
             </motion.aside>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Content Area - FIXED: Added proper margin and transition */}
-      <div
-        className={`transition-all duration-300 ${
-          isSidebarOpen ? "lg:ml-64" : "lg:ml-16"
-        }`}
-      >
-        {/* Top Navigation Bar */}
-        <motion.header
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="sticky top-0 bg-black/50 backdrop-blur-xl border-b border-white/10 z-30"
-          style={{
-            backdropFilter: "blur(20px) saturate(150%)",
-            WebkitBackdropFilter: "blur(20px) saturate(150%)",
-          }}
-        >
-          <div className="flex items-center justify-between p-4 lg:p-6">
-            {/* Left Side */}
-            <div className="flex items-center gap-4">
-              {/* Mobile Menu Button */}
+      {/* Main column */}
+      <div className="lg:ml-64">
+        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+          <div className="flex items-center justify-between px-4 py-3 lg:px-6">
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="p-2 text-gray-400 hover:text-white lg:hidden"
+                onClick={() => setMobileOpen(true)}
+                className="rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="h-5 w-5" />
               </button>
-
-              {/* Desktop Sidebar Toggle */}
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="hidden lg:block p-2 text-gray-400 hover:text-white"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-
-              {/* Page Title */}
               <div>
-                <h2 className="text-xl font-bold text-white">
-                  {location.pathname === "/admin/dashboard" ||
-                  location.pathname === "/admin"
-                    ? "Dashboard"
-                    : location.pathname
-                        .split("/")
-                        .pop()
-                        ?.replace("-", " ")
-                        ?.split(" ")
-                        .map(
-                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                        )
-                        .join(" ")}
-                </h2>
-                <p className="text-sm text-gray-400 hidden md:block">
-                  Manage your E-Cell administration
+                <h1 className="text-lg font-semibold text-slate-900">
+                  {titleFromPath(location.pathname)}
+                </h1>
+                <p className="hidden text-xs text-slate-500 md:block">
+                  Manage your E-Cell content
                 </p>
               </div>
             </div>
 
-            {/* Right Side */}
-            <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setProfileOpen((v) => !v);
+                }}
+                className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-100"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                  <User className="h-4 w-4" />
+                </span>
+                <span className="hidden text-left md:block">
+                  <span className="block text-sm font-medium text-slate-900">
+                    {adminSession.username}
+                  </span>
+                  <span className="block text-xs text-slate-500">
+                    {adminSession.role}
+                  </span>
+                </span>
+                <ChevronDown className="h-4 w-4 text-slate-400" />
               </button>
 
-              {/* Profile Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowProfileDropdown(!showProfileDropdown);
-                  }}
-                  className="flex items-center gap-3 p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium text-white">
-                      {adminSession.username}
-                    </p>
-                    <p className="text-xs text-gray-400">{adminSession.role}</p>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </button>
-
-                {/* Dropdown Menu */}
-                <AnimatePresence>
-                  {showProfileDropdown && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-2 w-48 bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl py-2 shadow-2xl"
-                      onClick={(e) => e.stopPropagation()}
+              <AnimatePresence>
+                {profileOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Link
+                      to="/admin/dashboard/settings"
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                      onClick={() => setProfileOpen(false)}
                     >
-                      <Link
-                        to="/admin/profile"
-                        className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        <User className="w-4 h-4" />
-                        Profile Settings
-                      </Link>
-                      <Link
-                        to="/admin/settings"
-                        className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        <Settings className="w-4 h-4" />
-                        Account Settings
-                      </Link>
-                      <div className="border-t border-white/10 my-2" />
-                      <button
-                        onClick={() => {
-                          setShowProfileDropdown(false);
-                          handleLogout();
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      <Settings className="h-4 w-4" /> Settings
+                    </Link>
+                    <div className="my-1 border-t border-slate-100" />
+                    <button
+                      onClick={() => {
+                        setProfileOpen(false);
+                        handleLogout();
+                      }}
+                      className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" /> Sign out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-        </motion.header>
+        </header>
 
-        {/* Page Content */}
-        <main className="p-4 lg:p-6 min-h-[calc(100vh-80px)]">{children}</main>
+        <main className="min-h-[calc(100vh-57px)] p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );
