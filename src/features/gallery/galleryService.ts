@@ -11,6 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
+import { sortByCreatedAtDesc } from "@/shared/lib/sort";
 import type {
   Album,
   AlbumFormValues,
@@ -24,13 +25,17 @@ const ALBUMS_COLLECTION = "gallery_albums";
 
 /** Data-access layer for the public gallery. Pure Firestore reads — no UI. */
 export async function listPublicImages(): Promise<GalleryImage[]> {
+  // Single where() needs no composite index; sort newest-first in JS.
   const q = query(
     collection(db, IMAGES_COLLECTION),
-    where("status", "==", "public"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "public")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as GalleryImage[];
+  const images = snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  })) as GalleryImage[];
+  return sortByCreatedAtDesc(images);
 }
 
 export async function listAlbums(): Promise<Album[]> {

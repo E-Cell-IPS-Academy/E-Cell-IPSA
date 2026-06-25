@@ -12,6 +12,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
+import { sortByCreatedAtDesc } from "@/shared/lib/sort";
 import { calculateReadTime } from "./types";
 import type { BlogFormValues, BlogPost, BlogStats } from "./types";
 
@@ -23,26 +24,28 @@ const COLLECTION = "blogs";
 
 /** Published posts, newest first. Pure Firestore — no UI. */
 export async function listPublishedPosts(): Promise<BlogPost[]> {
+  // Single where() needs no composite index; sort newest-first in JS.
   const q = query(
     collection(db, COLLECTION),
-    where("status", "==", "published"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "published")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as BlogPost[];
+  const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as BlogPost[];
+  return sortByCreatedAtDesc(posts);
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+  // Query by slug only (single where = no composite index); verify status in JS.
   const q = query(
     collection(db, COLLECTION),
     where("slug", "==", slug),
-    where("status", "==", "published"),
     limit(1)
   );
   const snap = await getDocs(q);
   if (snap.empty) return null;
   const d = snap.docs[0];
-  return { id: d.id, ...d.data() } as BlogPost;
+  const post = { id: d.id, ...d.data() } as BlogPost;
+  return post.status === "published" ? post : null;
 }
 
 /* -------------------------------------------------------------------------- */

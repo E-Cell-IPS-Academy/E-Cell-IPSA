@@ -32,6 +32,16 @@ const firebaseConfig: FirebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+// Fail loudly if env vars weren't baked into the build. VITE_* variables are
+// inlined at BUILD time — adding them in Vercel does nothing until you REDEPLOY.
+if (!firebaseConfig.apiKey) {
+  console.error(
+    "[firebase] Missing VITE_FIREBASE_* env vars. Add them in your host " +
+      "(Vercel → Settings → Environment Variables) and then REDEPLOY — " +
+      "Vite inlines env at build time, so existing builds won't pick them up."
+  );
+}
+
 // Initialize Firebase
 const app: FirebaseApp = initializeApp(firebaseConfig);
 const analytics: Analytics = getAnalytics(app);

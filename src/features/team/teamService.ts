@@ -12,6 +12,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
+import { sortByOrderAsc } from "@/shared/lib/sort";
 import type {
   TeamCategory,
   TeamCategoryFormValues,
@@ -25,13 +26,17 @@ const CATEGORIES_COLLECTION = "teamCategories";
 
 /** Data-access layer for the public team feature. Pure Firestore — no UI. */
 export async function listActiveMembers(): Promise<TeamMember[]> {
+  // Single where() needs no composite index; sort by order in JS.
   const q = query(
     collection(db, MEMBERS_COLLECTION),
-    where("isActive", "==", true),
-    orderBy("order", "asc")
+    where("isActive", "==", true)
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as TeamMember[];
+  const members = snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  })) as TeamMember[];
+  return sortByOrderAsc(members);
 }
 
 export async function listCategories(): Promise<TeamCategory[]> {

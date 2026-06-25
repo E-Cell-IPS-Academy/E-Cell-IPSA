@@ -11,29 +11,34 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
+import { sortByCreatedAtDesc } from "@/shared/lib/sort";
 import type { Startup, StartupFormValues, StartupStats } from "./types";
 
 const COLLECTION = "startups";
 
 /** Data-access layer for the public startups feature. Pure Firestore — no UI. */
 export async function listActiveStartups(): Promise<Startup[]> {
-  const q = query(
-    collection(db, COLLECTION),
-    where("isActive", "==", true),
-    orderBy("createdAt", "desc")
-  );
+  // Single where() needs no composite index; sort newest-first in JS.
+  const q = query(collection(db, COLLECTION), where("isActive", "==", true));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Startup[];
+  const startups = snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  })) as Startup[];
+  return sortByCreatedAtDesc(startups);
 }
 
 export async function listFeaturedStartups(): Promise<Startup[]> {
   const q = query(
     collection(db, COLLECTION),
-    where("status", "==", "featured"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "featured")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Startup[];
+  const startups = snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  })) as Startup[];
+  return sortByCreatedAtDesc(startups);
 }
 
 /** Admin data-access layer. Pure Firestore — no UI, no upload concerns. */
