@@ -124,13 +124,21 @@ You can also set `FIREBASE_SERVICE_ACCOUNT`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PAS
 
 ## Project Structure
 
+The codebase follows a **feature-based, layered architecture** — see [ARCHITECTURE.md](ARCHITECTURE.md) for the full guide and migration checklist.
+
 ```
 src/
-├── components/      # Reusable UI, sections, illustrations
+├── features/        # Self-contained feature modules (events, …)
+│   └── <feature>/   #   types · service · hooks · components · page · index
+├── shared/          # Cross-cutting building blocks
+│   ├── ui/          #   design system (Button, Card, Modal, Table, …)
+│   ├── hooks/       #   useCollection, useCloudinaryUpload
+│   ├── feedback/    #   ToastProvider / useToast
+│   └── lib/         #   utilities (cn)
+├── components/admin/# Admin shell (AdminLayout, PageHeader, ImageUploader)
 ├── context/         # React context (AuthContext)
 ├── firebase/        # Firebase initialization (config.ts)
-├── pages/           # Route pages
-│   └── admin/       # Admin management pages
+├── pages/           # Route entry points (thin; delegate to features)
 ├── services/        # Auth and data services
 ├── types/           # Shared TypeScript types
 └── main.tsx         # App entry
