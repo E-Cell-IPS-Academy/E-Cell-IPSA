@@ -104,5 +104,6 @@ Using `src/features/events` as the template, for each remaining page (`AdminBlog
 ## Migration status
 
 - ✅ Shared UI kit, hooks, admin shell, `@` alias
-- ✅ `events` — fully migrated (reference)
-- ⏳ `blogs`, `startups`, `gallery`, `team`, `users`, `hero`, `about`, `contact`, `settings` — follow the checklist above
+- ✅ **All admin pages migrated** — `events`, `blogs`, `startups`, `gallery`, `team`, `users`, `hero`, `about`, `contact`, `settings` (each `src/pages/admin/Admin*.tsx` is now a one-line re-export of its feature module)
+- ✅ Public slices wired to feature modules — `blog`, `startups`, `team`, `gallery`
+- ⏳ Remaining public pages can be migrated incrementally using the same checklist
