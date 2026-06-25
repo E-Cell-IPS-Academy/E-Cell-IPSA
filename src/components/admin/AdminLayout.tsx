@@ -22,6 +22,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
 import { cn } from "../../shared/lib/cn";
+import { ToastProvider } from "../../shared/feedback";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -197,155 +198,159 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      {/* Desktop sidebar */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col border-r border-slate-200 bg-white lg:flex">
-        <Brand />
-        <NavLinks
-          items={SIDEBAR_ITEMS}
-          pathname={location.pathname}
-          hasPermission={hasPermission}
-        />
-        <div className="border-t border-slate-200 p-3">
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
-          >
-            <LogOut className="h-[18px] w-[18px]" />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/30 lg:hidden"
-            onClick={() => setMobileOpen(false)}
-          >
-            <motion.aside
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              transition={{ type: "tween", duration: 0.2 }}
-              className="flex h-full w-64 flex-col bg-white"
-              onClick={(e) => e.stopPropagation()}
+    <ToastProvider>
+      <div className="min-h-screen bg-slate-50 text-slate-800">
+        {/* Desktop sidebar */}
+        <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col border-r border-slate-200 bg-white lg:flex">
+          <Brand />
+          <NavLinks
+            items={SIDEBAR_ITEMS}
+            pathname={location.pathname}
+            hasPermission={hasPermission}
+          />
+          <div className="border-t border-slate-200 p-3">
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
             >
-              <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                <span className="text-sm font-semibold text-slate-900">
-                  Admin
-                </span>
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <NavLinks
-                items={SIDEBAR_ITEMS}
-                pathname={location.pathname}
-                hasPermission={hasPermission}
-                onNavigate={() => setMobileOpen(false)}
-              />
-              <div className="border-t border-slate-200 p-3">
-                <button
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                >
-                  <LogOut className="h-[18px] w-[18px]" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </motion.aside>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main column */}
-      <div className="lg:ml-64">
-        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
-          <div className="flex items-center justify-between px-4 py-3 lg:px-6">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setMobileOpen(true)}
-                className="rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div>
-                <h1 className="text-lg font-semibold text-slate-900">
-                  {titleFromPath(location.pathname)}
-                </h1>
-                <p className="hidden text-xs text-slate-500 md:block">
-                  Manage your E-Cell content
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setProfileOpen((v) => !v);
-                }}
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-100"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600">
-                  <User className="h-4 w-4" />
-                </span>
-                <span className="hidden text-left md:block">
-                  <span className="block text-sm font-medium text-slate-900">
-                    {adminSession.username}
-                  </span>
-                  <span className="block text-xs text-slate-500">
-                    {adminSession.role}
-                  </span>
-                </span>
-                <ChevronDown className="h-4 w-4 text-slate-400" />
-              </button>
-
-              <AnimatePresence>
-                {profileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Link
-                      to="/admin/dashboard/settings"
-                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-                      onClick={() => setProfileOpen(false)}
-                    >
-                      <Settings className="h-4 w-4" /> Settings
-                    </Link>
-                    <div className="my-1 border-t border-slate-100" />
-                    <button
-                      onClick={() => {
-                        setProfileOpen(false);
-                        handleLogout();
-                      }}
-                      className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut className="h-4 w-4" /> Sign out
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              <LogOut className="h-[18px] w-[18px]" />
+              <span>Logout</span>
+            </button>
           </div>
-        </header>
+        </aside>
 
-        <main className="min-h-[calc(100vh-57px)] p-4 lg:p-6">{children}</main>
+        {/* Mobile drawer */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-slate-900/30 lg:hidden"
+              onClick={() => setMobileOpen(false)}
+            >
+              <motion.aside
+                initial={{ x: -280 }}
+                animate={{ x: 0 }}
+                exit={{ x: -280 }}
+                transition={{ type: "tween", duration: 0.2 }}
+                className="flex h-full w-64 flex-col bg-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                  <span className="text-sm font-semibold text-slate-900">
+                    Admin
+                  </span>
+                  <button
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <NavLinks
+                  items={SIDEBAR_ITEMS}
+                  pathname={location.pathname}
+                  hasPermission={hasPermission}
+                  onNavigate={() => setMobileOpen(false)}
+                />
+                <div className="border-t border-slate-200 p-3">
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut className="h-[18px] w-[18px]" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </motion.aside>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main column */}
+        <div className="lg:ml-64">
+          <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+            <div className="flex items-center justify-between px-4 py-3 lg:px-6">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setMobileOpen(true)}
+                  className="rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+                <div>
+                  <h1 className="text-lg font-semibold text-slate-900">
+                    {titleFromPath(location.pathname)}
+                  </h1>
+                  <p className="hidden text-xs text-slate-500 md:block">
+                    Manage your E-Cell content
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setProfileOpen((v) => !v);
+                  }}
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-100"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                    <User className="h-4 w-4" />
+                  </span>
+                  <span className="hidden text-left md:block">
+                    <span className="block text-sm font-medium text-slate-900">
+                      {adminSession.username}
+                    </span>
+                    <span className="block text-xs text-slate-500">
+                      {adminSession.role}
+                    </span>
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-slate-400" />
+                </button>
+
+                <AnimatePresence>
+                  {profileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Link
+                        to="/admin/dashboard/settings"
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <Settings className="h-4 w-4" /> Settings
+                      </Link>
+                      <div className="my-1 border-t border-slate-100" />
+                      <button
+                        onClick={() => {
+                          setProfileOpen(false);
+                          handleLogout();
+                        }}
+                        className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="h-4 w-4" /> Sign out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </header>
+
+          <main className="min-h-[calc(100vh-57px)] p-4 lg:p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 };
 
