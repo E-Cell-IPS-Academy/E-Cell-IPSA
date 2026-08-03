@@ -1,5 +1,6 @@
-import { orderBy, where } from "firebase/firestore";
+import { where } from "firebase/firestore";
 import { useCollection } from "@/shared/hooks";
+import { sortByCreatedAtDesc } from "@/shared/lib/sort";
 import type { BlogPost } from "../types";
 
 /**
@@ -7,11 +8,11 @@ import type { BlogPost } from "../types";
  * `useCollection` hook so listener cleanup and error handling are centralized.
  */
 export function useBlogs() {
-  return useCollection<BlogPost>(
+  const result = useCollection<BlogPost>(
     "blogs",
-    where("status", "==", "published"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "published")
   );
+  return { ...result, data: sortByCreatedAtDesc(result.data) };
 }
 
 /**

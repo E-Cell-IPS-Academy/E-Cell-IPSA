@@ -1,5 +1,6 @@
-import { orderBy, where } from "firebase/firestore";
+import { where } from "firebase/firestore";
 import { useCollection } from "@/shared/hooks";
+import { sortByCreatedAtDesc } from "@/shared/lib/sort";
 import type { Startup } from "../types";
 
 /**
@@ -7,18 +8,18 @@ import type { Startup } from "../types";
  * `useCollection` hook so listener cleanup and error handling are centralized.
  */
 export function useStartups() {
-  return useCollection<Startup>(
+  const result = useCollection<Startup>(
     "startups",
-    where("isActive", "==", true),
-    orderBy("createdAt", "desc")
+    where("isActive", "==", true)
   );
+  return { ...result, data: sortByCreatedAtDesc(result.data) };
 }
 
 /** Live list of featured startups, newest first. */
 export function useFeaturedStartups() {
-  return useCollection<Startup>(
+  const result = useCollection<Startup>(
     "startups",
-    where("status", "==", "featured"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "featured")
   );
+  return { ...result, data: sortByCreatedAtDesc(result.data) };
 }

@@ -1,241 +1,463 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, X, ArrowLeft, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  Loader,
+  Rocket,
+  Sparkles,
+} from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  useVyaparStatus,
+  submitVyaparRegistration,
+  EMPTY_VYAPAR_REGISTRATION,
+  VYAPAR_CATEGORIES,
+  TEAM_SIZE_OPTIONS,
+} from "../features/vyapar";
+import type { VyaparRegistrationFormValues } from "../features/vyapar";
 
-const RegistrationClosed: React.FC = () => {
-  const [timeDisplay, setTimeDisplay] = useState("00:00:00");
-  const [showConfetti, setShowConfetti] = useState(false);
+/* ── Shared field styling ─────────────────────────────────────────────── */
+const fieldClass =
+  "w-full rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-purple-400/60 focus:bg-white/[0.07]";
+const labelClass = "block text-sm font-medium text-white/80 mb-2";
 
-  useEffect(() => {
-    // Set time to 00:00:00 immediately to show registration ended
-    setTimeDisplay("00:00:00");
+function wordCount(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
 
-    // Trigger confetti animation after component loads
-    const timer = setTimeout(() => {
-      setShowConfetti(true);
-    }, 1000);
+/* ── Back link shown on every screen ─────────────────────────────────── */
+function BackHome() {
+  return (
+    <Link
+      to="/"
+      className="absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200 z-10"
+    >
+      <ArrowLeft className="w-5 h-5" />
+      Back to Home
+    </Link>
+  );
+}
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Confetti particles
-  const confettiParticles = Array.from({ length: 50 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 3,
-    color: ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444"][
-      Math.floor(Math.random() * 5)
-    ],
-  }));
-
+function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-purple-500/10 rounded-full blur-xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-blue-500/10 rounded-full blur-xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-red-500/10 rounded-full blur-xl animate-pulse delay-500" />
       </div>
+      <BackHome />
+      {children}
+    </div>
+  );
+}
 
-      {/* Animated Confetti */}
-      <AnimatePresence>
-        {showConfetti && (
-          <div className="absolute inset-0 pointer-events-none">
-            {confettiParticles.map((particle) => (
-              <motion.div
-                key={particle.id}
-                className="absolute w-3 h-3 rounded-full"
-                style={{
-                  backgroundColor: particle.color,
-                  left: `${particle.x}%`,
-                  top: "-10px",
-                }}
-                initial={{ y: -10, opacity: 1, rotate: 0 }}
-                animate={{
-                  y: window.innerHeight + 10,
-                  opacity: 0,
-                  rotate: 360,
-                  x: Math.random() * 200 - 100,
-                }}
-                transition={{
-                  duration: 3 + Math.random() * 2,
-                  delay: particle.delay,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Back to Home Link */}
-      <Link
-        to="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200 z-10"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        Back to Home
-      </Link>
-
-      {/* Main Content */}
+/* ── "Upcoming" screen ────────────────────────────────────────────────── */
+function RegistrationUpcoming() {
+  return (
+    <PageShell>
       <motion.div
-        initial={{ opacity: 0, y: 50, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-2xl"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="relative z-10 w-full max-w-xl"
       >
-        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-8 shadow-2xl text-center">
-          {/* Animated Icon */}
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{
-              delay: 0.3,
-              duration: 0.8,
-              type: "spring",
-              stiffness: 200,
-            }}
-            className="w-20 h-20 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 relative"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-            >
-              <Clock className="w-10 h-10 text-white" />
-            </motion.div>
-
-            {/* Pulsing ring */}
-            <motion.div
-              className="absolute inset-0 border-4 border-red-400 rounded-full"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.7, 0, 0.7] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </motion.div>
-
-          {/* Title Animation */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="text-4xl font-bold text-white mb-4"
-          >
-            <motion.span
-              animate={{ color: ["#ffffff", "#ef4444", "#ffffff"] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              Registration Closed
-            </motion.span>
-          </motion.h1>
-
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-            className="text-gray-400 text-lg mb-8"
-          >
-            VyapaarX 2.0 - E-Cell IPSA Pitching Competition
-          </motion.p>
-
-          {/* Stopwatch Display */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.9, duration: 0.6 }}
-            className="bg-black/30 border border-white/20 rounded-2xl p-6 mb-8"
-          >
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Clock className="w-6 h-6 text-red-400" />
-              <h2 className="text-xl font-semibold text-white">
-                Registration Timer
-              </h2>
-            </div>
-
-            <motion.div
-              className="text-6xl font-mono font-bold mb-2"
-              animate={{ color: ["#ef4444", "#dc2626", "#ef4444"] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              {timeDisplay}
-            </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-              className="text-red-400 font-semibold text-lg"
-            >
-              Time Ended
-            </motion.p>
-          </motion.div>
-
-          {/* Status Cards */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
-          >
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <X className="w-5 h-5 text-red-400" />
-                <span className="text-red-400 font-semibold">Registration</span>
-              </div>
-              <p className="text-white font-bold">CLOSED</p>
-            </div>
-
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <AlertCircle className="w-5 h-5 text-yellow-400" />
-                <span className="text-yellow-400 font-semibold">Status</span>
-              </div>
-              <p className="text-white font-bold">ENDED</p>
-            </div>
-          </motion.div>
-
-          {/* Thank You Message */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.3, duration: 0.6 }}
-            className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8"
-          >
-            <h3 className="text-xl font-bold text-white mb-3">Thank You!</h3>
-            <p className="text-gray-300 leading-relaxed">
-              Thank you for your interest in VyapaarX 2.0. The registration
-              period has ended. We received an overwhelming response and are
-              excited to see the innovation from our participants.
-            </p>
-          </motion.div>
+        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-10 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-3">
+            Registrations Opening Soon
+          </h1>
+          <p className="text-gray-400 mb-2">
+            VyapaarX — E-Cell IPSA Pitching Competition
+          </p>
+          <p className="text-gray-300 leading-relaxed">
+            We're putting the finishing touches on this year's VyapaarX.
+            Registration hasn't opened yet — check back soon or follow our
+            socials for the announcement.
+          </p>
         </div>
       </motion.div>
+    </PageShell>
+  );
+}
 
-      {/* Floating particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-white/20 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [-20, 20, -20],
-              x: [-10, 10, -10],
-              opacity: [0.2, 0.8, 0.2],
-            }}
-            transition={{
-              duration: 4 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
+/* ── "Ended" screen ───────────────────────────────────────────────────── */
+function RegistrationEnded() {
+  return (
+    <PageShell>
+      <motion.div
+        initial={{ opacity: 0, y: 40, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.7 }}
+        className="relative z-10 w-full max-w-xl"
+      >
+        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-10 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-3">
+            Registration Closed
+          </h1>
+          <p className="text-gray-400 mb-6">
+            VyapaarX — E-Cell IPSA Pitching Competition
+          </p>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left">
+            <h3 className="text-lg font-bold text-white mb-2">Thank you!</h3>
+            <p className="text-gray-300 leading-relaxed">
+              Thank you for your interest in VyapaarX. The registration period
+              has ended. We received an overwhelming response and are excited to
+              see the innovation from our participants.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </PageShell>
+  );
+}
+
+/* ── "Started" screen — the actual registration form ─────────────────── */
+function RegistrationForm() {
+  const [values, setValues] = useState<VyaparRegistrationFormValues>(
+    EMPTY_VYAPAR_REGISTRATION
+  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const set = <K extends keyof VyaparRegistrationFormValues>(
+    key: K,
+    value: VyaparRegistrationFormValues[K]
+  ) => setValues((v) => ({ ...v, [key]: value }));
+
+  const validate = (): boolean => {
+    const next: Record<string, string> = {};
+    if (!values.startupName.trim()) next.startupName = "Required";
+    if (!values.leaderName.trim()) next.leaderName = "Required";
+    if (!/^\S+@\S+\.\S+$/.test(values.leaderEmail))
+      next.leaderEmail = "Enter a valid email address";
+    if (!values.leaderPhone.trim()) next.leaderPhone = "Required";
+    if (!values.cityCollege.trim()) next.cityCollege = "Required";
+    if (!values.teamSize) next.teamSize = "Required";
+    if (!values.teamMembers.trim()) next.teamMembers = "Required";
+    if (!values.category) next.category = "Required";
+    if (values.category === "Others" && !values.otherCategory?.trim())
+      next.otherCategory = "Please specify your category";
+    if (!values.ideaDescription.trim()) next.ideaDescription = "Required";
+    else if (wordCount(values.ideaDescription) > 200)
+      next.ideaDescription = `Keep it under 200 words (currently ${wordCount(
+        values.ideaDescription
+      )})`;
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await submitVyaparRegistration(values);
+      setSubmitted(true);
+    } catch {
+      setSubmitError(
+        "Something went wrong submitting your registration. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <PageShell>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="relative z-10 w-full max-w-lg"
+        >
+          <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-10 shadow-2xl text-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-3">
+              You're registered!
+            </h1>
+            <p className="text-gray-300 leading-relaxed">
+              Thanks for registering <strong>{values.startupName}</strong> for
+              VyapaarX. We'll reach out to{" "}
+              <span className="text-purple-300">{values.leaderEmail}</span> with
+              next steps.
+            </p>
+          </div>
+        </motion.div>
+      </PageShell>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 px-4 py-16 sm:px-6 relative">
+      <BackHome />
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 mx-auto max-w-2xl"
+      >
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Rocket className="w-7 h-7 text-white" />
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Register for VyapaarX
+          </h1>
+          <p className="text-gray-400 flex items-center justify-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-purple-300" />
+            E-Cell IPSA Pitching Competition
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 sm:p-8 shadow-2xl space-y-5"
+        >
+          <Field label="Startup / Team Name" error={errors.startupName}>
+            <input
+              className={fieldClass}
+              value={values.startupName}
+              onChange={(e) => set("startupName", e.target.value)}
+              placeholder="e.g. Nimbus Labs"
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <Field label="Team Leader's Full Name" error={errors.leaderName}>
+              <input
+                className={fieldClass}
+                value={values.leaderName}
+                onChange={(e) => set("leaderName", e.target.value)}
+              />
+            </Field>
+            <Field
+              label="Team Leader's Email Address"
+              error={errors.leaderEmail}
+            >
+              <input
+                type="email"
+                className={fieldClass}
+                value={values.leaderEmail}
+                onChange={(e) => set("leaderEmail", e.target.value)}
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <Field
+              label="Team Leader's Phone Number"
+              error={errors.leaderPhone}
+            >
+              <input
+                className={fieldClass}
+                value={values.leaderPhone}
+                onChange={(e) => set("leaderPhone", e.target.value)}
+              />
+            </Field>
+            <Field label="City & College Name" error={errors.cityCollege}>
+              <input
+                className={fieldClass}
+                value={values.cityCollege}
+                onChange={(e) => set("cityCollege", e.target.value)}
+              />
+            </Field>
+          </div>
+
+          <Field label="Number of Team Members" error={errors.teamSize}>
+            <select
+              className={fieldClass}
+              value={values.teamSize}
+              onChange={(e) => set("teamSize", e.target.value)}
+            >
+              <option value="" disabled className="text-black">
+                Select…
+              </option>
+              {TEAM_SIZE_OPTIONS.map((n) => (
+                <option key={n} value={n} className="text-black">
+                  {n}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field
+            label="Names of All Team Members"
+            error={errors.teamMembers}
+            hint="One per line or comma-separated"
+          >
+            <textarea
+              className={fieldClass}
+              rows={3}
+              value={values.teamMembers}
+              onChange={(e) => set("teamMembers", e.target.value)}
+            />
+          </Field>
+
+          <Field label="Startup Category" error={errors.category}>
+            <select
+              className={fieldClass}
+              value={values.category}
+              onChange={(e) => set("category", e.target.value)}
+            >
+              <option value="" disabled className="text-black">
+                Select…
+              </option>
+              {VYAPAR_CATEGORIES.map((c) => (
+                <option key={c} value={c} className="text-black">
+                  {c}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <AnimatePresence>
+            {values.category === "Others" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Field
+                  label="If 'Others', specify your startup category"
+                  error={errors.otherCategory}
+                >
+                  <input
+                    className={fieldClass}
+                    value={values.otherCategory}
+                    onChange={(e) => set("otherCategory", e.target.value)}
+                  />
+                </Field>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <Field
+            label="Brief Description of Your Startup Idea (max 200 words)"
+            error={errors.ideaDescription}
+            hint={`${wordCount(values.ideaDescription)}/200 words`}
+          >
+            <textarea
+              className={fieldClass}
+              rows={5}
+              value={values.ideaDescription}
+              onChange={(e) => set("ideaDescription", e.target.value)}
+            />
+          </Field>
+
+          <YesNoField
+            label="Have you participated in any pitch competition before?"
+            value={values.pitchedBefore}
+            onChange={(v) => set("pitchedBefore", v)}
           />
+
+          <YesNoField
+            label="Do you want pitch preparation guidance from mentors?"
+            value={values.wantsMentorship}
+            onChange={(v) => set("wantsMentorship", v)}
+          />
+
+          {submitError && (
+            <p className="text-sm text-red-400 text-center">{submitError}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-semibold text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {submitting && <Loader className="w-4 h-4 animate-spin" />}
+            {submitting ? "Submitting…" : "Submit Registration"}
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  error,
+  hint,
+  children,
+}: {
+  label: string;
+  error?: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className={labelClass}>{label}</label>
+      {children}
+      {error ? (
+        <p className="mt-1.5 text-xs text-red-400">{error}</p>
+      ) : hint ? (
+        <p className="mt-1.5 text-xs text-white/30">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function YesNoField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: "Yes" | "No";
+  onChange: (v: "Yes" | "No") => void;
+}) {
+  return (
+    <div>
+      <label className={labelClass}>{label}</label>
+      <div className="flex gap-3">
+        {(["Yes", "No"] as const).map((opt) => (
+          <button
+            type="button"
+            key={opt}
+            onClick={() => onChange(opt)}
+            className={`flex-1 rounded-xl py-2.5 text-sm font-medium border transition-colors ${
+              value === opt
+                ? "bg-purple-500/20 border-purple-400/60 text-white"
+                : "bg-white/5 border-white/15 text-white/60 hover:bg-white/[0.08]"
+            }`}
+          >
+            {opt}
+          </button>
         ))}
       </div>
     </div>
   );
+}
+
+/* ── Top-level: pick a screen based on live status ────────────────────── */
+const VypaarXPage: React.FC = () => {
+  const { status, loading } = useVyaparStatus();
+
+  if (loading) {
+    return (
+      <PageShell>
+        <Loader className="w-8 h-8 text-purple-400 animate-spin relative z-10" />
+      </PageShell>
+    );
+  }
+
+  if (status === "upcoming") return <RegistrationUpcoming />;
+  if (status === "ended") return <RegistrationEnded />;
+  return <RegistrationForm />;
 };
 
-export default RegistrationClosed;
+export default VypaarXPage;

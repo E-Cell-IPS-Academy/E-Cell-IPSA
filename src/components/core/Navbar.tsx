@@ -141,6 +141,9 @@ const Navbar: React.FC = () => {
               })}
 
               {/* CTA pill */}
+              {/*
+                "We're Hiring" CTA — commented out per request. Restore by
+                un-commenting this block (and removing the Vyapar block below).
               <motion.div
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
@@ -165,10 +168,38 @@ const Navbar: React.FC = () => {
                   We're Hiring
                 </Link>
               </motion.div>
+              */}
+              <motion.div
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+              >
+                <Link
+                  to="/register"
+                  style={{
+                    fontFamily: F.nav,
+                    fontSize: "0.78rem",
+                    fontWeight: 400,
+                    letterSpacing: "0.03em",
+                    color: "rgba(255,255,255,0.9)",
+                    background:
+                      "linear-gradient(135deg, rgba(139,92,246,0.8), rgba(59,130,246,0.8))",
+                    border: "1px solid rgba(167,139,250,0.25)",
+                    padding: "0.45rem 1.1rem",
+                    borderRadius: "999px",
+                    backdropFilter: "blur(8px)",
+                    display: "inline-block",
+                  }}
+                >
+                  Register for VyaparX
+                </Link>
+              </motion.div>
             </div>
 
             {/* Mobile CTA */}
             <div className="lg:hidden flex items-center gap-3">
+              {/*
+                "We're Hiring" CTA — commented out per request. Restore by
+                un-commenting this block (and removing the Vyapar block below).
               <motion.div
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
@@ -190,6 +221,30 @@ const Navbar: React.FC = () => {
                   }}
                 >
                   We're Hiring
+                </Link>
+              </motion.div>
+              */}
+              <motion.div
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+              >
+                <Link
+                  to="/register"
+                  style={{
+                    fontFamily: F.nav,
+                    fontSize: "0.7rem",
+                    fontWeight: 400,
+                    letterSpacing: "0.02em",
+                    color: "rgba(255,255,255,0.9)",
+                    background:
+                      "linear-gradient(135deg, rgba(139,92,246,0.8), rgba(59,130,246,0.8))",
+                    border: "1px solid rgba(167,139,250,0.2)",
+                    padding: "0.38rem 0.85rem",
+                    borderRadius: "999px",
+                    display: "inline-block",
+                  }}
+                >
+                  Register for VyaparX
                 </Link>
               </motion.div>
             </div>

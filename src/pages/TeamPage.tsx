@@ -902,9 +902,18 @@ const TeamPage: React.FC = () => {
   } | null>(null);
 
   // ── Fetch teamCategories + teamMembers via the team feature slice ────────────
-  const { data: categories, loading: categoriesLoading } = useTeamCategories();
-  const { data: members, loading: membersLoading } = useTeamMembers();
+  const {
+    data: categories,
+    loading: categoriesLoading,
+    error: categoriesError,
+  } = useTeamCategories();
+  const {
+    data: members,
+    loading: membersLoading,
+    error: membersError,
+  } = useTeamMembers();
   const loading = categoriesLoading || membersLoading;
+  const error = categoriesError || membersError;
 
   // ── Lookup helpers ──────────────────────────────────────────────────────────
   const getCategoryName = useCallback(
@@ -1219,6 +1228,20 @@ const TeamPage: React.FC = () => {
                 }}
               >
                 Loading team…
+              </p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-24">
+              <UserCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
+              <p
+                style={{
+                  fontFamily: F.body,
+                  fontWeight: 300,
+                  fontSize: "0.8rem",
+                  color: isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.32)",
+                }}
+              >
+                Error loading team: {error.message}
               </p>
             </div>
           ) : members.length === 0 ? (

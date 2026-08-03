@@ -11,6 +11,7 @@ import AdminHeroManagement from "../pages/admin/AdminHeroManagement";
 import AdminAboutManagement from "../pages/admin/AdminAboutManagement";
 import AdminContactManagement from "../pages/admin/AdminContactManagement";
 import AdminSiteSettings from "../pages/admin/AdminSiteSettings";
+import AdminVyaparComplete from "../pages/admin/AdminVyaparComplete";
 
 /**
  * Admin routes (rendered inside ProtectedRoute + AdminLayout).
@@ -63,6 +64,11 @@ export const adminRoutes: AdminRouteConfig[] = [
   {
     path: "/dashboard/contact",
     element: <AdminContactManagement />,
+    requiredPermission: "manage_content",
+  },
+  {
+    path: "/dashboard/vyapar",
+    element: <AdminVyaparComplete />,
     requiredPermission: "manage_content",
   },
   {

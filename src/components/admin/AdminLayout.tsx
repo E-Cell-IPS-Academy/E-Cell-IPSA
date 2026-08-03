@@ -11,6 +11,7 @@ import {
   Info,
   Phone,
   Wrench,
+  Rocket,
   LogOut,
   Menu,
   X,
@@ -98,6 +99,13 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     label: "Contact",
     icon: Phone,
     href: "/admin/dashboard/contact",
+    permission: "manage_content",
+  },
+  {
+    id: "vyapar",
+    label: "VyapaarX",
+    icon: Rocket,
+    href: "/admin/dashboard/vyapar",
     permission: "manage_content",
   },
   {
