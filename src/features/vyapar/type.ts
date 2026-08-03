@@ -1,6 +1,9 @@
 import type { Timestamp } from "firebase/firestore";
 import type { WithId } from "@/shared/hooks";
 
+/** Display name for the current edition — update here to rename it everywhere. */
+export const VYAPAR_EVENT_NAME = "VyapaarX 3.O";
+
 /** Controls what the public /register page shows. Set from the admin panel. */
 export type VyaparStatus = "upcoming" | "started" | "ended";
 
@@ -32,10 +35,25 @@ export const VYAPAR_CATEGORIES = [
 
 export type VyaparCategory = (typeof VYAPAR_CATEGORIES)[number];
 
-/** Options for the "Number of Team Members" dropdown. */
-export const TEAM_SIZE_OPTIONS = ["1", "2", "3", "4", "5", "6+"] as const;
+/** College options for the registration form. Selecting "Other" reveals a free-text field. */
+export const COLLEGE_OPTIONS = ["IPS Academy Indore", "Other"] as const;
+
+/** Options for the "Number of Team Members" dropdown. Capped at 6. */
+export const TEAM_SIZE_OPTIONS = ["1", "2", "3", "4", "5", "6"] as const;
+
+export const GENDER_OPTIONS = ["Male", "Female", "Other"] as const;
 
 export type YesNo = "Yes" | "No";
+
+/** One additional team member (besides the leader): name + gender. */
+export interface TeamMemberEntry {
+  name: string;
+  gender: string;
+}
+
+export function emptyTeamMemberEntry(): TeamMemberEntry {
+  return { name: "", gender: "" };
+}
 
 /** A single registration submission for VyapaarX. */
 export interface VyaparRegistration extends WithId {
@@ -43,9 +61,10 @@ export interface VyaparRegistration extends WithId {
   leaderName: string;
   leaderEmail: string;
   leaderPhone: string;
-  cityCollege: string;
+  collegeName: string;
+  otherCollegeName?: string;
   teamSize: string;
-  teamMembers: string;
+  teamMembers: TeamMemberEntry[];
   category: string;
   otherCategory?: string;
   ideaDescription: string;
@@ -65,9 +84,10 @@ export const EMPTY_VYAPAR_REGISTRATION: VyaparRegistrationFormValues = {
   leaderName: "",
   leaderEmail: "",
   leaderPhone: "",
-  cityCollege: "",
+  collegeName: "",
+  otherCollegeName: "",
   teamSize: "",
-  teamMembers: "",
+  teamMembers: [],
   category: "",
   otherCategory: "",
   ideaDescription: "",

@@ -14,9 +14,16 @@ import {
   submitVyaparRegistration,
   EMPTY_VYAPAR_REGISTRATION,
   VYAPAR_CATEGORIES,
+  VYAPAR_EVENT_NAME,
   TEAM_SIZE_OPTIONS,
-} from "../features/vyapar";
-import type { VyaparRegistrationFormValues } from "../features/vyapar";
+  COLLEGE_OPTIONS,
+  GENDER_OPTIONS,
+  emptyTeamMemberEntry,
+} from "@/features/vyapar";
+import type {
+  VyaparRegistrationFormValues,
+  TeamMemberEntry,
+} from "@/features/vyapar";
 
 /* ── Shared field styling ─────────────────────────────────────────────── */
 const fieldClass =
@@ -71,12 +78,12 @@ function RegistrationUpcoming() {
             Registrations Opening Soon
           </h1>
           <p className="text-gray-400 mb-2">
-            VyapaarX — E-Cell IPSA Pitching Competition
+            {VYAPAR_EVENT_NAME} — E-Cell IPSA Pitching Competition
           </p>
           <p className="text-gray-300 leading-relaxed">
-            We're putting the finishing touches on this year's VyapaarX.
-            Registration hasn't opened yet — check back soon or follow our
-            socials for the announcement.
+            We're putting the finishing touches on this year's{" "}
+            {VYAPAR_EVENT_NAME}. Registration hasn't opened yet — check back
+            soon or follow our socials for the announcement.
           </p>
         </div>
       </motion.div>
@@ -102,14 +109,15 @@ function RegistrationEnded() {
             Registration Closed
           </h1>
           <p className="text-gray-400 mb-6">
-            VyapaarX — E-Cell IPSA Pitching Competition
+            {VYAPAR_EVENT_NAME} — E-Cell IPSA Pitching Competition
           </p>
           <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left">
             <h3 className="text-lg font-bold text-white mb-2">Thank you!</h3>
             <p className="text-gray-300 leading-relaxed">
-              Thank you for your interest in VyapaarX. The registration period
-              has ended. We received an overwhelming response and are excited to
-              see the innovation from our participants.
+              Thank you for your interest in {VYAPAR_EVENT_NAME}. The
+              registration period has ended. We received an overwhelming
+              response and are excited to see the innovation from our
+              participants.
             </p>
           </div>
         </div>
@@ -133,6 +141,24 @@ function RegistrationForm() {
     value: VyaparRegistrationFormValues[K]
   ) => setValues((v) => ({ ...v, [key]: value }));
 
+  const handleTeamSizeChange = (size: string) => {
+    const count = Number(size) || 0;
+    setValues((v) => {
+      const members = [...v.teamMembers];
+      while (members.length < count) members.push(emptyTeamMemberEntry());
+      members.length = count;
+      return { ...v, teamSize: size, teamMembers: members };
+    });
+  };
+
+  const setMember = (index: number, patch: Partial<TeamMemberEntry>) =>
+    setValues((v) => ({
+      ...v,
+      teamMembers: v.teamMembers.map((m, i) =>
+        i === index ? { ...m, ...patch } : m
+      ),
+    }));
+
   const validate = (): boolean => {
     const next: Record<string, string> = {};
     if (!values.startupName.trim()) next.startupName = "Required";
@@ -140,9 +166,14 @@ function RegistrationForm() {
     if (!/^\S+@\S+\.\S+$/.test(values.leaderEmail))
       next.leaderEmail = "Enter a valid email address";
     if (!values.leaderPhone.trim()) next.leaderPhone = "Required";
-    if (!values.cityCollege.trim()) next.cityCollege = "Required";
+    if (!values.collegeName) next.collegeName = "Required";
+    if (values.collegeName === "Other" && !values.otherCollegeName?.trim())
+      next.otherCollegeName = "Please specify your college name";
     if (!values.teamSize) next.teamSize = "Required";
-    if (!values.teamMembers.trim()) next.teamMembers = "Required";
+    values.teamMembers.forEach((m, i) => {
+      if (!m.name.trim()) next[`member-${i}-name`] = "Required";
+      if (!m.gender) next[`member-${i}-gender`] = "Required";
+    });
     if (!values.category) next.category = "Required";
     if (values.category === "Others" && !values.otherCategory?.trim())
       next.otherCategory = "Please specify your category";
@@ -189,8 +220,8 @@ function RegistrationForm() {
               You're registered!
             </h1>
             <p className="text-gray-300 leading-relaxed">
-              Thanks for registering <strong>{values.startupName}</strong> for
-              VyapaarX. We'll reach out to{" "}
+              Thanks for registering <strong>{values.startupName}</strong> for{" "}
+              {VYAPAR_EVENT_NAME}. We'll reach out to{" "}
               <span className="text-purple-300">{values.leaderEmail}</span> with
               next steps.
             </p>
@@ -214,7 +245,7 @@ function RegistrationForm() {
             <Rocket className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            Register for VyapaarX
+            Register for {VYAPAR_EVENT_NAME}
           </h1>
           <p className="text-gray-400 flex items-center justify-center gap-1.5">
             <Sparkles className="w-4 h-4 text-purple-300" />
@@ -267,20 +298,50 @@ function RegistrationForm() {
                 onChange={(e) => set("leaderPhone", e.target.value)}
               />
             </Field>
-            <Field label="City & College Name" error={errors.cityCollege}>
-              <input
+            <Field label="College Name" error={errors.collegeName}>
+              <select
                 className={fieldClass}
-                value={values.cityCollege}
-                onChange={(e) => set("cityCollege", e.target.value)}
-              />
+                value={values.collegeName}
+                onChange={(e) => set("collegeName", e.target.value)}
+              >
+                <option value="" disabled className="text-black">
+                  Select…
+                </option>
+                {COLLEGE_OPTIONS.map((c) => (
+                  <option key={c} value={c} className="text-black">
+                    {c}
+                  </option>
+                ))}
+              </select>
             </Field>
           </div>
+
+          <AnimatePresence>
+            {values.collegeName === "Other" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Field
+                  label="Specify your college name"
+                  error={errors.otherCollegeName}
+                >
+                  <input
+                    className={fieldClass}
+                    value={values.otherCollegeName}
+                    onChange={(e) => set("otherCollegeName", e.target.value)}
+                  />
+                </Field>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Field label="Number of Team Members" error={errors.teamSize}>
             <select
               className={fieldClass}
               value={values.teamSize}
-              onChange={(e) => set("teamSize", e.target.value)}
+              onChange={(e) => handleTeamSizeChange(e.target.value)}
             >
               <option value="" disabled className="text-black">
                 Select…
@@ -293,18 +354,56 @@ function RegistrationForm() {
             </select>
           </Field>
 
-          <Field
-            label="Names of All Team Members"
-            error={errors.teamMembers}
-            hint="One per line or comma-separated"
-          >
-            <textarea
-              className={fieldClass}
-              rows={3}
-              value={values.teamMembers}
-              onChange={(e) => set("teamMembers", e.target.value)}
-            />
-          </Field>
+          <AnimatePresence>
+            {values.teamMembers.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4"
+              >
+                <p className={labelClass}>Names of All Team Members</p>
+                {values.teamMembers.map((member, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/[0.03] border border-white/10 rounded-xl p-4"
+                  >
+                    <Field
+                      label={`Team Member ${i + 1} — Name`}
+                      error={errors[`member-${i}-name`]}
+                    >
+                      <input
+                        className={fieldClass}
+                        value={member.name}
+                        onChange={(e) => setMember(i, { name: e.target.value })}
+                      />
+                    </Field>
+                    <Field
+                      label={`Team Member ${i + 1} — Gender`}
+                      error={errors[`member-${i}-gender`]}
+                    >
+                      <select
+                        className={fieldClass}
+                        value={member.gender}
+                        onChange={(e) =>
+                          setMember(i, { gender: e.target.value })
+                        }
+                      >
+                        <option value="" disabled className="text-black">
+                          Select…
+                        </option>
+                        {GENDER_OPTIONS.map((g) => (
+                          <option key={g} value={g} className="text-black">
+                            {g}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Field label="Startup Category" error={errors.category}>
             <select

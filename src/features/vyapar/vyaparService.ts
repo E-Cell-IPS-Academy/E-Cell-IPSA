@@ -67,9 +67,9 @@ export function registrationsToCsv(regs: VyaparRegistration[]): string {
     "Team Leader's Full Name",
     "Team Leader's Email",
     "Team Leader's Phone",
-    "City & College",
+    "College",
     "Number of Team Members",
-    "Names of All Team Members",
+    "Team Member Names & Genders",
     "Startup Category",
     "Other Category",
     "Idea Description",
@@ -81,15 +81,23 @@ export function registrationsToCsv(regs: VyaparRegistration[]): string {
   const escape = (value: unknown): string =>
     `"${String(value ?? "").replace(/"/g, '""')}"`;
 
+  const formatCollege = (r: VyaparRegistration): string =>
+    r.collegeName === "Other" && r.otherCollegeName
+      ? r.otherCollegeName
+      : r.collegeName;
+
+  const formatMembers = (r: VyaparRegistration): string =>
+    (r.teamMembers ?? []).map((m) => `${m.name} (${m.gender})`).join("; ");
+
   const rows = regs.map((r) =>
     [
       r.startupName,
       r.leaderName,
       r.leaderEmail,
       r.leaderPhone,
-      r.cityCollege,
+      formatCollege(r),
       r.teamSize,
-      r.teamMembers,
+      formatMembers(r),
       r.category,
       r.otherCategory ?? "",
       r.ideaDescription,

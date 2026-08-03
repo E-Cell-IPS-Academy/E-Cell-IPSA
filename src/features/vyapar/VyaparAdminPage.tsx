@@ -21,7 +21,7 @@ import {
 import { useToast } from "@/shared/feedback";
 import { useVyaparAdmin } from "./hooks/useVyaparAdmin";
 import { downloadCsv, registrationsToCsv } from "./vyaparService";
-import { STATUS_LABEL, VYAPAR_STATUSES } from "./type";
+import { STATUS_LABEL, VYAPAR_EVENT_NAME, VYAPAR_STATUSES } from "./type";
 import type { VyaparRegistration, VyaparStatus } from "./type";
 
 export function VyaparAdminPage() {
@@ -98,7 +98,7 @@ export function VyaparAdminPage() {
   return (
     <div>
       <PageHeader
-        title="VyapaarX Registrations"
+        title={`${VYAPAR_EVENT_NAME} Registrations`}
         description="Control the registration page status and review submitted responses."
         actions={
           <Button
@@ -263,7 +263,14 @@ export function VyaparAdminPage() {
               <Detail label="Team Leader" value={selected.leaderName} />
               <Detail label="Email" value={selected.leaderEmail} />
               <Detail label="Phone" value={selected.leaderPhone} />
-              <Detail label="City & College" value={selected.cityCollege} />
+              <Detail
+                label="College"
+                value={
+                  selected.collegeName === "Other" && selected.otherCollegeName
+                    ? selected.otherCollegeName
+                    : selected.collegeName
+                }
+              />
               <Detail label="Team Size" value={selected.teamSize} />
               <Detail
                 label="Category"
@@ -279,11 +286,23 @@ export function VyaparAdminPage() {
                 value={selected.wantsMentorship}
               />
             </div>
-            <Detail
-              label="All team members"
-              value={selected.teamMembers}
-              block
-            />
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                Team Members ({selected.teamMembers.length})
+              </p>
+              {selected.teamMembers.length === 0 ? (
+                <p className="mt-0.5 text-slate-500">No additional members</p>
+              ) : (
+                <ul className="mt-1 space-y-1">
+                  {selected.teamMembers.map((m, i) => (
+                    <li key={i} className="text-slate-800">
+                      {i + 1}. {m.name}{" "}
+                      <span className="text-slate-400">({m.gender})</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <Detail
               label="Startup idea"
               value={selected.ideaDescription}
