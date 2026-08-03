@@ -1,5 +1,6 @@
 import { orderBy, where } from "firebase/firestore";
 import { useCollection } from "@/shared/hooks";
+import { sortByCreatedAtDesc } from "@/shared/lib/sort";
 import type { Album, GalleryImage } from "../types";
 
 /**
@@ -7,11 +8,11 @@ import type { Album, GalleryImage } from "../types";
  * `useCollection` hook so listener cleanup and error handling are centralized.
  */
 export function useGalleryImages() {
-  return useCollection<GalleryImage>(
+  const result = useCollection<GalleryImage>(
     "gallery_images",
-    where("status", "==", "public"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "public")
   );
+  return { ...result, data: sortByCreatedAtDesc(result.data) };
 }
 
 /** Live subscription to gallery albums, newest first. */

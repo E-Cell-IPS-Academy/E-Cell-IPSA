@@ -443,7 +443,7 @@ const Lightbox: React.FC<{
 const Gallery: React.FC = () => {
   useFonts();
   const { isDark } = useTheme();
-  const { data: images, loading } = useGalleryImages();
+  const { data: images, loading, error } = useGalleryImages();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -612,6 +612,33 @@ const Gallery: React.FC = () => {
                 }}
               >
                 Loading gallery…
+              </p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 bg-red-500/20 border border-red-500/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-red-400" />
+              </div>
+              <h3
+                style={{
+                  fontFamily: F.display,
+                  fontWeight: 400,
+                  fontSize: "1rem",
+                  color: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.82)",
+                  marginBottom: "0.4rem",
+                }}
+              >
+                Error Loading Gallery
+              </h3>
+              <p
+                style={{
+                  fontFamily: F.body,
+                  fontWeight: 300,
+                  fontSize: "0.78rem",
+                  color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.38)",
+                }}
+              >
+                {error.message}
               </p>
             </div>
           ) : filteredImages.length === 0 ? (

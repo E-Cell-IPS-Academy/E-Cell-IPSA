@@ -1,5 +1,6 @@
 import { orderBy, where } from "firebase/firestore";
 import { useCollection } from "@/shared/hooks";
+import { sortByOrderAsc } from "@/shared/lib/sort";
 import type { TeamCategory, TeamMember } from "../types";
 
 /**
@@ -8,11 +9,11 @@ import type { TeamCategory, TeamMember } from "../types";
  * centralized.
  */
 export function useTeamMembers() {
-  return useCollection<TeamMember>(
+  const result = useCollection<TeamMember>(
     "teamMembers",
-    where("isActive", "==", true),
-    orderBy("order", "asc")
+    where("isActive", "==", true)
   );
+  return { ...result, data: sortByOrderAsc(result.data) };
 }
 
 /** Live list of team categories, ordered by `order` ascending. */
