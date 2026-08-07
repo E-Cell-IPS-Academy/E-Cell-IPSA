@@ -1,7 +1,8 @@
 import type { Timestamp } from "firebase/firestore";
 import type { WithId } from "@/shared/hooks";
 
-/** Controls what the public /register page shows. Set from the admin panel. */
+export const VYAPAR_EVENT_NAME = "VyapaarX 3.O";
+
 export type VyaparStatus = "upcoming" | "started" | "ended";
 
 export const VYAPAR_STATUSES: VyaparStatus[] = ["upcoming", "started", "ended"];
@@ -19,7 +20,6 @@ export const STATUS_LABEL: Record<VyaparStatus, string> = {
   ended: "Ended",
 };
 
-/** Startup categories offered in the registration form. */
 export const VYAPAR_CATEGORIES = [
   "Fintech",
   "EdTech",
@@ -32,20 +32,34 @@ export const VYAPAR_CATEGORIES = [
 
 export type VyaparCategory = (typeof VYAPAR_CATEGORIES)[number];
 
-/** Options for the "Number of Team Members" dropdown. */
-export const TEAM_SIZE_OPTIONS = ["1", "2", "3", "4", "5", "6+"] as const;
+export const COLLEGE_OPTIONS = ["IPS Academy Indore", "Other"] as const;
+
+/** Total team members including leader – limited to 2-4 */
+export const TEAM_SIZE_OPTIONS = ["2", "3", "4"] as const;
+
+export const GENDER_OPTIONS = ["Male", "Female", "Other"] as const; // kept if needed elsewhere
 
 export type YesNo = "Yes" | "No";
 
-/** A single registration submission for VyapaarX. */
+/** One additional team member – name + email */
+export interface TeamMemberEntry {
+  name: string;
+  email: string;
+}
+
+export function emptyTeamMemberEntry(): TeamMemberEntry {
+  return { name: "", email: "" };
+}
+
 export interface VyaparRegistration extends WithId {
   startupName: string;
   leaderName: string;
   leaderEmail: string;
   leaderPhone: string;
-  cityCollege: string;
+  collegeName: string;
+  otherCollegeName?: string;
   teamSize: string;
-  teamMembers: string;
+  teamMembers: TeamMemberEntry[];
   category: string;
   otherCategory?: string;
   ideaDescription: string;
@@ -54,7 +68,6 @@ export interface VyaparRegistration extends WithId {
   createdAt?: Timestamp;
 }
 
-/** Shape the public form works with (no server-managed fields). */
 export type VyaparRegistrationFormValues = Omit<
   VyaparRegistration,
   "id" | "createdAt"
@@ -65,9 +78,10 @@ export const EMPTY_VYAPAR_REGISTRATION: VyaparRegistrationFormValues = {
   leaderName: "",
   leaderEmail: "",
   leaderPhone: "",
-  cityCollege: "",
+  collegeName: "",
+  otherCollegeName: "",
   teamSize: "",
-  teamMembers: "",
+  teamMembers: [],
   category: "",
   otherCategory: "",
   ideaDescription: "",

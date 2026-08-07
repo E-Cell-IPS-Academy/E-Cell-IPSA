@@ -190,7 +190,7 @@ const Navbar: React.FC = () => {
                     display: "inline-block",
                   }}
                 >
-                  Register for VyaparX
+                  Register for VyaparX 3.0
                 </Link>
               </motion.div>
             </div>
@@ -244,7 +244,7 @@ const Navbar: React.FC = () => {
                     display: "inline-block",
                   }}
                 >
-                  Register for VyaparX
+                  Register for VyaparX 3.0
                 </Link>
               </motion.div>
             </div>

@@ -11,6 +11,8 @@ import BlogDetail from "../pages/BlogDetail";
 import ContactPage from "../pages/ContactPage";
 import StartupOfWeek from "../pages/StartupOfWeek";
 import IgniteXRegistration from "../pages/IgniteX";
+import CertificateDownloadPage from "../pages/CertificateDownloadPage";
+import CertificateVerifyPage from "../pages/CertificateVerifyPage";
 
 // Program pages
 import IncubationPage from "../pages/IncubationPage";
@@ -44,6 +46,8 @@ export const publicRoutes: RouteConfig[] = [
   { path: "/contact", element: <ContactPage /> },
   { path: "/startup", element: <StartupOfWeek /> },
   { path: "/hiring", element: <IgniteXRegistration /> },
+  { path: "/certificate", element: <CertificateDownloadPage /> },
+  { path: "/verify", element: <CertificateVerifyPage /> },
 
   // Programs
   { path: "/incubation", element: <IncubationPage /> },

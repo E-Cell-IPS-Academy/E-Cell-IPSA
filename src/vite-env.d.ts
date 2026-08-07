@@ -17,6 +17,11 @@ interface ImportMetaEnv {
   // Admin login (NOTE: client-side check only — not real security; see .env.example)
   readonly VITE_ADMIN_USERNAME: string;
   readonly VITE_ADMIN_PASSWORD: string;
+
+  // Certificate mailer backend (see /certificate-mailer-backend). Optional —
+  // omit to use a same-origin /api/send-certificate-emails instead.
+  readonly VITE_CERT_MAILER_URL?: string;
+  readonly VITE_CERT_MAIL_API_KEY?: string;
 }
 
 interface ImportMeta {

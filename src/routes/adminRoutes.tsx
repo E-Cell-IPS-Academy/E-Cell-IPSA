@@ -12,6 +12,8 @@ import AdminAboutManagement from "../pages/admin/AdminAboutManagement";
 import AdminContactManagement from "../pages/admin/AdminContactManagement";
 import AdminSiteSettings from "../pages/admin/AdminSiteSettings";
 import AdminVyaparComplete from "../pages/admin/AdminVyaparComplete";
+import AdminCertEventsComplete from "../pages/admin/AdminCertEventsComplete";
+import AdminCertEventManageComplete from "../pages/admin/AdminCertEventManageComplete";
 
 /**
  * Admin routes (rendered inside ProtectedRoute + AdminLayout).
@@ -69,6 +71,16 @@ export const adminRoutes: AdminRouteConfig[] = [
   {
     path: "/dashboard/vyapar",
     element: <AdminVyaparComplete />,
+    requiredPermission: "manage_content",
+  },
+  {
+    path: "/dashboard/certificates",
+    element: <AdminCertEventsComplete />,
+    requiredPermission: "manage_content",
+  },
+  {
+    path: "/dashboard/certificates/:eventId",
+    element: <AdminCertEventManageComplete />,
     requiredPermission: "manage_content",
   },
   {

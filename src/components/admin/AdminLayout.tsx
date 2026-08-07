@@ -12,6 +12,7 @@ import {
   Phone,
   Wrench,
   Rocket,
+  Award,
   LogOut,
   Menu,
   X,
@@ -106,6 +107,13 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     label: "VyapaarX",
     icon: Rocket,
     href: "/admin/dashboard/vyapar",
+    permission: "manage_content",
+  },
+  {
+    id: "certificates",
+    label: "Certificates",
+    icon: Award,
+    href: "/admin/dashboard/certificates",
     permission: "manage_content",
   },
   {
