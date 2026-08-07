@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader, ShieldCheck, ShieldX, Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
-import { verifyCertificate } from "@/features/certificates";
+import {
+  verifyCertificate,
+  mergedRecipientName,
+} from "@/features/certificates";
 import type { Certificate } from "@/features/certificates";
 
 const fieldClass =
@@ -125,7 +128,7 @@ export default function CertificateVerifyPage() {
                   Valid Certificate
                 </p>
                 <div className="space-y-1 text-sm text-gray-300 text-left mx-auto max-w-xs">
-                  <Row label="Name" value={certificate.name} />
+                  <Row label="Name" value={mergedRecipientName(certificate)} />
                   <Row label="Event" value={certificate.eventName} />
                   <Row label="Issued" value={formatIssuedDate(certificate)} />
                   <Row

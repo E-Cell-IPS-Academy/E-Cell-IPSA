@@ -1,73 +1,73 @@
 import type { Timestamp } from "firebase/firestore";
 import type { WithId } from "@/shared/hooks";
 
-/** System fields are always auto-filled at PDF generation time — never CSV-mapped. */
-export const SYSTEM_FIELD_KEYS = [
-  "certificateId",
-  "eventName",
-  "issuedDate",
-] as const;
-export type SystemFieldKey = (typeof SYSTEM_FIELD_KEYS)[number];
-
-/** The one field every event ships with by default besides the system ones. */
-export const NAME_FIELD_KEY = "name" as const;
-
 export type TextAlign = "left" | "center" | "right";
 
-/** Where and how one field is drawn on the certificate template. */
+/** The built-in PDF fonts we expose — no font files to upload/embed, always available. */
+export const FONT_FAMILIES = [
+  { value: "helvetica", label: "Helvetica (Sans-serif)" },
+  { value: "times", label: "Times New Roman (Serif)" },
+  { value: "courier", label: "Courier (Monospace)" },
+] as const;
+
+export type FontFamily = (typeof FONT_FAMILIES)[number]["value"];
+
+/** A positioned, single-line field (used for the Certificate ID). */
 export interface CertFieldPlacement {
-  key: string; // "name" | "certificateId" | "eventName" | "issuedDate" | custom key
-  label: string;
   xPct: number; // 0–100, left offset as % of template width
   yPct: number; // 0–100, top offset as % of template height
   fontSize: number;
-  color: string; // hex, e.g. "#1a1a1a"
+  fontFamily: FontFamily;
+  color: string; // hex
   align: TextAlign;
   bold?: boolean;
-  /** Custom (non-system, non-name) fields can be removed; built-ins cannot. */
-  removable?: boolean;
 }
 
-export function defaultFieldPlacements(): CertFieldPlacement[] {
-  return [
-    {
-      key: NAME_FIELD_KEY,
-      label: "Recipient Name",
-      xPct: 50,
-      yPct: 45,
-      fontSize: 32,
-      color: "#1a1a1a",
-      align: "center",
-      bold: true,
-    },
-    {
-      key: "eventName",
-      label: "Event Name",
-      xPct: 50,
-      yPct: 55,
-      fontSize: 18,
-      color: "#333333",
-      align: "center",
-    },
-    {
-      key: "issuedDate",
-      label: "Issue Date",
-      xPct: 50,
-      yPct: 65,
-      fontSize: 14,
-      color: "#555555",
-      align: "center",
-    },
-    {
-      key: "certificateId",
-      label: "Certificate ID",
-      xPct: 50,
-      yPct: 92,
-      fontSize: 10,
-      color: "#777777",
-      align: "center",
-    },
-  ];
+/** A positioned, word-wrapped paragraph block (used for the certificate body). */
+export interface TextBlockPlacement extends CertFieldPlacement {
+  widthPct: number; // 0–100, wrap width as % of template width
+  lineHeightPct: number; // line spacing as % of template height
+}
+
+/** Token replaced with the recipient's salutation + name, e.g. "Mr. Rahul Sharma". */
+export const NAME_TOKEN = "{{NAME}}";
+/** Token replaced with the event's name, in both the certificate body and emails. */
+export const EVENT_TOKEN = "{{EVENT}}";
+
+export function defaultBodyTemplate(): string {
+  return `This is to certify that ${NAME_TOKEN}, from IPS Academy, Institute of Engineering & Science, Indore, has actively participated in the event organized by the department. We appreciate their enthusiasm, collaborative spirit, and valuable contribution to the success of the event.`;
+}
+
+export function defaultBodyPlacement(): TextBlockPlacement {
+  return {
+    xPct: 50,
+    yPct: 45,
+    widthPct: 70,
+    fontSize: 16,
+    fontFamily: "helvetica",
+    color: "#1a1a1a",
+    align: "center",
+    lineHeightPct: 5,
+  };
+}
+
+export function defaultCertificateIdPlacement(): CertFieldPlacement {
+  return {
+    xPct: 50,
+    yPct: 92,
+    fontSize: 10,
+    fontFamily: "helvetica",
+    color: "#777777",
+    align: "center",
+  };
+}
+
+export function defaultEmailSubject(): string {
+  return `Your certificate for ${EVENT_TOKEN} is ready`;
+}
+
+export function defaultEmailBody(): string {
+  return `Hi ${NAME_TOKEN},\n\nYour certificate for ${EVENT_TOKEN} has been issued. Use the details below to download it any time.`;
 }
 
 /** An event under which certificates are issued (one template shared by all). */
@@ -78,7 +78,13 @@ export interface CertEvent extends WithId {
   templateFormat: "png" | "jpg";
   templateWidth: number;
   templateHeight: number;
-  fields: CertFieldPlacement[];
+  /** Paragraph text with a {{NAME}} token — the only per-recipient merge field in the body. */
+  bodyTemplate: string;
+  bodyPlacement: TextBlockPlacement;
+  certificateIdPlacement: CertFieldPlacement;
+  /** Editable email subject/intro — supports {{NAME}} and {{EVENT}}. Sent as-is to the backend. */
+  emailSubject: string;
+  emailBody: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
@@ -96,7 +102,9 @@ export interface Certificate extends WithId {
   eventName: string;
   certificateId: string;
   name: string;
-  data: Record<string, string>;
+  salutation?: string;
+  email: string;
+  emailSentAt?: Timestamp;
   issuedAt?: Timestamp;
 }
 
@@ -104,4 +112,11 @@ export interface Certificate extends WithId {
 export interface CertificateLookupResult {
   certificate: Certificate;
   event: CertEvent;
+}
+
+/** Merges salutation + name the same way everywhere {{NAME}} is substituted. */
+export function mergedRecipientName(
+  cert: Pick<Certificate, "name" | "salutation">
+): string {
+  return cert.salutation ? `${cert.salutation} ${cert.name}` : cert.name;
 }

@@ -7,7 +7,8 @@ export {
   createCertEvent,
   updateCertEventDetails,
   updateCertEventTemplate,
-  updateCertEventFields,
+  updateCertEventBody,
+  updateCertEventIdPlacement,
   deleteCertEvent,
 } from "./certEventsService";
 export {
@@ -16,9 +17,11 @@ export {
   listCertificatesForEvent,
   deleteCertificate,
   deleteCertificatesForEvent,
+  markCertificateEmailed,
   lookupCertificateForDownload,
   verifyCertificate,
 } from "./certificatesService";
 export type { IssueCertificateRow } from "./certificatesService";
 export { generateCertificatePdf, downloadCertificatePdf } from "./pdfGenerator";
+export { pdfFileToPngFile } from "./pdfTemplateToImage";
 export * from "./types";

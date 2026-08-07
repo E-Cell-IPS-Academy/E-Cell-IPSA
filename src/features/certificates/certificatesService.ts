@@ -5,11 +5,12 @@ import {
   getDocs,
   query,
   serverTimestamp,
+  updateDoc,
   where,
   writeBatch,
 } from "firebase/firestore";
 import { db } from "@/firebase/config";
-import type { CertEvent, Certificate, CertificateLookupResult } from "./types";
+import type { CertEvent, Certificate } from "./types";
 import { getCertEvent } from "./certEventsService";
 
 const COLLECTION = "certificates";
@@ -31,36 +32,41 @@ export function generateCertificateId(eventName: string): string {
 
 export interface IssueCertificateRow {
   name: string;
-  data: Record<string, string>;
+  salutation?: string;
+  email: string;
 }
 
 /**
  * Bulk-issues certificates for one event. Only the mapped data + a freshly
  * generated unique ID are ever written — no PDF is created or stored here.
+ * Returns the created records (including their certificate IDs) so the
+ * caller can trigger notification emails.
  */
 export async function issueCertificates(
   event: Pick<CertEvent, "id" | "name">,
   rows: IssueCertificateRow[]
-): Promise<number> {
-  let issued = 0;
+): Promise<Certificate[]> {
+  const created: Certificate[] = [];
   for (let i = 0; i < rows.length; i += BATCH_LIMIT) {
     const batch = writeBatch(db);
     const chunk = rows.slice(i, i + BATCH_LIMIT);
     for (const row of chunk) {
       const ref = doc(collection(db, COLLECTION));
-      batch.set(ref, {
+      const certificateId = generateCertificateId(event.name);
+      const record = {
         eventId: event.id,
         eventName: event.name,
-        certificateId: generateCertificateId(event.name),
+        certificateId,
         name: row.name,
-        data: row.data,
-        issuedAt: serverTimestamp(),
-      });
+        salutation: row.salutation ?? "",
+        email: row.email,
+      };
+      batch.set(ref, { ...record, issuedAt: serverTimestamp() });
+      created.push({ id: ref.id, ...record });
     }
     await batch.commit();
-    issued += chunk.length;
   }
-  return issued;
+  return created;
 }
 
 /** Admin: every certificate issued for one event, newest first. */
@@ -99,6 +105,11 @@ export async function deleteCertificatesForEvent(
   }
 }
 
+/** Marks a certificate as emailed (best-effort bookkeeping, not a delivery guarantee). */
+export async function markCertificateEmailed(id: string): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, id), { emailSentAt: serverTimestamp() });
+}
+
 async function findCertificateByCode(
   certificateId: string
 ): Promise<Certificate | null> {
@@ -121,7 +132,7 @@ async function findCertificateByCode(
 export async function lookupCertificateForDownload(
   certificateId: string,
   name: string
-): Promise<CertificateLookupResult | null> {
+): Promise<{ certificate: Certificate; event: CertEvent } | null> {
   const certificate = await findCertificateByCode(certificateId);
   if (!certificate) return null;
   const nameMatches =

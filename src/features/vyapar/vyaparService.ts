@@ -21,7 +21,6 @@ const COLLECTION = "vyaparRegistrations";
 const SETTINGS_COLLECTION = "settings";
 const SETTINGS_DOC_ID = "vyapar";
 
-/** Data-access layer for VyapaarX registrations and status. Pure Firestore — no UI. */
 export async function submitVyaparRegistration(
   values: VyaparRegistrationFormValues
 ): Promise<void> {
@@ -31,7 +30,6 @@ export async function submitVyaparRegistration(
   });
 }
 
-/** Admin: every registration, newest first. Single orderBy — no composite index needed. */
 export async function listVyaparRegistrations(): Promise<VyaparRegistration[]> {
   const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
@@ -45,7 +43,6 @@ export async function deleteVyaparRegistration(id: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTION, id));
 }
 
-/** Current registration-page status. Defaults to "upcoming" if never set. */
 export async function getVyaparStatus(): Promise<VyaparStatus> {
   const snap = await getDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID));
   const status = snap.exists() ? (snap.data().status as VyaparStatus) : null;
@@ -60,7 +57,6 @@ export async function setVyaparStatus(status: VyaparStatus): Promise<void> {
   );
 }
 
-/** Build a downloadable CSV string from a list of registrations. */
 export function registrationsToCsv(regs: VyaparRegistration[]): string {
   const headers = [
     "Startup / Team Name",
@@ -69,7 +65,7 @@ export function registrationsToCsv(regs: VyaparRegistration[]): string {
     "Team Leader's Phone",
     "College",
     "Number of Team Members",
-    "Team Member Names & Genders",
+    "Team Member Names & Emails",
     "Startup Category",
     "Other Category",
     "Idea Description",
@@ -86,8 +82,9 @@ export function registrationsToCsv(regs: VyaparRegistration[]): string {
       ? r.otherCollegeName
       : r.collegeName;
 
+  // Updated to use email instead of gender
   const formatMembers = (r: VyaparRegistration): string =>
-    (r.teamMembers ?? []).map((m) => `${m.name} (${m.gender})`).join("; ");
+    (r.teamMembers ?? []).map((m) => `${m.name} (${m.email})`).join("; ");
 
   const rows = regs.map((r) =>
     [
@@ -112,7 +109,6 @@ export function registrationsToCsv(regs: VyaparRegistration[]): string {
   return [headers.map(escape).join(","), ...rows].join("\r\n");
 }
 
-/** Trigger a browser download of the given CSV string. */
 export function downloadCsv(csv: string, filename: string): void {
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);

@@ -16,6 +16,7 @@ import {
   lookupCertificateForDownload,
   generateCertificatePdf,
   downloadCertificatePdf,
+  mergedRecipientName,
 } from "@/features/certificates";
 import type { CertificateLookupResult } from "@/features/certificates";
 
@@ -90,7 +91,7 @@ export default function CertificateDownloadPage() {
   const detailsText = (r: CertificateLookupResult) =>
     [
       `🏆 ${r.event.name}`,
-      `Awarded to: ${r.certificate.name}`,
+      `Awarded to: ${mergedRecipientName(r.certificate)}`,
       `Certificate ID: ${r.certificate.certificateId}`,
       `Verify: ${verificationUrl(r.certificate.certificateId)}`,
     ].join("\n");
@@ -195,7 +196,7 @@ export default function CertificateDownloadPage() {
                 <ShieldCheck className="w-7 h-7 text-white" />
               </div>
               <h2 className="text-xl font-bold text-white">
-                {result.certificate.name}
+                {mergedRecipientName(result.certificate)}
               </h2>
               <p className="text-gray-400">{result.event.name}</p>
               <p className="mt-1 font-mono text-xs text-purple-300">

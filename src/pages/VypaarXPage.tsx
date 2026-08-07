@@ -17,7 +17,6 @@ import {
   VYAPAR_EVENT_NAME,
   TEAM_SIZE_OPTIONS,
   COLLEGE_OPTIONS,
-  GENDER_OPTIONS,
   emptyTeamMemberEntry,
 } from "@/features/vyapar";
 import type {
@@ -25,7 +24,11 @@ import type {
   TeamMemberEntry,
 } from "@/features/vyapar";
 
-/* ── Shared field styling ─────────────────────────────────────────────── */
+// ── BMC image from Cloudinary ─────────────────────────────────────────
+const BMC_IMAGE_URL =
+  "https://res.cloudinary.com/dszmnqzhk/image/upload/v1786110806/ikz7imtyzgkagwz3abjo.png";
+
+// ── Shared field styling ───────────────────────────────────────────────
 const fieldClass =
   "w-full rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-purple-400/60 focus:bg-white/[0.07]";
 const labelClass = "block text-sm font-medium text-white/80 mb-2";
@@ -34,7 +37,7 @@ function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
-/* ── Back link shown on every screen ─────────────────────────────────── */
+// ── Back link ──────────────────────────────────────────────────────────
 function BackHome() {
   return (
     <Link
@@ -126,7 +129,57 @@ function RegistrationEnded() {
   );
 }
 
-/* ── "Started" screen — the actual registration form ─────────────────── */
+/* ── BMC reminder with both image and text list ────────────────────── */
+const BMC_POINTS = [
+  "Key Partners",
+  "Key Activities",
+  "Value Proposition",
+  "Customer Relationships",
+  "Customer Segments",
+  "Key Resources",
+  "Channels",
+  "Cost Structure",
+  "Revenue Streams",
+];
+
+function BMCReminder() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm"
+    >
+      <h3 className="text-sm font-semibold uppercase tracking-wider text-purple-300">
+        📊 PPT Requirements
+      </h3>
+      <p className="mt-1 text-sm text-white/80">
+        Your pitch presentation <strong>must</strong> cover the following
+        Business Model Canvas points:
+      </p>
+
+      {/* Image */}
+      <div className="mt-3 overflow-hidden rounded-lg">
+        <img
+          src={BMC_IMAGE_URL}
+          alt="Business Model Canvas – PPT Requirements"
+          className="w-full object-contain"
+        />
+      </div>
+
+      {/* Text list */}
+      <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-white/70 sm:grid-cols-3">
+        {BMC_POINTS.map((point) => (
+          <li key={point} className="flex items-center gap-1.5">
+            <span className="text-purple-400">•</span> {point}
+          </li>
+        ))}
+      </ul>
+    </motion.div>
+  );
+}
+
+/* ── Registration form ───────────────────────────────────────────────── */
 function RegistrationForm() {
   const [values, setValues] = useState<VyaparRegistrationFormValues>(
     EMPTY_VYAPAR_REGISTRATION
@@ -141,12 +194,15 @@ function RegistrationForm() {
     value: VyaparRegistrationFormValues[K]
   ) => setValues((v) => ({ ...v, [key]: value }));
 
+  // ── Team size: total members = selected number; additional = total - 1 ──
   const handleTeamSizeChange = (size: string) => {
-    const count = Number(size) || 0;
+    const total = Number(size) || 0;
+    const additionalCount = Math.max(0, total - 1);
     setValues((v) => {
       const members = [...v.teamMembers];
-      while (members.length < count) members.push(emptyTeamMemberEntry());
-      members.length = count;
+      while (members.length < additionalCount)
+        members.push(emptyTeamMemberEntry());
+      members.length = additionalCount;
       return { ...v, teamSize: size, teamMembers: members };
     });
   };
@@ -170,9 +226,17 @@ function RegistrationForm() {
     if (values.collegeName === "Other" && !values.otherCollegeName?.trim())
       next.otherCollegeName = "Please specify your college name";
     if (!values.teamSize) next.teamSize = "Required";
+    else {
+      const total = Number(values.teamSize);
+      const expectedAdditional = total - 1;
+      if (values.teamMembers.length !== expectedAdditional) {
+        next.teamSize = `Please select a valid team size (${total} members total)`;
+      }
+    }
     values.teamMembers.forEach((m, i) => {
       if (!m.name.trim()) next[`member-${i}-name`] = "Required";
-      if (!m.gender) next[`member-${i}-gender`] = "Required";
+      if (!/^\S+@\S+\.\S+$/.test(m.email))
+        next[`member-${i}-email`] = "Enter a valid email address";
     });
     if (!values.category) next.category = "Required";
     if (values.category === "Others" && !values.otherCategory?.trim())
@@ -252,6 +316,9 @@ function RegistrationForm() {
             E-Cell IPSA Pitching Competition
           </p>
         </div>
+
+        {/* BMC reminder (image + list) */}
+        {/* <BMCReminder /> */}
 
         <form
           onSubmit={handleSubmit}
@@ -337,7 +404,10 @@ function RegistrationForm() {
             )}
           </AnimatePresence>
 
-          <Field label="Number of Team Members" error={errors.teamSize}>
+          <Field
+            label="Total Number of Team Members (including leader)"
+            error={errors.teamSize}
+          >
             <select
               className={fieldClass}
               value={values.teamSize}
@@ -362,7 +432,7 @@ function RegistrationForm() {
                 exit={{ opacity: 0, height: 0 }}
                 className="space-y-4"
               >
-                <p className={labelClass}>Names of All Team Members</p>
+                <p className={labelClass}>Names of Additional Team Members</p>
                 {values.teamMembers.map((member, i) => (
                   <div
                     key={i}
@@ -379,25 +449,18 @@ function RegistrationForm() {
                       />
                     </Field>
                     <Field
-                      label={`Team Member ${i + 1} — Gender`}
-                      error={errors[`member-${i}-gender`]}
+                      label={`Team Member ${i + 1} — Email`}
+                      error={errors[`member-${i}-email`]}
                     >
-                      <select
+                      <input
+                        type="email"
                         className={fieldClass}
-                        value={member.gender}
+                        value={member.email}
                         onChange={(e) =>
-                          setMember(i, { gender: e.target.value })
+                          setMember(i, { email: e.target.value })
                         }
-                      >
-                        <option value="" disabled className="text-black">
-                          Select…
-                        </option>
-                        {GENDER_OPTIONS.map((g) => (
-                          <option key={g} value={g} className="text-black">
-                            {g}
-                          </option>
-                        ))}
-                      </select>
+                        placeholder="member@example.com"
+                      />
                     </Field>
                   </div>
                 ))}
@@ -481,11 +544,13 @@ function RegistrationForm() {
             {submitting ? "Submitting…" : "Submit Registration"}
           </button>
         </form>
+        <BMCReminder />
       </motion.div>
     </div>
   );
 }
 
+/* ── Field and YesNoField components ─────────────────────────────────── */
 function Field({
   label,
   error,
@@ -542,7 +607,7 @@ function YesNoField({
   );
 }
 
-/* ── Top-level: pick a screen based on live status ────────────────────── */
+/* ── Top-level: pick screen based on status ─────────────────────────── */
 const VypaarXPage: React.FC = () => {
   const { status, loading } = useVyaparStatus();
 

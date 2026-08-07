@@ -293,11 +293,12 @@ export function VyaparAdminPage() {
               {selected.teamMembers.length === 0 ? (
                 <p className="mt-0.5 text-slate-500">No additional members</p>
               ) : (
+                // ── UPDATED: show email instead of gender ──
                 <ul className="mt-1 space-y-1">
                   {selected.teamMembers.map((m, i) => (
                     <li key={i} className="text-slate-800">
                       {i + 1}. {m.name}{" "}
-                      <span className="text-slate-400">({m.gender})</span>
+                      <span className="text-slate-400">({m.email})</span>
                     </li>
                   ))}
                 </ul>

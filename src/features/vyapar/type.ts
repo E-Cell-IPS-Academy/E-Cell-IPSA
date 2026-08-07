@@ -1,10 +1,8 @@
 import type { Timestamp } from "firebase/firestore";
 import type { WithId } from "@/shared/hooks";
 
-/** Display name for the current edition — update here to rename it everywhere. */
 export const VYAPAR_EVENT_NAME = "VyapaarX 3.O";
 
-/** Controls what the public /register page shows. Set from the admin panel. */
 export type VyaparStatus = "upcoming" | "started" | "ended";
 
 export const VYAPAR_STATUSES: VyaparStatus[] = ["upcoming", "started", "ended"];
@@ -22,7 +20,6 @@ export const STATUS_LABEL: Record<VyaparStatus, string> = {
   ended: "Ended",
 };
 
-/** Startup categories offered in the registration form. */
 export const VYAPAR_CATEGORIES = [
   "Fintech",
   "EdTech",
@@ -35,27 +32,25 @@ export const VYAPAR_CATEGORIES = [
 
 export type VyaparCategory = (typeof VYAPAR_CATEGORIES)[number];
 
-/** College options for the registration form. Selecting "Other" reveals a free-text field. */
 export const COLLEGE_OPTIONS = ["IPS Academy Indore", "Other"] as const;
 
-/** Options for the "Number of Team Members" dropdown. Capped at 6. */
-export const TEAM_SIZE_OPTIONS = ["1", "2", "3", "4", "5", "6"] as const;
+/** Total team members including leader – limited to 2-4 */
+export const TEAM_SIZE_OPTIONS = ["2", "3", "4"] as const;
 
-export const GENDER_OPTIONS = ["Male", "Female", "Other"] as const;
+export const GENDER_OPTIONS = ["Male", "Female", "Other"] as const; // kept if needed elsewhere
 
 export type YesNo = "Yes" | "No";
 
-/** One additional team member (besides the leader): name + gender. */
+/** One additional team member – name + email */
 export interface TeamMemberEntry {
   name: string;
-  gender: string;
+  email: string;
 }
 
 export function emptyTeamMemberEntry(): TeamMemberEntry {
-  return { name: "", gender: "" };
+  return { name: "", email: "" };
 }
 
-/** A single registration submission for VyapaarX. */
 export interface VyaparRegistration extends WithId {
   startupName: string;
   leaderName: string;
@@ -73,7 +68,6 @@ export interface VyaparRegistration extends WithId {
   createdAt?: Timestamp;
 }
 
-/** Shape the public form works with (no server-managed fields). */
 export type VyaparRegistrationFormValues = Omit<
   VyaparRegistration,
   "id" | "createdAt"

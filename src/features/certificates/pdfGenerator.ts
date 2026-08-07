@@ -1,6 +1,44 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import type { PDFFont } from "pdf-lib";
-import type { CertEvent, CertFieldPlacement, Certificate } from "./types";
+import type { PDFDocument as PDFDocumentType, PDFFont, PDFPage } from "pdf-lib";
+import type {
+  CertEvent,
+  CertFieldPlacement,
+  Certificate,
+  FontFamily,
+  TextBlockPlacement,
+} from "./types";
+import { NAME_TOKEN, mergedRecipientName } from "./types";
+
+const STANDARD_FONT_MAP: Record<
+  FontFamily,
+  { regular: StandardFonts; bold: StandardFonts }
+> = {
+  helvetica: {
+    regular: StandardFonts.Helvetica,
+    bold: StandardFonts.HelveticaBold,
+  },
+  times: {
+    regular: StandardFonts.TimesRoman,
+    bold: StandardFonts.TimesRomanBold,
+  },
+  courier: { regular: StandardFonts.Courier, bold: StandardFonts.CourierBold },
+};
+
+/** Embeds (and caches) the font for a given family + weight combination. */
+function makeFontResolver(pdfDoc: PDFDocumentType) {
+  const cache = new Map<string, PDFFont>();
+  return async (fontFamily: FontFamily, bold?: boolean): Promise<PDFFont> => {
+    const key = `${fontFamily}-${bold ? "bold" : "regular"}`;
+    const cached = cache.get(key);
+    if (cached) return cached;
+    const standardFont = bold
+      ? STANDARD_FONT_MAP[fontFamily].bold
+      : STANDARD_FONT_MAP[fontFamily].regular;
+    const font = await pdfDoc.embedFont(standardFont);
+    cache.set(key, font);
+    return font;
+  };
+}
 
 function hexToRgb01(hex: string): [number, number, number] {
   const clean = hex.replace("#", "");
@@ -13,46 +51,100 @@ function hexToRgb01(hex: string): [number, number, number] {
       : clean,
     16
   );
-  const r = ((bigint >> 16) & 255) / 255;
-  const g = ((bigint >> 8) & 255) / 255;
-  const b = (bigint & 255) / 255;
-  return [r, g, b];
+  return [
+    ((bigint >> 16) & 255) / 255,
+    ((bigint >> 8) & 255) / 255,
+    (bigint & 255) / 255,
+  ];
 }
 
-function formatIssuedDate(cert: Certificate): string {
-  const millis = cert.issuedAt?.toMillis?.();
-  const date = millis ? new Date(millis) : new Date();
-  return date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+/** Greedy word-wrap: splits text into lines no wider than maxWidth at fontSize. */
+function wrapText(
+  text: string,
+  font: PDFFont,
+  fontSize: number,
+  maxWidth: number
+): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (font.widthOfTextAtSize(candidate, fontSize) <= maxWidth || !current) {
+      current = candidate;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function drawSingleLineField(
+  page: PDFPage,
+  value: string,
+  field: CertFieldPlacement,
+  font: PDFFont,
+  pageWidth: number,
+  pageHeight: number
+): void {
+  if (!value) return;
+  const textWidth = font.widthOfTextAtSize(value, field.fontSize);
+  let x = (field.xPct / 100) * pageWidth;
+  if (field.align === "center") x -= textWidth / 2;
+  else if (field.align === "right") x -= textWidth;
+  const y = pageHeight - (field.yPct / 100) * pageHeight - field.fontSize;
+  const [r, g, b] = hexToRgb01(field.color);
+  page.drawText(value, {
+    x,
+    y,
+    size: field.fontSize,
+    font,
+    color: rgb(r, g, b),
   });
 }
 
-function resolveFieldValue(
-  field: CertFieldPlacement,
-  event: CertEvent,
-  cert: Certificate
-): string {
-  switch (field.key) {
-    case "name":
-      return cert.name;
-    case "certificateId":
-      return cert.certificateId;
-    case "eventName":
-      return cert.eventName || event.name;
-    case "issuedDate":
-      return formatIssuedDate(cert);
-    default:
-      return cert.data[field.key] ?? "";
-  }
+function drawWrappedBlock(
+  page: PDFPage,
+  text: string,
+  block: TextBlockPlacement,
+  font: PDFFont,
+  pageWidth: number,
+  pageHeight: number
+): void {
+  const maxWidth = (block.widthPct / 100) * pageWidth;
+  const lines = wrapText(text, font, block.fontSize, maxWidth);
+  const lineHeight = (block.lineHeightPct / 100) * pageHeight;
+  const [r, g, b] = hexToRgb01(block.color);
+
+  // Vertically center the block around yPct so it grows/shrinks evenly as text changes.
+  const totalHeight = lineHeight * (lines.length - 1);
+  const startYFromTop = (block.yPct / 100) * pageHeight - totalHeight / 2;
+
+  lines.forEach((line, i) => {
+    const lineWidth = font.widthOfTextAtSize(line, block.fontSize);
+    let x = (block.xPct / 100) * pageWidth;
+    if (block.align === "center") x -= lineWidth / 2;
+    else if (block.align === "right") x -= lineWidth;
+    const yFromTop = startYFromTop + i * lineHeight;
+    const y = pageHeight - yFromTop - block.fontSize;
+    page.drawText(line, {
+      x,
+      y,
+      size: block.fontSize,
+      font,
+      color: rgb(r, g, b),
+    });
+  });
 }
 
 /**
  * Renders one certificate PDF entirely in the browser: fetch the template
- * image, draw each configured field on top of it, return the raw bytes.
- * Nothing is uploaded or persisted anywhere — the caller decides what to do
- * with the bytes (trigger a download, in this app's case).
+ * image, merge {{NAME}} into the body paragraph and word-wrap it, draw the
+ * certificate ID, return the raw bytes. Nothing is uploaded or persisted
+ * anywhere — the caller decides what to do with the bytes.
  */
 export async function generateCertificatePdf(
   event: CertEvent,
@@ -74,30 +166,29 @@ export async function generateCertificatePdf(
   const page = pdfDoc.addPage([width, height]);
   page.drawImage(image, { x: 0, y: 0, width, height });
 
-  const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const resolveFont = makeFontResolver(pdfDoc);
+  const font = await resolveFont(
+    event.bodyPlacement.fontFamily,
+    event.bodyPlacement.bold
+  );
+  const idFont = await resolveFont(
+    event.certificateIdPlacement.fontFamily,
+    event.certificateIdPlacement.bold
+  );
 
-  for (const field of event.fields) {
-    const value = resolveFieldValue(field, event, cert);
-    if (!value) continue;
-
-    const font: PDFFont = field.bold ? boldFont : regularFont;
-    const fontSize = field.fontSize;
-    const textWidth = font.widthOfTextAtSize(value, fontSize);
-
-    let x = (field.xPct / 100) * width;
-    if (field.align === "center") x -= textWidth / 2;
-    else if (field.align === "right") x -= textWidth;
-
-    // Field yPct is measured from the top (matches the visual editor);
-    // pdf-lib's origin is bottom-left, so flip it and drop by ~fontSize to
-    // align the text baseline with where the label sits visually.
-    const yFromTop = (field.yPct / 100) * height;
-    const y = height - yFromTop - fontSize;
-
-    const [r, g, b] = hexToRgb01(field.color);
-    page.drawText(value, { x, y, size: fontSize, font, color: rgb(r, g, b) });
-  }
+  const bodyText = event.bodyTemplate.replaceAll(
+    NAME_TOKEN,
+    mergedRecipientName(cert)
+  );
+  drawWrappedBlock(page, bodyText, event.bodyPlacement, font, width, height);
+  drawSingleLineField(
+    page,
+    cert.certificateId,
+    event.certificateIdPlacement,
+    idFont,
+    width,
+    height
+  );
 
   return pdfDoc.save();
 }

@@ -2,23 +2,84 @@ import { useCallback, useEffect, useState } from "react";
 import {
   getCertEvent,
   updateCertEventDetails,
-  updateCertEventFields,
   updateCertEventTemplate,
+  updateCertEventBody,
+  updateCertEventIdPlacement,
+  updateCertEventEmailTemplate,
 } from "../certEventsService";
 import {
   deleteCertificate,
   issueCertificates,
   listCertificatesForEvent,
+  markCertificateEmailed,
 } from "../certificatesService";
+import { defaultEmailSubject, defaultEmailBody } from "../types";
 import type {
   CertEvent,
   CertEventFormValues,
   CertFieldPlacement,
   Certificate,
+  TextBlockPlacement,
 } from "../types";
 import type { IssueCertificateRow } from "../certificatesService";
 
-/** Owns everything the single-event manage page needs: event, fields, certificates. */
+interface SendEmailsResult {
+  sent: number;
+  failed: number;
+}
+
+/**
+ * Where the certificate-mailer backend lives. Defaults to a same-origin
+ * relative path (works if you deploy the backend into the same Vercel
+ * project as this site). Set VITE_CERT_MAILER_URL in your .env to point at
+ * a separately-hosted backend instead, e.g.:
+ *   VITE_CERT_MAILER_URL=https://your-mailer.vercel.app/api/send-certificate-emails
+ */
+const MAILER_URL =
+  import.meta.env.VITE_CERT_MAILER_URL || "/api/send-certificate-emails";
+
+/**
+ * Calls the small backend that sends each recipient their Full Name +
+ * Certificate ID + download link via nodemailer, using the admin-authored
+ * subject/body (with {{NAME}}/{{EVENT}} tokens the backend substitutes per
+ * recipient). This is the one part of the certificates feature that isn't
+ * pure client + Firestore — email sending has to happen server-side so SMTP
+ * credentials never reach the browser.
+ */
+async function sendCertificateEmails(
+  event: CertEvent,
+  certs: Certificate[]
+): Promise<SendEmailsResult> {
+  const origin = window.location.origin;
+  const adminKey = import.meta.env.VITE_CERT_MAIL_API_KEY;
+  const response = await fetch(MAILER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(adminKey ? { "x-admin-key": adminKey } : {}),
+    },
+    body: JSON.stringify({
+      eventName: event.name,
+      emailSubject: event.emailSubject || defaultEmailSubject(),
+      emailBody: event.emailBody || defaultEmailBody(),
+      origin,
+      downloadUrl: `${origin}/certificate`,
+      certificates: certs.map((c) => ({
+        id: c.id,
+        name: c.name,
+        salutation: c.salutation,
+        email: c.email,
+        certificateId: c.certificateId,
+      })),
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`Email service responded with ${response.status}`);
+  }
+  return response.json();
+}
+
+/** Owns everything the single-event manage page needs: event, layout, certificates. */
 export function useCertEventManager(eventId: string | undefined) {
   const [event, setEvent] = useState<CertEvent | null>(null);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -66,26 +127,53 @@ export function useCertEventManager(eventId: string | undefined) {
     [eventId, reload]
   );
 
-  const saveFields = useCallback(
-    async (fields: CertFieldPlacement[]) => {
+  const saveLayout = useCallback(
+    async (
+      bodyTemplate: string,
+      bodyPlacement: TextBlockPlacement,
+      certificateIdPlacement: CertFieldPlacement
+    ) => {
       if (!eventId) return;
-      await updateCertEventFields(eventId, fields);
+      await updateCertEventBody(eventId, bodyTemplate, bodyPlacement);
+      await updateCertEventIdPlacement(eventId, certificateIdPlacement);
+      await reload();
+    },
+    [eventId, reload]
+  );
+
+  const saveEmailTemplate = useCallback(
+    async (emailSubject: string, emailBody: string) => {
+      if (!eventId) return;
+      await updateCertEventEmailTemplate(eventId, emailSubject, emailBody);
       await reload();
     },
     [eventId, reload]
   );
 
   const importRows = useCallback(
-    async (rows: IssueCertificateRow[]) => {
-      if (!eventId || !event) return 0;
-      const count = await issueCertificates(
+    async (rows: IssueCertificateRow[]): Promise<Certificate[]> => {
+      if (!eventId || !event) return [];
+      const created = await issueCertificates(
         { id: eventId, name: event.name },
         rows
       );
       await reload();
-      return count;
+      return created;
     },
     [eventId, event, reload]
+  );
+
+  const sendEmails = useCallback(
+    async (certs: Certificate[]): Promise<SendEmailsResult> => {
+      if (!event) return { sent: 0, failed: certs.length };
+      const result = await sendCertificateEmails(event, certs);
+      await Promise.all(
+        certs.map((c) => markCertificateEmailed(c.id).catch(() => undefined))
+      );
+      await reload();
+      return result;
+    },
+    [event, reload]
   );
 
   const removeCertificate = useCallback(
@@ -103,8 +191,10 @@ export function useCertEventManager(eventId: string | undefined) {
     reload,
     saveDetails,
     saveTemplate,
-    saveFields,
+    saveLayout,
+    saveEmailTemplate,
     importRows,
+    sendEmails,
     removeCertificate,
   };
 }

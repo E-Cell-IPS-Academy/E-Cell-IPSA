@@ -1,26 +1,37 @@
 import { useRef, useState } from "react";
 import Papa from "papaparse";
-import { FileSpreadsheet, UploadCloud } from "lucide-react";
+import { FileSpreadsheet, Mail, UploadCloud } from "lucide-react";
 import { Button, Select } from "@/shared/ui";
 import { useToast } from "@/shared/feedback";
-import { SYSTEM_FIELD_KEYS } from "../types";
-import type { CertEvent } from "../types";
+import type { Certificate } from "../types";
 import type { IssueCertificateRow } from "../certificatesService";
 
 interface CsvImportPanelProps {
-  event: CertEvent;
-  onImport: (rows: IssueCertificateRow[]) => Promise<number | void>;
+  hasTemplate: boolean;
+  onImport: (rows: IssueCertificateRow[]) => Promise<Certificate[]>;
+  onSendEmails: (
+    certs: Certificate[]
+  ) => Promise<{ sent: number; failed: number }>;
 }
 
 const IGNORE = "__ignore__";
+const TARGETS = [
+  { value: "name", label: "Full Name" },
+  { value: "salutation", label: "Salutation (Mr./Ms.)" },
+  { value: "email", label: "Email" },
+];
 
 /**
- * Upload a CSV of attendees, map each column to a field on the event's
- * template (or ignore it), then bulk-issue certificates. Only the mapped
- * data + a generated ID are written to Firestore — the CSV file itself is
- * never uploaded anywhere, it's parsed entirely in the browser.
+ * Upload a CSV of Name / Salutation / Email, map columns, then bulk-issue
+ * certificates and optionally email each recipient their certificate ID +
+ * download link. The CSV itself is parsed entirely in the browser and never
+ * uploaded anywhere.
  */
-export function CsvImportPanel({ event, onImport }: CsvImportPanelProps) {
+export function CsvImportPanel({
+  hasTemplate,
+  onImport,
+  onSendEmails,
+}: CsvImportPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
@@ -28,11 +39,8 @@ export function CsvImportPanel({ event, onImport }: CsvImportPanelProps) {
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [importing, setImporting] = useState(false);
-
-  const mappableTargets = event.fields.filter(
-    (f) =>
-      !SYSTEM_FIELD_KEYS.includes(f.key as (typeof SYSTEM_FIELD_KEYS)[number])
-  );
+  const [emailing, setEmailing] = useState(false);
+  const [issued, setIssued] = useState<Certificate[] | null>(null);
 
   const handleFile = (file: File | undefined) => {
     if (!file) return;
@@ -43,51 +51,46 @@ export function CsvImportPanel({ event, onImport }: CsvImportPanelProps) {
         const parsedHeaders = results.meta.fields ?? [];
         setHeaders(parsedHeaders);
         setRows(results.data);
+        setIssued(null);
 
-        // Best-effort auto-map: match header text to a field's key or label.
         const auto: Record<string, string> = {};
         parsedHeaders.forEach((h) => {
           const norm = h.trim().toLowerCase();
-          const match = mappableTargets.find(
-            (f) =>
-              f.key.toLowerCase() === norm || f.label.toLowerCase() === norm
-          );
-          auto[h] = match?.key ?? IGNORE;
+          if (/^(full\s*)?name$/.test(norm)) auto[h] = "name";
+          else if (/salut|title|mr\/ms|prefix/.test(norm))
+            auto[h] = "salutation";
+          else if (/email/.test(norm)) auto[h] = "email";
+          else auto[h] = IGNORE;
         });
         setMapping(auto);
       },
-      error: (err) => {
-        toast.error(`Failed to parse CSV: ${err.message}`);
-      },
+      error: (err) => toast.error(`Failed to parse CSV: ${err.message}`),
     });
   };
 
-  const nameHeader = Object.entries(mapping).find(
-    ([, target]) => target === "name"
-  )?.[0];
+  const headerFor = (target: string) =>
+    Object.entries(mapping).find(([, t]) => t === target)?.[0];
 
   const handleIssue = async () => {
-    if (!nameHeader) {
-      toast.error('Map one column to "Recipient Name" before issuing.');
+    const nameHeader = headerFor("name");
+    const emailHeader = headerFor("email");
+    if (!nameHeader || !emailHeader) {
+      toast.error('Map one column to "Full Name" and one to "Email".');
       return;
     }
-    const issueRows: IssueCertificateRow[] = rows.map((row) => {
-      const data: Record<string, string> = {};
-      Object.entries(mapping).forEach(([header, target]) => {
-        if (target === IGNORE || target === "name") return;
-        data[target] = row[header] ?? "";
-      });
-      return { name: row[nameHeader] ?? "", data };
-    });
+    const salutationHeader = headerFor("salutation");
+
+    const issueRows: IssueCertificateRow[] = rows.map((row) => ({
+      name: row[nameHeader] ?? "",
+      salutation: salutationHeader ? (row[salutationHeader] ?? "") : "",
+      email: row[emailHeader] ?? "",
+    }));
 
     setImporting(true);
     try {
-      const count = await onImport(issueRows);
-      toast.success(`Issued ${count ?? issueRows.length} certificate(s)`);
-      setRows([]);
-      setHeaders([]);
-      setMapping({});
-      if (inputRef.current) inputRef.current.value = "";
+      const created = await onImport(issueRows);
+      setIssued(created);
+      toast.success(`Issued ${created.length} certificate(s)`);
     } catch {
       toast.error("Failed to issue certificates");
     } finally {
@@ -95,9 +98,28 @@ export function CsvImportPanel({ event, onImport }: CsvImportPanelProps) {
     }
   };
 
+  const handleSendEmails = async () => {
+    if (!issued || issued.length === 0) return;
+    setEmailing(true);
+    try {
+      const { sent, failed } = await onSendEmails(issued);
+      if (failed === 0) {
+        toast.success(`Emailed ${sent} recipient(s)`);
+      } else {
+        toast.error(`Emailed ${sent}, failed for ${failed}`);
+      }
+    } catch {
+      toast.error(
+        "Couldn't reach the email service. Check the backend is deployed and configured."
+      );
+    } finally {
+      setEmailing(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {!event.templateUrl && (
+      {!hasTemplate && (
         <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
           Upload a certificate template first — imported attendees can't be
           issued certificates without one.
@@ -114,7 +136,7 @@ export function CsvImportPanel({ event, onImport }: CsvImportPanelProps) {
         <span className="text-sm font-medium">
           {headers.length > 0
             ? `${rows.length} row(s) loaded — click to replace`
-            : "Click to choose a CSV file"}
+            : "Click to choose a CSV file (Name, Salutation, Email)"}
         </span>
       </div>
       <input
@@ -145,14 +167,11 @@ export function CsvImportPanel({ event, onImport }: CsvImportPanelProps) {
                   }
                 >
                   <option value={IGNORE}>Ignore this column</option>
-                  <option value="name">Recipient Name</option>
-                  {mappableTargets
-                    .filter((f) => f.key !== "name")
-                    .map((f) => (
-                      <option key={f.key} value={f.key}>
-                        {f.label}
-                      </option>
-                    ))}
+                  {TARGETS.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
                 </Select>
               </div>
             ))}
@@ -188,13 +207,25 @@ export function CsvImportPanel({ event, onImport }: CsvImportPanelProps) {
             )}
           </div>
 
-          <Button
-            onClick={handleIssue}
-            loading={importing}
-            disabled={!event.templateUrl}
-          >
-            Issue {rows.length} Certificate{rows.length === 1 ? "" : "s"}
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={handleIssue}
+              loading={importing}
+              disabled={!hasTemplate}
+            >
+              Issue {rows.length} Certificate{rows.length === 1 ? "" : "s"}
+            </Button>
+            {issued && issued.length > 0 && (
+              <Button
+                variant="outline"
+                leftIcon={<Mail className="h-4 w-4" />}
+                loading={emailing}
+                onClick={handleSendEmails}
+              >
+                Email {issued.length} Recipient{issued.length === 1 ? "" : "s"}
+              </Button>
+            )}
+          </div>
         </>
       )}
     </div>
