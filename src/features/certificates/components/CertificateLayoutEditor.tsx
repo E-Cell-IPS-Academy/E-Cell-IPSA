@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { Bold, GripVertical, Save } from "lucide-react";
 import { Button, Select, Textarea } from "@/shared/ui";

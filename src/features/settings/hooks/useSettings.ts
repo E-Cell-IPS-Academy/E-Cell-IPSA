@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { getSettings, saveSettings } from "../settingsService";
 import { EMPTY_SETTINGS } from "../types";

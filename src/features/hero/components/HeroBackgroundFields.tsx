@@ -1,3 +1,5 @@
+"use client";
+
 import { Image as ImageIcon, Palette, Video } from "lucide-react";
 import { Input } from "@/shared/ui";
 import { ImageUploader } from "@/components/admin/ImageUploader";

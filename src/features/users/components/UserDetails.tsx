@@ -1,3 +1,5 @@
+"use client";
+
 import { CheckCircle2, ExternalLink, Shield, Trash2, User } from "lucide-react";
 import { Badge, Button } from "@/shared/ui";
 import { UserStatusBadge, UserTypeBadge } from "./UserBadges";

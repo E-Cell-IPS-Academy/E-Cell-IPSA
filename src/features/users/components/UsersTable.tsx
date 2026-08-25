@@ -1,3 +1,5 @@
+"use client";
+
 import { CheckCircle2, Eye, Trash2, User } from "lucide-react";
 import {
   Badge,

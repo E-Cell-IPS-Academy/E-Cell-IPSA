@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { getAbout, saveAbout } from "../aboutService";
 import { EMPTY_ABOUT } from "../types";

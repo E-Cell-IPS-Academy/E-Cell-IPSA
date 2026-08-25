@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -21,7 +23,8 @@ import {
   Settings,
   Shield,
 } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
 import { cn } from "../../shared/lib/cn";
 import { ToastProvider } from "../../shared/feedback";
@@ -151,7 +154,7 @@ const NavLinks: React.FC<{
       return (
         <Link
           key={item.id}
-          to={item.href}
+          href={item.href}
           onClick={onNavigate}
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
@@ -184,8 +187,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { adminSession, logout, hasPermission } = useAdminAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname() ?? "";
+  const router = useRouter();
+  const navigate = router.push;
 
   const handleLogout = async () => {
     try {
@@ -196,7 +200,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     }
   };
 
-  useEffect(() => setMobileOpen(false), [location.pathname]);
+  useEffect(() => setMobileOpen(false), [pathname]);
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -221,7 +225,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <Brand />
           <NavLinks
             items={SIDEBAR_ITEMS}
-            pathname={location.pathname}
+            pathname={pathname}
             hasPermission={hasPermission}
           />
           <div className="border-t border-slate-200 p-3">
@@ -266,7 +270,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 </div>
                 <NavLinks
                   items={SIDEBAR_ITEMS}
-                  pathname={location.pathname}
+                  pathname={pathname}
                   hasPermission={hasPermission}
                   onNavigate={() => setMobileOpen(false)}
                 />
@@ -297,7 +301,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 </button>
                 <div>
                   <h1 className="text-lg font-semibold text-slate-900">
-                    {titleFromPath(location.pathname)}
+                    {titleFromPath(pathname)}
                   </h1>
                   <p className="hidden text-xs text-slate-500 md:block">
                     Manage your E-Cell content
@@ -338,7 +342,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Link
-                        to="/admin/dashboard/settings"
+                        href="/admin/dashboard/settings"
                         className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
                         onClick={() => setProfileOpen(false)}
                       >

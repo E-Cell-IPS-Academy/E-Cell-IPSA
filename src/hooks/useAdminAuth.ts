@@ -1,6 +1,8 @@
+"use client";
+
 // Create /src/hooks/useAdminAuth.ts
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import type { AdminSession } from "../types/admin";
 
 interface UseAdminAuthReturn {
@@ -14,7 +16,8 @@ interface UseAdminAuthReturn {
 export const useAdminAuth = (): UseAdminAuthReturn => {
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = router.push;
 
   useEffect(() => {
     const checkAuth = (): void => {

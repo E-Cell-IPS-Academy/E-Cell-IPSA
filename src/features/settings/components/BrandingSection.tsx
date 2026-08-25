@@ -1,3 +1,5 @@
+"use client";
+
 import { Type } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Input } from "@/shared/ui";
 import { ImageUploader } from "@/components/admin/ImageUploader";

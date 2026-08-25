@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Star } from "lucide-react";

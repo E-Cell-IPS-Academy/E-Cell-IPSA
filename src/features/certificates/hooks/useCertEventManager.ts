@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import {
   getCertEvent,
@@ -29,14 +31,14 @@ interface SendEmailsResult {
 }
 
 /**
- * Where the certificate-mailer backend lives. Defaults to a same-origin
- * relative path (works if you deploy the backend into the same Vercel
- * project as this site). Set VITE_CERT_MAILER_URL in your .env to point at
- * a separately-hosted backend instead, e.g.:
- *   VITE_CERT_MAILER_URL=https://your-mailer.vercel.app/api/send-certificate-emails
+ * Where the certificate-mailer route lives. Defaults to the same-origin
+ * Next.js Route Handler (src/app/api/send-certificate-emails/route.ts) —
+ * no separate backend to deploy. Only set NEXT_PUBLIC_CERT_MAILER_URL if
+ * you're calling a differently-hosted instance, e.g.:
+ *   NEXT_PUBLIC_CERT_MAILER_URL=https://your-other-deploy.vercel.app/api/send-certificate-emails
  */
 const MAILER_URL =
-  import.meta.env.VITE_CERT_MAILER_URL || "/api/send-certificate-emails";
+  process.env.NEXT_PUBLIC_CERT_MAILER_URL || "/api/send-certificate-emails";
 
 /**
  * Calls the small backend that sends each recipient their Full Name +
@@ -51,7 +53,7 @@ async function sendCertificateEmails(
   certs: Certificate[]
 ): Promise<SendEmailsResult> {
   const origin = window.location.origin;
-  const adminKey = import.meta.env.VITE_CERT_MAIL_API_KEY;
+  const adminKey = process.env.NEXT_PUBLIC_CERT_MAIL_API_KEY;
   const response = await fetch(MAILER_URL, {
     method: "POST",
     headers: {

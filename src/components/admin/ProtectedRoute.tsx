@@ -1,6 +1,9 @@
+"use client";
+
+import RedirectTo from "@/shared/ui/RedirectTo";
 // Create /src/components/admin/ProtectedRoute.tsx
 import React from "react";
-import { Navigate } from "react-router-dom";
+
 import { useAdminAuth } from "../../hooks/useAdminAuth";
 
 interface ProtectedRouteProps {
@@ -31,7 +34,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
+    return <RedirectTo to="/admin/login" />;
   }
 
   // Check specific permission if required

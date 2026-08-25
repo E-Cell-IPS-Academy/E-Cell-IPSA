@@ -1,3 +1,5 @@
+"use client";
+
 import { Calendar, Edit, Eye, MapPin, Trash2, Users } from "lucide-react";
 import { Button, Card } from "@/shared/ui";
 import { EventStatusBadge } from "./EventStatusBadge";

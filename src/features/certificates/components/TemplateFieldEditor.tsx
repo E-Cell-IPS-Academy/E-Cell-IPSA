@@ -1,3 +1,5 @@
+"use client";
+
 // import { useRef, useState } from "react";
 // import { Bold, GripVertical, Plus, Trash2 } from "lucide-react";
 // import { Button, Input, Select } from "@/shared/ui";

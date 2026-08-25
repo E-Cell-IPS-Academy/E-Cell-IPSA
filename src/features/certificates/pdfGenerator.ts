@@ -1,3 +1,5 @@
+"use client";
+
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { PDFDocument as PDFDocumentType, PDFFont, PDFPage } from "pdf-lib";
 import type {

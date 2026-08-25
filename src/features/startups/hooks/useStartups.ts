@@ -1,3 +1,5 @@
+"use client";
+
 import { where } from "firebase/firestore";
 import { useCollection } from "@/shared/hooks";
 import { sortByCreatedAtDesc } from "@/shared/lib/sort";

@@ -1,3 +1,5 @@
+"use client";
+
 import { Save } from "lucide-react";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button, Spinner } from "@/shared/ui";

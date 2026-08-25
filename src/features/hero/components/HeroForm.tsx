@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link as LinkIcon, Save } from "lucide-react";

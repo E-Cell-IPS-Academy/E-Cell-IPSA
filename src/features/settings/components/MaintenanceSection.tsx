@@ -1,3 +1,5 @@
+"use client";
+
 import { Shield, ToggleLeft, ToggleRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import type { SiteSettings } from "../types";

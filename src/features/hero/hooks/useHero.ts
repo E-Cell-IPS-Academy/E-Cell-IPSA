@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { getHero, saveHero } from "../heroService";
 import { EMPTY_HERO } from "../types";

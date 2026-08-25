@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { Award, FilePlus, Trash2, Users } from "lucide-react";
 import { PageHeader } from "@/components/admin/PageHeader";
 import {
@@ -19,7 +21,8 @@ import type { CertEvent, CertEventFormValues } from "./types";
 
 export function CertEventsAdminPage() {
   const { events, loading, create, remove } = useCertEvents();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = router.push;
   const toast = useToast();
 
   const [showCreate, setShowCreate] = useState(false);

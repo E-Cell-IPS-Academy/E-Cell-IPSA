@@ -1,3 +1,5 @@
+"use client";
+
 import { Calendar, Edit, Eye, FileText, Trash2, User } from "lucide-react";
 import { Button, Card } from "@/shared/ui";
 import { BlogStatusBadge } from "./BlogStatusBadge";

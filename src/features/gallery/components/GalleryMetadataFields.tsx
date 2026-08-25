@@ -1,3 +1,5 @@
+"use client";
+
 import { Input, Select, Textarea } from "@/shared/ui";
 import { GALLERY_CATEGORIES, GALLERY_STATUSES } from "../types";
 import type { Album, GalleryImageFormValues } from "../types";

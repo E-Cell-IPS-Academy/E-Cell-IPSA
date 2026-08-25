@@ -1,7 +1,9 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 interface SearchItem {
   title: string;
@@ -35,7 +37,8 @@ const GlobalSearch: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = router.push;
 
   const filtered = searchItems.filter(
     (item) =>

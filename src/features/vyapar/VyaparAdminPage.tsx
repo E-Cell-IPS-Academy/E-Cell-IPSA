@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import { Download, Eye, Search, Trash2, Users } from "lucide-react";
 import { PageHeader } from "@/components/admin/PageHeader";

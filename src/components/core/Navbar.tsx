@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Navbar — Font Architecture
  * ──────────────────────────────────────────────────────────────
@@ -13,7 +15,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Home, Calendar, Image, FileText, Phone, Users } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const GOOGLE_FONTS_URL =
   "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&family=Outfit:wght@300;400&display=swap";
@@ -38,7 +41,7 @@ const Navbar: React.FC = () => {
   useFonts();
 
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
-  const location = useLocation();
+  const pathname = usePathname() ?? "";
 
   useEffect(() => {
     const handleScroll = (): void => {
@@ -86,7 +89,7 @@ const Navbar: React.FC = () => {
               whileHover={{ scale: 1.04 }}
               transition={{ duration: 0.2 }}
             >
-              <Link to="/" className="flex items-center">
+              <Link href="/" className="flex items-center">
                 <img
                   src="/EcellLogo.png"
                   alt="E-Cell IPSA Logo"
@@ -98,11 +101,11 @@ const Navbar: React.FC = () => {
             {/* Desktop nav links */}
             <div className="hidden lg:flex items-center gap-8">
               {navItems.map((item) => {
-                const isActive = location.pathname === item.href;
+                const isActive = pathname === item.href;
                 return (
                   <motion.div key={item.name}>
                     <Link
-                      to={item.href}
+                      href={item.href}
                       style={{
                         fontFamily: F.nav,
                         fontSize: "0.8rem",
@@ -149,7 +152,7 @@ const Navbar: React.FC = () => {
                 whileTap={{ scale: 0.96 }}
               >
                 <Link
-                  to="/hiring"
+                  href="/hiring"
                   style={{
                     fontFamily: F.nav,
                     fontSize: "0.78rem",
@@ -174,7 +177,7 @@ const Navbar: React.FC = () => {
                 whileTap={{ scale: 0.96 }}
               >
                 <Link
-                  to="/register"
+                  href="/register"
                   style={{
                     fontFamily: F.nav,
                     fontSize: "0.78rem",
@@ -205,7 +208,7 @@ const Navbar: React.FC = () => {
                 whileTap={{ scale: 0.96 }}
               >
                 <Link
-                  to="/hiring"
+                  href="/hiring"
                   style={{
                     fontFamily: F.nav,
                     fontSize: "0.7rem",
@@ -229,7 +232,7 @@ const Navbar: React.FC = () => {
                 whileTap={{ scale: 0.96 }}
               >
                 <Link
-                  to="/register"
+                  href="/register"
                   style={{
                     fontFamily: F.nav,
                     fontSize: "0.7rem",
@@ -271,11 +274,11 @@ const Navbar: React.FC = () => {
           <div className="flex items-center justify-around py-2 px-2">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.href;
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.name}
-                  to={item.href}
+                  href={item.href}
                   className="flex flex-col items-center py-2 px-3 rounded-xl relative"
                   style={{ transition: "all 0.25s" }}
                 >

@@ -1,3 +1,5 @@
+"use client";
+
 import type { Timestamp } from "firebase/firestore";
 import type { WithId } from "@/shared/hooks";
 

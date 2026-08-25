@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * ParallaxShowcase — Font Architecture
  * ──────────────────────────────────────────────────────────────

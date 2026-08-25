@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import { Calendar, Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/admin/PageHeader";

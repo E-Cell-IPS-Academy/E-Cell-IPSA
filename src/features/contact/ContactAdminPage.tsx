@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import { Download, Inbox, Mail, Search } from "lucide-react";
 import { PageHeader } from "@/components/admin/PageHeader";

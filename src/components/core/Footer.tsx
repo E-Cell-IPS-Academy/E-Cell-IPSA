@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
@@ -11,7 +13,7 @@ import {
   Youtube,
   ArrowUp,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { db } from "../../firebase/config";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -401,7 +403,7 @@ const Footer = () => {
                     viewport={{ once: true }}
                   >
                     <Link
-                      to={link.href}
+                      href={link.href}
                       style={linkStyle}
                       onMouseEnter={(e) =>
                         (e.currentTarget.style.color = "rgba(167,139,250,0.8)")
@@ -467,7 +469,7 @@ const Footer = () => {
             {footerLinks.legal.map((link) => (
               <Link
                 key={link.name}
-                to={link.href}
+                href={link.href}
                 style={{
                   fontFamily: F.mono,
                   fontSize: "8px",

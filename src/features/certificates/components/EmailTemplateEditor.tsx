@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Save } from "lucide-react";
 import { Button, Card, Input, Textarea } from "@/shared/ui";

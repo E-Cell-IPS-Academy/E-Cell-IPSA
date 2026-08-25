@@ -1,3 +1,5 @@
+"use client";
+
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import {
   Button,

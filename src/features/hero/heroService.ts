@@ -1,3 +1,5 @@
+"use client";
+
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import { EMPTY_HERO } from "./types";

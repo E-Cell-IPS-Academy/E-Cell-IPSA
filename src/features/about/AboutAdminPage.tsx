@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Spinner } from "@/shared/ui";

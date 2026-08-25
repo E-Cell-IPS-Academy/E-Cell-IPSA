@@ -1,3 +1,5 @@
+"use client";
+
 // Create /src/services/authService.ts
 import {
   signInWithEmailAndPassword,

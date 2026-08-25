@@ -1,3 +1,5 @@
+"use client";
+
 import { MailOpen, Trash2 } from "lucide-react";
 import { Button, Table, TBody, TD, TH, THead, TR } from "@/shared/ui";
 import { SubmissionStatusBadge } from "./SubmissionStatusBadge";

@@ -1,3 +1,5 @@
+"use client";
+
 import { formatDate } from "./utils";
 import type { ContactSubmission } from "./types";
 

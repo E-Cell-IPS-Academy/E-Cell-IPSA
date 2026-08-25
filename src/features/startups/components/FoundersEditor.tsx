@@ -1,3 +1,5 @@
+"use client";
+
 import { Plus, Trash2 } from "lucide-react";
 import { Button, Input, Textarea } from "@/shared/ui";
 import type { Founder } from "../types";

@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useRouter, useParams } from "next/navigation";
 import {
   ArrowLeft,
   Award,
@@ -45,8 +47,9 @@ import type {
 type Tab = "template" | "email" | "import" | "certificates";
 
 export function CertEventManagePage() {
-  const { eventId } = useParams<{ eventId: string }>();
-  const navigate = useNavigate();
+  const eventId = useParams<{ eventId: string }>()?.eventId ?? "";
+  const router = useRouter();
+  const navigate = router.push;
   const toast = useToast();
   const { upload, uploading, progress } = useCloudinaryUpload();
 
