@@ -35,7 +35,7 @@ export function useCloudinaryUpload() {
     ): Promise<CloudinaryUploadResult> => {
       if (!CLOUD_NAME || !UPLOAD_PRESET) {
         throw new Error(
-          "Cloudinary is not configured. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET."
+          "Cloudinary is not configured. Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET."
         );
       }
 

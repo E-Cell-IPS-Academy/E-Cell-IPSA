@@ -15,10 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredPermission,
 }) => {
-  const { adminSession, isLoading, isAuthenticated, hasPermission } =
-    useAdminAuth();
-
-  console.log(adminSession);
+  const { isLoading, isAuthenticated, hasPermission } = useAdminAuth();
 
   // Show loading spinner while checking authentication
   if (isLoading) {

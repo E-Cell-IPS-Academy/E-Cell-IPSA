@@ -1,0 +1,25 @@
+{
+  "name": "E-Cell IPSA | Entrepreneurship Cell IPS Academy Indore",
+  "short_name": "E-Cell IPSA",
+  "description": "Premier Entrepreneurship Cell at IPS Academy Indore fostering innovation, startup incubation, mentorship, and funding opportunities.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    {
+      "src": "/EcellLogo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/EcellLogo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

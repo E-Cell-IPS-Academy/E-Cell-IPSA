@@ -74,7 +74,7 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
 
   const hasPermission = (permission: string): boolean => {
     if (!adminSession) return false;
-    return adminSession.permissions.includes(permission as any);
+    return adminSession.permissions.some((p) => p === permission);
   };
 
   const isAuthenticated = (): boolean => {

@@ -1,0 +1,23 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Obsolete Vite-era files — excluded from the Vercel build.
+#
+# These files remain on disk but are NOT imported anywhere in the live Next.js
+# app. They are leftovers from the Vite → Next.js migration and BREAK `next build`
+# if included in the deployment:
+#
+#   • src/pages/**  — Next.js treats a `src/pages` directory as the Pages Router
+#     and compiles every file into a route. These files still import the removed
+#     `react-router-dom` and use `import.meta.env`, so the build fails.
+#   • src/routes/{AppRoutes,publicRoutes,adminRoutes}.tsx — old react-router route
+#     tables that also import `react-router-dom`.
+#   • src/routes/types.ts — types used only by those dead route tables.
+#
+# RECOMMENDED: delete these from the repository (see the migration report). Once
+# deleted, every line below becomes a harmless no-op and this file can be removed.
+# The live App Router lives entirely under src/app/**, which is NOT ignored.
+# ─────────────────────────────────────────────────────────────────────────────
+src/pages
+src/routes/AppRoutes.tsx
+src/routes/publicRoutes.tsx
+src/routes/adminRoutes.tsx
+src/routes/types.ts
