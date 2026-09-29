@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -27,11 +27,19 @@ export function useCloudinaryUpload() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  // Several uploads can run in parallel (uploadMany); only clear the
+  // `uploading` flag once the LAST one settles.
+  const activeUploads = useRef(0);
 
   const upload = useCallback(
     async (
       file: File,
-      options?: { folder?: string; resourceType?: "image" | "video" | "auto" }
+      options?: {
+        folder?: string;
+        resourceType?: "image" | "video" | "auto";
+        /** Per-file progress (0–100), independent of the shared `progress`. */
+        onProgress?: (percent: number) => void;
+      }
     ): Promise<CloudinaryUploadResult> => {
       if (!CLOUD_NAME || !UPLOAD_PRESET) {
         throw new Error(
@@ -39,6 +47,7 @@ export function useCloudinaryUpload() {
         );
       }
 
+      activeUploads.current += 1;
       setUploading(true);
       setProgress(0);
       setError(null);
@@ -59,7 +68,9 @@ export function useCloudinaryUpload() {
             );
             xhr.upload.onprogress = (e) => {
               if (e.lengthComputable) {
-                setProgress(Math.round((e.loaded / e.total) * 100));
+                const pct = Math.round((e.loaded / e.total) * 100);
+                setProgress(pct);
+                options?.onProgress?.(pct);
               }
             };
             xhr.onload = () => {
@@ -76,7 +87,16 @@ export function useCloudinaryUpload() {
                   bytes: data.bytes,
                 });
               } else {
-                reject(new Error(`Upload failed (${xhr.status})`));
+                let detail = "";
+                try {
+                  detail = JSON.parse(xhr.responseText)?.error?.message ?? "";
+                } catch { }
+                console.error("Cloudinary upload failed", xhr.status, xhr.responseText);
+                reject(
+                  new Error(
+                    `Upload failed (${xhr.status})${detail ? `: ${detail}` : ""}`
+                  )
+                );
               }
             };
             xhr.onerror = () =>
@@ -90,7 +110,8 @@ export function useCloudinaryUpload() {
         setError(message);
         throw err;
       } finally {
-        setUploading(false);
+        activeUploads.current -= 1;
+        if (activeUploads.current <= 0) setUploading(false);
       }
     },
     []

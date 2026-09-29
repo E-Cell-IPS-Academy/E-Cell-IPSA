@@ -1,26 +1,30 @@
 "use client";
 
-import { Calendar, Edit, Eye, FileText, Trash2, User } from "lucide-react";
+import { Calendar, Edit, Eye, FileText, Globe, GlobeLock, Trash2, User } from "lucide-react";
 import { Button, Card } from "@/shared/ui";
 import { BlogStatusBadge } from "./BlogStatusBadge";
 import type { BlogPost } from "../types";
+import { optimizedUrl } from "../lib/imageUtils";
 
 interface BlogCardProps {
   blog: BlogPost;
   onView: (blog: BlogPost) => void;
   onEdit: (blog: BlogPost) => void;
+  /** Quick publish / unpublish from the list. */
+  onToggleStatus?: (blog: BlogPost) => void;
   onDelete: (blog: BlogPost) => void;
 }
 
 /** Single blog post tile for the admin grid. */
-export function BlogCard({ blog, onView, onEdit, onDelete }: BlogCardProps) {
+export function BlogCard({ blog, onView, onEdit, onToggleStatus, onDelete }: BlogCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-md">
       <div className="relative h-40 bg-slate-100">
         {blog.featuredImage ? (
           <img
-            src={blog.featuredImage}
-            alt={blog.title}
+            src={optimizedUrl(blog.featuredImage, 640)}
+            alt=""
+            loading="lazy"
             className="h-full w-full object-cover"
           />
         ) : (
@@ -88,7 +92,7 @@ export function BlogCard({ blog, onView, onEdit, onDelete }: BlogCardProps) {
           </div>
         )}
 
-        <div className="mt-4 flex items-center gap-1 border-t border-slate-100 pt-3">
+        <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-slate-100 pt-3">
           <Button
             variant="ghost"
             size="sm"
@@ -105,6 +109,16 @@ export function BlogCard({ blog, onView, onEdit, onDelete }: BlogCardProps) {
           >
             Edit
           </Button>
+          {onToggleStatus && (
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={blog.status === "published" ? <GlobeLock className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+              onClick={() => onToggleStatus(blog)}
+            >
+              {blog.status === "published" ? "Unpublish" : "Publish"}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

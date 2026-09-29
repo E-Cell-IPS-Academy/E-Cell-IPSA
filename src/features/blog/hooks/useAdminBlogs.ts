@@ -35,8 +35,9 @@ export function useAdminBlogs() {
 
   const create = useCallback(
     async (values: BlogFormValues) => {
-      await createBlog(values);
+      const id = await createBlog(values);
       await reload();
+      return id;
     },
     [reload]
   );

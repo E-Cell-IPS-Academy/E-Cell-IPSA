@@ -6,9 +6,15 @@ import { useCloudinaryUpload } from "../../shared/hooks/useCloudinaryUpload";
 import { Spinner } from "../../shared/ui/Spinner";
 import { cn } from "../../shared/lib/cn";
 
+export interface UploadedImageMeta {
+  width?: number;
+  height?: number;
+}
+
 interface ImageUploaderProps {
   value?: string;
-  onUploaded: (url: string, publicId: string) => void;
+  /** `meta` (natural size) is optional — existing callers can ignore it. */
+  onUploaded: (url: string, publicId: string, meta?: UploadedImageMeta) => void;
   onError?: (message: string) => void;
   folder?: string;
   label?: string;
@@ -39,7 +45,10 @@ export function ImageUploader({
     }
     try {
       const result = await upload(file, { folder, resourceType: "image" });
-      onUploaded(result.secureUrl, result.publicId);
+      onUploaded(result.secureUrl, result.publicId, {
+        width: result.width,
+        height: result.height,
+      });
     } catch (err) {
       onError?.(err instanceof Error ? err.message : "Upload failed");
     }

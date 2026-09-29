@@ -4,6 +4,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  increment,
   limit,
   orderBy,
   query,
@@ -15,6 +16,7 @@ import { db } from "@/firebase/config";
 import { sortByCreatedAtDesc } from "@/shared/lib/sort";
 import { calculateReadTime } from "./types";
 import type { BlogFormValues, BlogPost, BlogStats } from "./types";
+import { blocksToHtml, estimateReadTime } from "./lib/blocks";
 
 const COLLECTION = "blogs";
 
@@ -59,13 +61,53 @@ export async function listBlogs(): Promise<BlogPost[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as BlogPost[];
 }
 
-export async function createBlog(values: BlogFormValues): Promise<void> {
-  await addDoc(collection(db, COLLECTION), {
-    ...values,
-    readTime: calculateReadTime(values.content),
+/**
+ * Firestore rejects `undefined` field values. Deep-remove them from plain
+ * objects/arrays (Timestamps, FieldValues etc. are class instances and are
+ * left untouched).
+ */
+export function stripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((v) => stripUndefined(v)) as unknown as T;
+  }
+  if (value && typeof value === "object") {
+    const proto = Object.getPrototypeOf(value);
+    if (proto !== Object.prototype && proto !== null) return value;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) {
+      if (v !== undefined) out[k] = stripUndefined(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
+/**
+ * Fields derived from the article body. For block-based posts `content` is
+ * regenerated as HTML from `blocks` (so search, exports and older readers keep
+ * working) and `readTime` is estimated from words + images.
+ */
+function withDerivedFields(
+  values: Partial<BlogFormValues>
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...values };
+  if (values.blocks !== undefined) {
+    out.content = blocksToHtml(values.blocks);
+    out.readTime = estimateReadTime(values.blocks);
+  } else if (values.content !== undefined) {
+    out.readTime = calculateReadTime(values.content);
+  }
+  return stripUndefined(out);
+}
+
+/** Creates the post and resolves with its new document id. */
+export async function createBlog(values: BlogFormValues): Promise<string> {
+  const ref = await addDoc(collection(db, COLLECTION), {
+    ...withDerivedFields(values),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  return ref.id;
 }
 
 export async function updateBlog(
@@ -73,12 +115,37 @@ export async function updateBlog(
   values: Partial<BlogFormValues>
 ): Promise<void> {
   await updateDoc(doc(db, COLLECTION, id), {
-    ...values,
-    ...(values.content !== undefined
-      ? { readTime: calculateReadTime(values.content) }
-      : {}),
+    ...withDerivedFields(values),
     updatedAt: serverTimestamp(),
   });
+}
+
+/** True when another post already uses `slug` (posts are addressed by slug). */
+export async function isSlugTaken(
+  slug: string,
+  excludeId?: string
+): Promise<boolean> {
+  const q = query(collection(db, COLLECTION), where("slug", "==", slug));
+  const snap = await getDocs(q);
+  return snap.docs.some((d) => d.id !== excludeId);
+}
+
+/**
+ * Count one read of a published post (once per browser session). Best-effort:
+ * failures (e.g. Firestore rules disallowing public writes) are ignored so
+ * reading is never affected.
+ */
+export async function recordView(id: string): Promise<void> {
+  try {
+    const key = `blog_viewed_${id}`;
+    if (typeof sessionStorage !== "undefined") {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    }
+    await updateDoc(doc(db, COLLECTION, id), { viewCount: increment(1) });
+  } catch {
+    /* ignore */
+  }
 }
 
 export async function deleteBlog(id: string): Promise<void> {

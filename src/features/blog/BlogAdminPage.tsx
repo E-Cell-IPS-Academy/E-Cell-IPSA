@@ -16,31 +16,15 @@ import {
 import { useToast } from "@/shared/feedback";
 import { useAdminBlogs } from "./hooks/useAdminBlogs";
 import { BlogCard } from "./components/BlogCard";
-import { BlogForm } from "./components/BlogForm";
+import { BlogEditor } from "./components/editor/BlogEditor";
 import { BlogDetails } from "./components/BlogDetails";
-import { BLOG_STATUSES, EMPTY_BLOG } from "./types";
-import type { BlogFormValues, BlogPost } from "./types";
+import { BLOG_STATUSES } from "./types";
+import type { BlogPost } from "./types";
+import { validatePublish } from "./lib/validation";
+import { todayISO } from "./lib/format";
 
-type ModalMode = "create" | "edit" | "view" | null;
-
-const toFormValues = (b: BlogPost): BlogFormValues => ({
-  title: b.title,
-  slug: b.slug,
-  excerpt: b.excerpt,
-  content: b.content,
-  featuredImage: b.featuredImage ?? "",
-  featuredImagePublicId: b.featuredImagePublicId ?? "",
-  status: b.status,
-  category: b.category,
-  tags: b.tags ?? [],
-  author: b.author,
-  publishedDate: b.publishedDate ?? "",
-  readTime: b.readTime,
-  seoTitle: b.seoTitle ?? "",
-  seoDescription: b.seoDescription ?? "",
-  isFeature: b.isFeature,
-  viewCount: b.viewCount,
-});
+/** list = the grid of posts; editor = full-page block editor; view = details modal. */
+type Mode = "list" | "editor" | "view";
 
 const STAT_CARDS = [
   { key: "total", label: "Total" },
@@ -51,14 +35,13 @@ const STAT_CARDS = [
 ] as const;
 
 export function BlogAdminPage() {
-  const { blogs, loading, stats, create, update, remove } = useAdminBlogs();
+  const { blogs, loading, stats, create, update, remove, changeStatus } = useAdminBlogs();
   const toast = useToast();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [mode, setMode] = useState<ModalMode>(null);
+  const [mode, setMode] = useState<Mode>("list");
   const [selected, setSelected] = useState<BlogPost | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<BlogPost | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -74,28 +57,28 @@ export function BlogAdminPage() {
     });
   }, [blogs, search, statusFilter]);
 
-  const closeModal = () => {
-    setMode(null);
+  const backToList = () => {
+    setMode("list");
     setSelected(null);
   };
 
-  const handleSubmit = async (values: BlogFormValues) => {
-    setSubmitting(true);
+  /** Publish / unpublish straight from the list (publishing re-checks the required fields). */
+  const toggleStatus = async (blog: BlogPost) => {
     try {
-      if (mode === "create") {
-        await create(values);
-        toast.success("Blog post created");
-      } else if (mode === "edit" && selected) {
-        await update(selected.id, values);
-        toast.success("Blog post updated");
+      if (blog.status === "published") {
+        await changeStatus(blog.id, "draft");
+        toast.success("Story unpublished");
+        return;
       }
-      closeModal();
+      const problems = validatePublish(blog);
+      if (Object.keys(problems).length) {
+        toast.error(`Open the editor to finish this story first: ${Object.values(problems).join(" ")}`);
+        return;
+      }
+      await update(blog.id, { status: "published", publishedDate: blog.publishedDate || todayISO() });
+      toast.success("Story published");
     } catch {
-      toast.error(
-        `Failed to ${mode === "create" ? "create" : "update"} blog post`
-      );
-    } finally {
-      setSubmitting(false);
+      toast.error("Could not change the story status");
     }
   };
 
@@ -113,6 +96,13 @@ export function BlogAdminPage() {
     }
   };
 
+  if (mode === "editor") {
+    return (
+      // key: opening a different post (or "new") always starts from a clean editor
+      <BlogEditor key={selected?.id ?? "new"} post={selected} onClose={backToList} create={create} update={update} />
+    );
+  }
+
   return (
     <div>
       <PageHeader
@@ -123,7 +113,7 @@ export function BlogAdminPage() {
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => {
               setSelected(null);
-              setMode("create");
+              setMode("editor");
             }}
           >
             Create post
@@ -182,7 +172,7 @@ export function BlogAdminPage() {
               leftIcon={<Plus className="h-4 w-4" />}
               onClick={() => {
                 setSelected(null);
-                setMode("create");
+                setMode("editor");
               }}
             >
               Create post
@@ -201,8 +191,9 @@ export function BlogAdminPage() {
               }}
               onEdit={(b) => {
                 setSelected(b);
-                setMode("edit");
+                setMode("editor");
               }}
+              onToggleStatus={toggleStatus}
               onDelete={setPendingDelete}
             />
           ))}
@@ -210,24 +201,8 @@ export function BlogAdminPage() {
       )}
 
       <Modal
-        open={mode === "create" || mode === "edit"}
-        onClose={closeModal}
-        size="xl"
-        title={mode === "edit" ? "Edit blog post" : "Create blog post"}
-      >
-        <BlogForm
-          initialValues={selected ? toFormValues(selected) : EMPTY_BLOG}
-          submitLabel={mode === "edit" ? "Update post" : "Create post"}
-          submitting={submitting}
-          onSubmit={handleSubmit}
-          onCancel={closeModal}
-          onError={(message) => toast.error(message)}
-        />
-      </Modal>
-
-      <Modal
         open={mode === "view"}
-        onClose={closeModal}
+        onClose={backToList}
         size="lg"
         title={selected?.title ?? "Blog post details"}
       >

@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import { Badge } from "@/shared/ui";
+import { sanitizeHtml } from "../lib/sanitize";
 import { BlogStatusBadge } from "./BlogStatusBadge";
 import type { BlogPost } from "../types";
 
@@ -15,6 +17,8 @@ function Field({ label, value }: { label: string; value: string }) {
 
 /** Read-only details view for a blog post (shown in the modal). */
 export function BlogDetails({ blog }: { blog: BlogPost }) {
+  // Content is HTML (regenerated from blocks, or legacy) — always sanitize before injecting.
+  const safeContent = useMemo(() => sanitizeHtml(blog.content), [blog.content]);
   return (
     <div className="space-y-6">
       {blog.featuredImage && (
@@ -74,7 +78,7 @@ export function BlogDetails({ blog }: { blog: BlogPost }) {
         </p>
         <div
           className="prose prose-sm max-w-none rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700"
-          dangerouslySetInnerHTML={{ __html: blog.content }}
+          dangerouslySetInnerHTML={{ __html: safeContent }}
         />
       </div>
     </div>
