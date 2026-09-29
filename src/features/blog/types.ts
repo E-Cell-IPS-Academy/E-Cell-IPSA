@@ -92,6 +92,12 @@ export interface VideoBlock extends BlockBase {
   caption?: string;
 }
 
+/** Raw HTML/embed snippet. Sanitized (allow-list) when shown to readers. */
+export interface HtmlBlock extends BlockBase {
+  type: "html";
+  html: string;
+}
+
 export type ContentBlock =
   | HeadingBlock
   | ParagraphBlock
@@ -100,7 +106,8 @@ export type ContentBlock =
   | QuoteBlock
   | ListBlock
   | DividerBlock
-  | VideoBlock;
+  | VideoBlock
+  | HtmlBlock;
 
 export type BlockType = ContentBlock["type"];
 

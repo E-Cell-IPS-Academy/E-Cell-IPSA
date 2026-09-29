@@ -2,7 +2,7 @@
 
 import type { ContentBlock } from "../../../types";
 import { GalleryEditor, ImageBlockEditor } from "./ImageBlocks";
-import { DividerEditor, VideoEditor } from "./MiscBlocks";
+import { DividerEditor, HtmlEditor, VideoEditor } from "./MiscBlocks";
 import { HeadingEditor, ListEditor, ParagraphEditor, QuoteEditor } from "./TextBlocks";
 
 interface BlockEditorProps {
@@ -28,6 +28,8 @@ export function BlockEditor({ block, onChange, onInsertParagraphAfter }: BlockEd
       return <ListEditor block={block} onChange={onChange} />;
     case "video":
       return <VideoEditor block={block} onChange={onChange} />;
+    case "html":
+      return <HtmlEditor block={block} onChange={onChange} />;
     case "divider":
       return <DividerEditor />;
   }

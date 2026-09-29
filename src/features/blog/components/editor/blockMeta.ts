@@ -1,4 +1,5 @@
 import {
+  Code,
   Heading2,
   Images,
   Image as ImageIcon,
@@ -46,6 +47,7 @@ export const BLOCK_OPTIONS: BlockOption[] = [
   },
   { key: "divider", label: "Divider", hint: "Section break", icon: Minus, create: () => createBlock("divider") },
   { key: "video", label: "Video", hint: "YouTube · Vimeo", icon: Video, create: () => createBlock("video") },
+  { key: "html", label: "HTML", hint: "Custom HTML / embed", icon: Code, create: () => createBlock("html") },
 ];
 
 export const BLOCK_LABEL: Record<BlockType, string> = {
@@ -57,6 +59,7 @@ export const BLOCK_LABEL: Record<BlockType, string> = {
   list: "List",
   divider: "Divider",
   video: "Video",
+  html: "HTML",
 };
 
 export const BLOCK_ICON: Record<BlockType, LucideIcon> = {
@@ -68,4 +71,5 @@ export const BLOCK_ICON: Record<BlockType, LucideIcon> = {
   list: List,
   divider: Minus,
   video: Video,
+  html: Code,
 };

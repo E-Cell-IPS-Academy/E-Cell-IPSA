@@ -120,7 +120,7 @@ export function htmlToBlocks(html: string): ContentBlock[] {
 /* -------------------------------------------------------------------------- */
 
 const KNOWN_TYPES = new Set([
-  "heading", "paragraph", "image", "gallery", "quote", "list", "divider", "video",
+  "heading", "paragraph", "image", "gallery", "quote", "list", "divider", "video", "html",
 ]);
 
 const asImage = (raw: unknown): BlogImage => ({

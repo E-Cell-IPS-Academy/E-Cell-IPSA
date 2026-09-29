@@ -4,6 +4,7 @@ import { parseVideoUrl } from "../../lib/video";
 import { categorySlug } from "../../lib/format";
 import { Inline } from "./Inline";
 import { ArticleImage } from "./ArticleImage";
+import { sanitizeHtml } from "../../lib/sanitize";
 
 export type OpenLightbox = (images: BlogImage[], index: number) => void;
 
@@ -170,6 +171,10 @@ export function BlockRenderer({
         );
       case "video":
         return <Video key={b.id} url={b.url} caption={b.caption} />;
+      case "html": {
+        if (!b.html.trim()) return null;
+        return <div key={b.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(b.html) }} />;
+      }
     }
   });
 

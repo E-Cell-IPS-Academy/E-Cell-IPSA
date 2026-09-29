@@ -44,6 +44,8 @@ export function createBlock(type: BlockType): ContentBlock {
       return { id, type };
     case "video":
       return { id, type, url: "", caption: "" };
+    case "html":
+      return { id, type, html: "" };
   }
 }
 
@@ -103,6 +105,8 @@ export function isBlockEmpty(block: ContentBlock): boolean {
       return block.items.every((i) => i.trim() === "");
     case "video":
       return block.url.trim() === "";
+    case "html":
+      return block.html.trim() === "";
     case "divider":
       return false;
   }
@@ -156,6 +160,8 @@ export function blocksToPlainText(blocks: ContentBlock[]): string {
           return b.caption ?? "";
         case "divider":
           return "";
+        case "html":
+          return b.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
       }
     })
     .filter(Boolean)
@@ -207,14 +213,16 @@ export function blocksToHtml(blocks: ContentBlock[]): string {
         }
         case "divider":
           return "<hr />";
+        case "html":
+          return b.html;
         case "video": {
           const v = parseVideoUrl(b.url);
           const href = v.kind === "iframe" ? v.embedUrl : v.kind === "file" ? v.src : v.kind === "link" ? v.href : "";
           return href
             ? figure(
-                `<p><a href="${escapeHtml(href)}" rel="noopener noreferrer">${escapeHtml(href)}</a></p>`,
-                b.caption
-              )
+              `<p><a href="${escapeHtml(href)}" rel="noopener noreferrer">${escapeHtml(href)}</a></p>`,
+              b.caption
+            )
             : "";
         }
       }

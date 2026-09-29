@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import type { VideoBlock } from "../../../types";
+import type { HtmlBlock, VideoBlock } from "../../../types";
 import { parseVideoUrl } from "../../../lib/video";
 import { fieldClass } from "../controls";
 
@@ -52,5 +52,28 @@ export function DividerEditor() {
     <p aria-hidden="true" className="select-none py-1 text-center text-lg tracking-[0.7em] text-slate-300">
       * * *
     </p>
+  );
+}
+
+export function HtmlEditor({ block, onChange }: { block: HtmlBlock; onChange: (b: HtmlBlock) => void }) {
+  return (
+    <div className="space-y-2">
+      <label htmlFor={`html-${block.id}`} className="block text-xs font-medium text-slate-600">
+        HTML
+      </label>
+      <textarea
+        id={`html-${block.id}`}
+        value={block.html}
+        onChange={(e) => onChange({ ...block, html: e.target.value })}
+        rows={8}
+        spellCheck={false}
+        placeholder={"<p>Paste your HTML here…</p>"}
+        className={`${fieldClass} font-mono text-xs leading-relaxed`}
+      />
+      <p className="text-xs text-slate-500">
+        For safety, readers see a cleaned version: scripts, inline styles and event handlers are removed.
+        Headings, paragraphs, lists, links, images, tables, code and YouTube/Vimeo iframes are kept.
+      </p>
+    </div>
   );
 }
