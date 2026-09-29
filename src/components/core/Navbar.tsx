@@ -177,7 +177,7 @@ const Navbar: React.FC = () => {
                 whileTap={{ scale: 0.96 }}
               >
                 <Link
-                  href="/register"
+                  href="/ignitex"
                   style={{
                     fontFamily: F.nav,
                     fontSize: "0.78rem",
@@ -193,7 +193,7 @@ const Navbar: React.FC = () => {
                     display: "inline-block",
                   }}
                 >
-                  Register for VyaparX 3.0
+                  IgniteX 3.O Registration
                 </Link>
               </motion.div>
             </div>
@@ -232,7 +232,7 @@ const Navbar: React.FC = () => {
                 whileTap={{ scale: 0.96 }}
               >
                 <Link
-                  href="/register"
+                  href="/ignitex"
                   style={{
                     fontFamily: F.nav,
                     fontSize: "0.7rem",
@@ -247,7 +247,7 @@ const Navbar: React.FC = () => {
                     display: "inline-block",
                   }}
                 >
-                  Register for VyaparX 3.0
+                  IgniteX 3.O Registration
                 </Link>
               </motion.div>
             </div>

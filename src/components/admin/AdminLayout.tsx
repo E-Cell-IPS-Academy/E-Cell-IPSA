@@ -14,6 +14,7 @@ import {
   Phone,
   Wrench,
   Rocket,
+  Sparkles,
   Award,
   LogOut,
   Menu,
@@ -110,6 +111,13 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     label: "VyapaarX",
     icon: Rocket,
     href: "/admin/dashboard/vyapar",
+    permission: "manage_content",
+  },
+  {
+    id: "ignitex",
+    label: "IgniteX 3.O",
+    icon: Sparkles,
+    href: "/admin/dashboard/ignitex",
     permission: "manage_content",
   },
   {
