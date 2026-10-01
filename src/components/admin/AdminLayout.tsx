@@ -15,6 +15,7 @@ import {
   Wrench,
   Rocket,
   Sparkles,
+  Trophy,
   Award,
   LogOut,
   Menu,
@@ -118,6 +119,13 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     label: "IgniteX 3.O",
     icon: Sparkles,
     href: "/admin/dashboard/ignitex",
+    permission: "manage_content",
+  },
+  {
+    id: "ignitex-competitions",
+    label: "IgniteX Competitions",
+    icon: Trophy,
+    href: "/admin/dashboard/ignitex-competitions",
     permission: "manage_content",
   },
   {

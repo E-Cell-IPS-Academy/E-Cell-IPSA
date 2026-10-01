@@ -75,3 +75,47 @@ export const IGNITEX_STATUS_LABEL: Record<IgnitexEventStatus, string> = {
   started: "Started",
   ended: "Ended",
 };
+
+// ---------------------------------------------------------------------------
+// Competitions (10 October) — 2-member team registration
+// ---------------------------------------------------------------------------
+
+export type IgnitexCompetitionId = "ipl-auction" | "venture-120";
+
+export interface IgnitexCompetition {
+  id: IgnitexCompetitionId;
+  /** Stored as `eventType` on every registration document. */
+  eventType: string;
+  title: string;
+  tagline: string;
+  emoji: string;
+  teamSize: number;
+}
+
+export const IGNITEX_COMPETITIONS: IgnitexCompetition[] = [
+  {
+    id: "ipl-auction",
+    eventType: "ignitex-ipl-auction",
+    title: "IPL Auction",
+    tagline: "Bid, strategize and build the ultimate squad.",
+    emoji: "🏏",
+    teamSize: 2,
+  },
+  {
+    id: "venture-120",
+    eventType: "ignitex-venture-120",
+    title: "Venture 120",
+    tagline: "Build a startup in 120 minutes.",
+    emoji: "⏱️",
+    teamSize: 2,
+  },
+];
+
+export interface IgnitexCompetitionRegistration extends WithId {
+  eventType: string;
+  competitionTitle: string;
+  teamSize: number;
+  leaderEmail: string;
+  members: IgnitexSpeakerRegistrationFormValues[];
+  createdAt?: Timestamp;
+}

@@ -8,5 +8,7 @@ export {
   registrationsToCsv,
   downloadCsv,
   DuplicateRegistrationError,
+  DuplicateTeamError,
+  submitCompetitionRegistration,
 } from "./ignitexService";
 export * from "./types";

@@ -13,6 +13,8 @@ import {
 import { db } from "@/firebase/config";
 import {
   IGNITEX_SPEAKER_SESSION,
+  type IgnitexCompetition,
+  type IgnitexCompetitionRegistration,
   type IgnitexEventStatus,
   type IgnitexSettings,
   type IgnitexSpeakerRegistration,
@@ -164,4 +166,113 @@ export function downloadCsv(csv: string, filename: string): void {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------------------------------------
+// Competition (team) registrations
+// ---------------------------------------------------------------------------
+
+const COMPETITION_COLLECTION = "ignitexCompetitionRegistrations";
+
+export class DuplicateTeamError extends Error {
+  constructor() {
+    super("A team with this leader email is already registered for this competition.");
+    this.name = "DuplicateTeamError";
+  }
+}
+
+/** members[0] is the team leader. One team per leader email per competition. */
+export async function submitCompetitionRegistration(
+  competition: IgnitexCompetition,
+  members: IgnitexSpeakerRegistrationFormValues[]
+): Promise<void> {
+  const cleaned = members.map((m) => ({
+    name: m.name.trim(),
+    year: m.year,
+    branch: m.branch.trim(),
+    enrollmentNo: m.enrollmentNo.trim(),
+    phone: m.phone.trim(),
+    email: m.email.trim().toLowerCase(),
+    gender: m.gender,
+    collegeName: m.collegeName,
+  }));
+  const leaderEmail = cleaned[0].email;
+  const ref = doc(
+    db,
+    COMPETITION_COLLECTION,
+    registrationId(competition.eventType, leaderEmail)
+  );
+
+  try {
+    const existing = await getDoc(ref);
+    if (existing.exists()) throw new DuplicateTeamError();
+  } catch (err) {
+    if (err instanceof DuplicateTeamError) throw err;
+  }
+
+  await setDoc(ref, {
+    eventType: competition.eventType,
+    competitionTitle: competition.title,
+    teamSize: competition.teamSize,
+    leaderEmail,
+    members: cleaned,
+    createdAt: serverTimestamp(),
+  });
+}
+
+/** Admin: all competition team registrations, newest first. */
+export async function listCompetitionRegistrations(): Promise<
+  IgnitexCompetitionRegistration[]
+> {
+  const snap = await getDocs(collection(db, COMPETITION_COLLECTION));
+  const regs = snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  })) as IgnitexCompetitionRegistration[];
+  return regs.sort(
+    (a, b) => (b.createdAt?.toMillis() ?? 0) - (a.createdAt?.toMillis() ?? 0)
+  );
+}
+
+/** One row per team; each member's details sit in their own columns. */
+export function competitionRegistrationsToCsv(
+  regs: IgnitexCompetitionRegistration[]
+): string {
+  const memberHeaders = (n: number) => [
+    `Member ${n} Name`,
+    `Member ${n} Year`,
+    `Member ${n} Branch`,
+    `Member ${n} Enrollment No`,
+    `Member ${n} Phone`,
+    `Member ${n} Email`,
+    `Member ${n} Gender`,
+    `Member ${n} College`,
+  ];
+  const headers = [
+    "Competition",
+    ...memberHeaders(1),
+    ...memberHeaders(2),
+    "Registered At",
+  ];
+  const memberCells = (m?: IgnitexSpeakerRegistrationFormValues) => [
+    m?.name ?? "",
+    m?.year ?? "",
+    m?.branch ?? "",
+    m?.enrollmentNo ?? "",
+    m?.phone ?? "",
+    m?.email ?? "",
+    m?.gender ?? "",
+    m?.collegeName ?? "",
+  ];
+  const rows = regs.map((r) =>
+    [
+      r.competitionTitle,
+      ...memberCells(r.members?.[0]),
+      ...memberCells(r.members?.[1]),
+      r.createdAt ? r.createdAt.toDate().toLocaleString() : "",
+    ]
+      .map(csvCell)
+      .join(",")
+  );
+  return [headers.map(csvCell).join(","), ...rows].join("\n");
 }
