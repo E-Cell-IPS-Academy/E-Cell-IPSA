@@ -36,22 +36,22 @@ export interface IgnitexSpeakerRegistrationFormValues {
 
 export interface IgnitexSpeakerRegistration
   extends WithId,
-    IgnitexSpeakerRegistrationFormValues {
+  IgnitexSpeakerRegistrationFormValues {
   eventType: typeof IGNITEX_SPEAKER_SESSION;
   createdAt?: Timestamp;
 }
 
 export const EMPTY_IGNITEX_SPEAKER_REGISTRATION: IgnitexSpeakerRegistrationFormValues =
-  {
-    name: "",
-    year: "",
-    branch: "",
-    enrollmentNo: "",
-    phone: "",
-    email: "",
-    gender: "",
-    collegeName: "",
-  };
+{
+  name: "",
+  year: "",
+  branch: "",
+  enrollmentNo: "",
+  phone: "",
+  email: "",
+  gender: "",
+  collegeName: "",
+};
 
 /**
  * Settings doc (settings/ignitex). Status drives the public page:
@@ -93,14 +93,14 @@ export interface IgnitexCompetition {
 }
 
 export const IGNITEX_COMPETITIONS: IgnitexCompetition[] = [
-  {
-    id: "ipl-auction",
-    eventType: "ignitex-ipl-auction",
-    title: "IPL Auction",
-    tagline: "Bid, strategize and build the ultimate squad.",
-    emoji: "🏏",
-    teamSize: 2,
-  },
+  // {
+  //   id: "ipl-auction",
+  //   eventType: "ignitex-ipl-auction",
+  //   title: "IPL Auction",
+  //   tagline: "Bid, strategize and build the ultimate squad.",
+  //   emoji: "🏏",
+  //   teamSize: 2,
+  // },
   {
     id: "venture-120",
     eventType: "ignitex-venture-120",
