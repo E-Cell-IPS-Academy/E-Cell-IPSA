@@ -64,11 +64,10 @@ const Navbar: React.FC = () => {
     <>
       {/* ── Top Navbar ── */}
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
             ? "bg-black/70 backdrop-blur-2xl border-b border-white/10 shadow-2xl shadow-black/40"
             : "bg-black/20 backdrop-blur-xl border-b border-white/[0.06]"
-        }`}
+          }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
@@ -122,9 +121,9 @@ const Navbar: React.FC = () => {
                         (e.currentTarget.style.color = "rgba(255,255,255,0.88)")
                       }
                       onMouseLeave={(e) =>
-                        (e.currentTarget.style.color = isActive
-                          ? "rgba(255,255,255,0.92)"
-                          : "rgba(255,255,255,0.52)")
+                      (e.currentTarget.style.color = isActive
+                        ? "rgba(255,255,255,0.92)"
+                        : "rgba(255,255,255,0.52)")
                       }
                     >
                       {item.name}
@@ -172,7 +171,7 @@ const Navbar: React.FC = () => {
                 </Link>
               </motion.div>
               */}
-              <motion.div
+              {/* <motion.div
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
               >
@@ -195,7 +194,7 @@ const Navbar: React.FC = () => {
                 >
                   IgniteX 3.O Registration
                 </Link>
-              </motion.div>
+              </motion.div> */}
             </div>
 
             {/* Mobile CTA */}

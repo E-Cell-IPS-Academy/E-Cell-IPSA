@@ -101,14 +101,14 @@ export const IGNITEX_COMPETITIONS: IgnitexCompetition[] = [
   //   emoji: "🏏",
   //   teamSize: 2,
   // },
-  {
-    id: "venture-120",
-    eventType: "ignitex-venture-120",
-    title: "Venture 120",
-    tagline: "Build a startup in 120 minutes.",
-    emoji: "⏱️",
-    teamSize: 2,
-  },
+  // {
+  //   id: "venture-120",
+  //   eventType: "ignitex-venture-120",
+  //   title: "Venture 120",
+  //   tagline: "Build a startup in 120 minutes.",
+  //   emoji: "⏱️",
+  //   teamSize: 2,
+  // },
 ];
 
 export interface IgnitexCompetitionRegistration extends WithId {
